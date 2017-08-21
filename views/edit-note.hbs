@@ -1,0 +1,12 @@
+{{>header.hbs title=note.title}}
+<ol class="breadcrumb">
+    <li><a href="/">Home</a></li>
+    <li><a href="/notes">Notes</a></li>
+    <li><a href="/notes/{{note.tag}}">{{note.title}}</a></li>
+    <li class="active">Edit</li>
+</ol>
+<form method="post">
+    {{>note-form.hbs note=note}}
+    <button class="btn btn-default">Save Changes</button>
+</form>
+{{>footer.hbs}}

@@ -1,0 +1,13 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "noImplicitAny": true,
+        "target": "es6",
+        "module": "commonjs",
+        "baseUrl": ".",
+        "sourceMap": true,
+        "outDir": "./dist",
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true
+    }
+}

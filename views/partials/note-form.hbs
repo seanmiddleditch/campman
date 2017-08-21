@@ -1,0 +1,16 @@
+<div class="form-group">
+    <label for="note-title" class="control-label">Title</label>
+    <input class="form-control" id="note-title" name="title" value="{{note.title}}" placeholder="Title of Note"/>
+</div>
+<div class="form-group">
+    <label for="note-tag" class="control-label">Tag</label>
+    <input class="form-control" id="note-tag" name="tag" value="{{note.tag}}" placeholder="Unique Tag"/>
+</div>
+<div class="form-group">
+    <label for="note-labels" class="control-label">Labels</label>
+    <input class="form-control" id="note-labels" name="labels" value="{{note.labelsString}}" placeholder="Labels"/>
+</div>
+<div class="form-group">
+    <label for="note-body" class="control-label">Body</label>
+    <textarea class="form-control" id="note-body" rows="20" name="body" placeholder="MarkDown formatted body of Note">{{note.body}}</textarea>
+</div>

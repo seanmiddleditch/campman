@@ -1,0 +1,11 @@
+{{>header.hbs title=note.title}}
+<ol class="breadcrumb">
+    <li><a href="/">Home</a></li>
+    <li class="active">Notes</li>
+</ol>
+<divul class="list-group">
+{{#each notes}}
+    <a href="/notes/{{tag}}" class="list-group-item">{{title}}</a>
+{{/each}}
+</div>
+{{>footer.hbs}}

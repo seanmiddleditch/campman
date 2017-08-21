@@ -1,0 +1,9 @@
+{{>header.hbs title=note.title}}
+<ol class="breadcrumb">
+    <li><a href="/">Home</a></li>
+    <li><a href="/notes">Notes</a></li>
+    <li class="active">{{note.title}}</li>
+</ol>
+<div class="page-header">{{note.title}} <small> <a href="/notes/edit/{{note.tag}}"><span class="glyphicon glyphicon-pencil"></span>Edit</a></small></div>
+<div>{{markdown note.body}}</div>
+{{>footer.hbs}}
