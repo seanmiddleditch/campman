@@ -1,9 +1,9 @@
 {{>header.hbs title=note.title}}
 <ol class="breadcrumb">
-    <li><a href="/">Home</a></li>
-    <li><a href="/notes">Notes</a></li>
-    <li><a href="/n/{{note.slug}}">{{note.title}}</a></li>
-    <li class="active"><span class="glyphicon glyphicon-pencil"></span> Edit</li>
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item"><a href="/notes">Notes</a></li>
+    <li class="breadcrumb-item"><a href="/n/{{note.slug}}">{{note.title}}</a></li>
+    <li class="breadcrumb-item active"><i class="fa fa-pencil"></i> Edit</li>
 </ol>
 <form method="post">
     {{>note-form.hbs note=note}}

@@ -2,6 +2,7 @@ import {Request, Response, Router} from "express";
 import {Label, Note} from "../models/note";
 import {Connection} from "typeorm";
 import {Converter} from "showdown";
+import * as Slug from "../util/slug";
 
 export function noteRouter(connection: Connection)
 {
@@ -25,13 +26,13 @@ export function noteRouter(connection: Connection)
     router.post('/notes/create', async (req, res, next) => {
         try {
             const note = new Note();
-            note.slug = req.body.slug;
+            note.slug = Slug.sanitizeSlug(req.body.slug || req.body.title);
             note.title = req.body.title;
             note.labels = await Label.reify(connection, Label.fromString(req.body.labels));
             note.body = req.body.body;
 
             await notes.save(note);
-            res.redirect('/n/' + req.body.slug);
+            res.redirect('/n/' + note.slug);
         } catch (err) {
             console.error(err);
             next();
@@ -55,13 +56,13 @@ export function noteRouter(connection: Connection)
         try {
             const note = await notes.findOne({where: {slug: req.params.slug}, relations: ['labels']});
             if (note) {
-                note.slug = req.body.slug;
+                note.slug = Slug.sanitizeSlug(req.body.slug || req.body.title);
                 note.title = req.body.title;
                 note.labels = await Label.reify(connection, Label.fromString(req.body.labels));
                 note.body = req.body.body;
 
                 await notes.save(note);
-                res.redirect('/n/' + req.body.slug);
+                res.redirect('/n/' + note.slug);
             } else {
                 next();
             }

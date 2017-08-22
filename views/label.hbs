@@ -1,13 +1,15 @@
 {{>header.hbs title=label.slug}}
 <ol class="breadcrumb">
-    <li><a href="/">Home</a></li>
-    <li><a href="/labels">Labels</a></li>
-    <li class="active">{{label.slug}}</li>
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item"><a href="/labels">Labels</a></li>
+    <li class="breadcrumb-item active">{{label.slug}}</li>
 </ol>
-<div class="page-header"><span class="glyphicon glyphicon-tag"></span> {{label.slug}}</div>
+<div class="page-header">
+    <h1><i class="fa fa-tag"></i> Label {{label.slug}}</h1>
+</div>
 <div class="list-group">
 {{#each label.notes}}
-    <a href="/n/{{slug}}" class="list-group-item"><span class="glyphicon glyphicon-book"></span> {{title}}</a>
+    <a href="/n/{{slug}}" class="list-group-item"><i class="fa fa-file"></i> {{title}}</a>
 {{/each}}
 </div>
 {{>footer.hbs}}
