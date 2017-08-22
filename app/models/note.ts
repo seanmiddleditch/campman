@@ -7,11 +7,35 @@ export class Label
     public id: number;
 
     @typeorm.Column({length: 32})
+    @typeorm.Column({length: 32})
     @typeorm.Index({unique: true})
     public slug: string;
 
-    public constructor(label: string) {
+    @typeorm.ManyToMany(type => Note, note => note.labels, {
+        cascadeInsert: false,
+        cascadeUpdate: false
+    })
+    public notes: Note[];
+
+    public constructor(label: string)
+    {
         this.slug = label;
+    }
+
+    public static fromString(input: string): string[]
+    {
+        return input.split(/[\s,]+/).filter(s => s.length);
+    }
+
+    public static reify(connection: typeorm.Connection, labels: string[]) : Promise<Label[]>
+    {
+        const repo = connection.getRepository(Label);
+
+        // typeorm can't handle this efficiently just yet...
+        return Promise.all(labels.map(async (slug) => {
+            const label = await repo.findOne({slug: slug});
+            return label ? label : new Label(slug);
+        }));
     }
 }
 
@@ -31,17 +55,21 @@ export class Note
     @typeorm.Column()
     public body: string;
 
-    @typeorm.ManyToMany(type => Label, {
+    @typeorm.VersionColumn()
+    public revision: number;
+
+    @typeorm.CreateDateColumn()
+    public created: Date;
+
+    @typeorm.UpdateDateColumn()
+    public updated: Date;
+
+    @typeorm.ManyToMany(type => Label, label => label.notes, {
         cascadeInsert: true,
-        cascadeUpdate: false
+        cascadeUpdate: true
     })
     @typeorm.JoinTable()
     public labels: Label[];
-
-    public setLabelString(labelsText: string) {
-        const labels = labelsText.split(/[\s,]+/);
-        this.labels = labels.map(s => new Label(s));
-    }
 
     public get labelsString(): string
     {

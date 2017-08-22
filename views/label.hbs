@@ -1,0 +1,13 @@
+{{>header.hbs title=label.slug}}
+<ol class="breadcrumb">
+    <li><a href="/">Home</a></li>
+    <li><a href="/labels">Labels</a></li>
+    <li class="active">{{label.slug}}</li>
+</ol>
+<div class="page-header"><span class="glyphicon glyphicon-tag"></span> {{label.slug}}</div>
+<div class="list-group">
+{{#each label.notes}}
+    <a href="/n/{{tag}}" class="list-group-item"><span class="glyphicon glyphicon-book"></span> {{title}}</a>
+{{/each}}
+</div>
+{{>footer.hbs}}

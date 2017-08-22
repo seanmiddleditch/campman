@@ -21,7 +21,6 @@
   "devDependencies": {
     "@types/handlebars": "^4.0.35",
     "@types/showdown": "^1.7.0",
-    "express": "^4.15.4",
-    "tsc": "^1.20150623.0"
+    "express": "^4.15.4"
   }
 }

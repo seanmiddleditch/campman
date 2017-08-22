@@ -1,11 +1,11 @@
-{{>header.hbs title=note.title}}
+{{>header.hbs title='Notes'}}
 <ol class="breadcrumb">
     <li><a href="/">Home</a></li>
     <li class="active">Notes</li>
 </ol>
-<divul class="list-group">
+<div class="list-group">
 {{#each notes}}
-    <a href="/notes/{{tag}}" class="list-group-item">{{title}}</a>
+    <a href="/n/{{tag}}" class="list-group-item"><span class="glyphicon glyphicon-book"></span> {{title}}</a>
 {{/each}}
 </div>
 {{>footer.hbs}}

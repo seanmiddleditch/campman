@@ -4,13 +4,15 @@ import * as typeorm from "typeorm";
 import {routes} from "./routes";
 import {createEngine} from "./util/hb-engine";
 import * as BodyParser from "body-parser";
+import * as models from "./models/note";
 
 (async () => {
     const connection = await typeorm.createConnection({
         "type": "sqlite",
         "database": "test.db",
         "entities": [
-            __dirname + "/models/*.js"
+            models.Note,
+            models.Label
         ],
         "autoSchemaSync": false
     });

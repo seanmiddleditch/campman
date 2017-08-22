@@ -1,0 +1,11 @@
+{{>header.hbs title='Labels'}}
+<ol class="breadcrumb">
+    <li><a href="/">Home</a></li>
+    <li class="active">Labels</li>
+</ol>
+<div class="list-group">
+{{#each labels}}
+    <a href="/l/{{slug}}" class="list-group-item"><span class="glyphicon glyphicon-tag"></span> {{slug}}</a>
+{{/each}}
+</div>
+{{>footer.hbs}}
