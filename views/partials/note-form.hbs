@@ -2,27 +2,27 @@
     <div class="form-group">
         <label for="note-title" class="control-label col-sm-1">Title</label>
         <div class="col-sm-9">
-            <input class="form-control" id="note-title" name="title" value="{{note.title}}" placeholder="Title of Note"/>
+            <input class="form-control" id="note-title" name="title" type="text" required spellcheck maxlength="255" value="{{note.title}}" placeholder="Title of Note"/>
         </div>
     </div>
     <div class="form-group">
         <label for="note-labels" class="control-label col-sm-1">Labels</label>
         <div class="input-group col-sm-3">
             <div class="input-group-addon"><i class="fa fa-tags"></i></div>
-            <input class="form-control" id="note-labels" name="labels" value="{{note.labelsString}}" placeholder="Labels"/>
+            <input class="form-control" id="note-labels" name="labels" value="{{note.labelsString}}" type="text" pattern="^[a-zA-Z0-9-]+([ ,]+[a-zA-Z0-9-]+)*$" placeholder="Labels"/>
         </div>
     </div>
     <div class="form-group">
         <label for="note-body" class="control-label col-sm-1">Body</label>
         <div class="input-group col-sm-9">
-            <textarea class="form-control" id="note-body" rows="20" name="body" placeholder="MarkDown formatted body of Note">{{note.body}}</textarea>
+            <textarea class="form-control" id="note-body" rows="20" name="body" spellcheck placeholder="MarkDown formatted body of Note">{{note.body}}</textarea>
         </div>
     </div>
     <div class="form-group">
         <label for="note-title" class="control-label col-sm-1">Slug</label>
         <div class="input-group col-sm-3">
             <div class="input-group-addon">/n/</div>
-            <input class="form-control" id="note-slug" name="slug" value="{{note.slug}}" placeholder="Unique slug name"/>
+            <input class="form-control" id="note-slug" name="slug" value="{{note.slug}}" type="text" pattern="^[a-zA-Z0-9]+[a-zA-Z0-9-]*[a-zA-Z0-9]+$" placeholder="Unique slug name"/>
         </div>
     </div>
 </div>
