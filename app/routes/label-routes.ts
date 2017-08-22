@@ -19,9 +19,9 @@ export function labelRouter(connection: Connection)
         }
     });
 
-    router.get('/l/:tag', async (req, res, next) => {
+    router.get('/l/:slug', async (req, res, next) => {
         try {
-            const label = await labels.findOne({where: {slug: req.params.tag}, relations: ['notes']});
+            const label = await labels.findOne({where: {slug: req.params.slug}, relations: ['notes']});
             if (label) {
                 res.render('label.hbs', {label: label});
             } else {

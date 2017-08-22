@@ -7,7 +7,6 @@ export class Label
     public id: number;
 
     @typeorm.Column({length: 32})
-    @typeorm.Column({length: 32})
     @typeorm.Index({unique: true})
     public slug: string;
 
@@ -47,7 +46,7 @@ export class Note
 
     @typeorm.Column({length: 32})
     @typeorm.Index({unique: true})
-    public tag: string;
+    public slug: string;
 
     @typeorm.Column()
     public title: string;

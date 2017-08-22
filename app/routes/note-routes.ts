@@ -25,22 +25,22 @@ export function noteRouter(connection: Connection)
     router.post('/notes/create', async (req, res, next) => {
         try {
             const note = new Note();
-            note.tag = req.body.tag;
+            note.slug = req.body.slug;
             note.title = req.body.title;
             note.labels = await Label.reify(connection, Label.fromString(req.body.labels));
             note.body = req.body.body;
 
             await notes.save(note);
-            res.redirect(req.body.tag);
+            res.redirect('/n/' + req.body.slug);
         } catch (err) {
             console.error(err);
             next();
         }
     });
 
-    router.get('/n/:tag/edit', async (req, res, next) => {
+    router.get('/n/:slug/edit', async (req, res, next) => {
         try {
-            const note = await notes.findOne({where: {tag: req.params.tag}, relations: ['labels']});
+            const note = await notes.findOne({where: {slug: req.params.slug}, relations: ['labels']});
             if (note) {
                 res.render('edit-note.hbs', {note: note});
             } else {
@@ -51,17 +51,17 @@ export function noteRouter(connection: Connection)
             next();
         }
     });
-    router.post('/n/:tag/edit', async (req, res, next) => {
+    router.post('/n/:slug/edit', async (req, res, next) => {
         try {
-            const note = await notes.findOne({where: {tag: req.params.tag}, relations: ['labels']});
+            const note = await notes.findOne({where: {slug: req.params.slug}, relations: ['labels']});
             if (note) {
-                note.tag = req.body.tag;
+                note.slug = req.body.slug;
                 note.title = req.body.title;
                 note.labels = await Label.reify(connection, Label.fromString(req.body.labels));
                 note.body = req.body.body;
 
                 await notes.save(note);
-                res.redirect('/n/' + req.body.tag);
+                res.redirect('/n/' + req.body.slug);
             } else {
                 next();
             }
@@ -71,9 +71,9 @@ export function noteRouter(connection: Connection)
         }
     });
 
-    router.get('/n/:tag', async (req, res, next) => {
+    router.get('/n/:slug', async (req, res, next) => {
         try {
-            const note = await notes.findOne({where: {tag: req.params.tag}, relations: ['labels']});
+            const note = await notes.findOne({where: {slug: req.params.slug}, relations: ['labels']});
             if (note) {
                 res.render('note.hbs', {note: note});
             } else {
