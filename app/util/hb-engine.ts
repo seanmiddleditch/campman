@@ -1,15 +1,11 @@
 import * as Handlebars from "handlebars";
 import * as fs from "fs";
-import {Converter} from "showdown";
 import * as path from "path";
+import {transform} from "./markup";
 
 export function createEngine(viewPath: string)
 {
-    const markdown = new Converter();
-    markdown.setFlavor('github');
-    Handlebars.registerHelper('markdown', (input: string) => {
-        return new Handlebars.SafeString(markdown.makeHtml(input));
-    })
+    Handlebars.registerHelper('markdown', (input: string) => new Handlebars.SafeString(transform(input)));
 
     const entries = fs.readdirSync(viewPath + '/partials');
     for (const fileName of entries) {
