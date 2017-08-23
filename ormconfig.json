@@ -2,5 +2,8 @@
     "name": "default",
     "type": "sqlite",
     "database": "test.db",
-    "autoSchemaSync": false
+    "autoSchemaSync": false,
+    "entities": [
+        "dist/models/*.js"
+    ]
 }
