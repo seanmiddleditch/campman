@@ -1,17 +1,16 @@
 import {Request, Response, Router} from "express";
-import {Label, Note} from "../models/note";
-import {Connection} from "typeorm";
+import {Label, Note} from "../models";
+import * as squell from "squell";
 import {Converter} from "showdown";
 
-export function labelRouter(connection: Connection)
+export function labelRouter(db: squell.Database)
 {
     const router = Router();
     const converter = new Converter();
-    const labels = connection.getRepository(Label);
 
     router.get('/labels', async (req, res, next) => {
         try {
-            const all = await labels.find();
+            const all = await db.query(Label).order(m => [[m.slug, squell.ASC]]).find();
             res.render('labels.hbs', {labels: all});
         } catch (err) {
             console.error(err);
@@ -21,7 +20,7 @@ export function labelRouter(connection: Connection)
 
     router.get('/l/:slug', async (req, res, next) => {
         try {
-            const label = await labels.findOne({where: {slug: req.params.slug}, relations: ['notes']});
+            const label = await db.query(Label).where(m => m.slug.eq(req.params.slug)).findOne();
             if (label) {
                 res.render('label.hbs', {label: label});
             } else {

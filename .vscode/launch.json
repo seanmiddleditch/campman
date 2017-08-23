@@ -9,6 +9,7 @@
             "request": "launch",
             "name": "Launch Program",
             "program": "${workspaceRoot}/dist/index.js",
+            "sourceMaps": true,
             "outFiles": [
                 "${workspaceRoot}/dist/**/*.js"
             ]

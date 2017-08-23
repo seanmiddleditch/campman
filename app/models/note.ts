@@ -1,77 +1,39 @@
-import * as typeorm from "typeorm";
+import {Label} from "./label";
+import * as modelsafe from "modelsafe";
+import * as squell from "squell";
 
-@typeorm.Entity()
-export class Label
+@modelsafe.model({name: 'note'})
+export class Note extends modelsafe.Model
 {
-    @typeorm.PrimaryGeneratedColumn()
-    public id: number;
+    @modelsafe.attr(modelsafe.INTEGER, {optional: true})
+    @squell.attr({primaryKey: true, autoIncrement: true})
+    public id?: number;
 
-    @typeorm.Column({length: 32})
-    @typeorm.Index({unique: true})
+    @modelsafe.attr(modelsafe.STRING, {unique: true})
+    @modelsafe.minLength(1)
+    @modelsafe.maxLength(32)
     public slug: string;
 
-    @typeorm.ManyToMany(type => Note, note => note.labels, {
-        cascadeInsert: false,
-        cascadeUpdate: false
-    })
-    public notes: Note[];
-
-    public constructor(label: string)
-    {
-        this.slug = label;
-    }
-
-    public static fromString(input: string): string[]
-    {
-        return input.split(/[\s,]+/).filter(s => s.length);
-    }
-
-    public static reify(connection: typeorm.Connection, labels: string[]) : Promise<Label[]>
-    {
-        const repo = connection.getRepository(Label);
-
-        // typeorm can't handle this efficiently just yet...
-        return Promise.all(labels.map(async (slug) => {
-            const label = await repo.findOne({slug: slug});
-            return label ? label : new Label(slug);
-        }));
-    }
-}
-
-@typeorm.Entity()
-export class Note
-{
-    @typeorm.PrimaryGeneratedColumn({"type": "int"})
-    public id: number;
-
-    @typeorm.Column({length: 32})
-    @typeorm.Index({unique: true})
-    public slug: string;
-
-    @typeorm.Column()
+    @modelsafe.attr(modelsafe.STRING)
+    @modelsafe.maxLength(255)
+    @modelsafe.minLength(1)
     public title: string;
     
-    @typeorm.Column()
+    @modelsafe.attr(modelsafe.STRING)
     public body: string;
 
-    @typeorm.VersionColumn()
-    public revision: number;
-
-    @typeorm.CreateDateColumn()
-    public created: Date;
-
-    @typeorm.UpdateDateColumn()
-    public updated: Date;
-
-    @typeorm.ManyToMany(type => Label, label => label.notes, {
-        cascadeInsert: true,
-        cascadeUpdate: true
-    })
-    @typeorm.JoinTable()
+    @modelsafe.assoc(modelsafe.BELONGS_TO_MANY, Label)
+    @squell.assoc({through: 'note_label'})
     public labels: Label[];
 
     public get labelsString(): string
     {
         return this.labels ? this.labels.map(label => label.slug).join(',') : '';
     }
+}
+
+@modelsafe.model({name: 'note_label'})
+class NoteLabel extends modelsafe.Model
+{
+
 }
