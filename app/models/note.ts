@@ -30,6 +30,18 @@ export class Note extends modelsafe.Model
     {
         return this.labels ? this.labels.map(label => label.slug).join(',') : '';
     }
+
+    public static createWithSlug(slug: string): Note
+    {
+        const note = new Note;
+        note.slug = slug;
+        return note;
+    }
+
+    public static findBySlug(db: squell.Database, slug: string): Promise<Note|null>
+    {
+        return db.query(Note).includeAll().where(m => m.slug.eq(slug)).findOne();
+    }
 }
 
 @modelsafe.model({name: 'note_label'})

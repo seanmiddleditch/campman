@@ -16,7 +16,9 @@ export class Label extends modelsafe.Model
 
     public static fromString(input: string): string[]
     {
-        return input.split(/[\s,]+/).filter(s => s.length).map(s => s.substring(0, 32));
+        return input.split(/[\s,]+/).map(
+            s => s.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-/, '').replace(/-$/, '')
+        ).filter(s => s.length).map(s => s.substring(0, 32));
     }
 
     public static async reify(db: squell.Database, slugs: string[]) : Promise<Label[]>

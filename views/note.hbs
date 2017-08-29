@@ -1,18 +1,128 @@
-{{>header.hbs title=note.title}}
-<ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="/">Home</a></li>
-    <li class="breadcrumb-item"><a href="/notes">Notes</a></li>
-    <li class="breadcrumb-item active">{{note.title}}</li>
-    <li class="breadcrumb-item"><a href="/n/{{note.slug}}/edit"><i class="fa fa-pencil"></i> Edit</a></li>
-</ol>
+{{>header.hbs title=note.title css='notes.css'}}
 <div class="page-header">
-    <h1>{{note.title}}</h1>
+    <h1 class="note-title" id="input-note-title">{{#if note.title}}{{note.title}}{{else}}Page Title{{/if}}</h1>
 {{#if note.labels}}
-    <div class="text-lowercase">
+    <div class="note-labels">
         <i class="fa fa-tags"></i>
-        {{#each note.labels}}<span class="label"><a href="/l/{{slug}}">{{slug}}</a></span> {{/each}}
+        <span>{{#each note.labels}}<span class="label note-label"><a href="/l/{{slug}}">{{slug}}</a></span>{{/each}}</span>
     </div>
 {{/if}}
+    <div>
+        <button class="btn btn-default" {{#if note.id}}{{else}}style="display: none"{{/if}} id="editor-edit-btn"><i class="fa fa-pencil"></i> Edit</button>
+        <button class="btn btn-primary" {{#if note.id}}style="display: none"{{/if}} id="editor-save-btn">Save</button>
+        <button class="btn btn-default" style="display: none" id="editor-cancel-btn">Cancel</button>
+        <button class="btn btn-danger" style="display: none" id="editor-delete-btn">DELETE</button>
+    </div>
 </div>
-<div>{{markdown note.body}}</div>
+<div data-markup="{{note.body}}" class="note-body" id="input-note-body">{{markdown note.body}}</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () =>
+    {
+        const editBtn = $('#editor-edit-btn');
+        const saveBtn = $('#editor-save-btn');
+        const cancelBtn = $('#editor-cancel-btn');
+        const deleteBtn = $('#editor-delete-btn');
+
+        const titleField = $('#input-note-title');
+        const bodyField = $('#input-note-body');
+        const labelsField = $('#input-note-labels');
+
+        let noteId = parseInt('0{{note.id}}', 10);
+        let editing = false;
+        let saving = false;
+
+        function startEditing()
+        {
+            if (!editing)
+            {
+                editing = true;
+
+                editBtn.hide();
+                saveBtn.show();
+                if (noteId)
+                {
+                    cancelBtn.show();
+                    deleteBtn.show();
+                }
+
+                titleField.data('previous', titleField[0].innerText);
+                titleField.attr('contentEditable', true);
+
+                bodyField.data('previous', bodyField[0].innerText);
+                bodyField.text(bodyField.data('markup'));
+                bodyField.attr('contentEditable', true);
+            }
+        }
+
+        editBtn.click(startEditing);
+        if (!noteId)
+        {
+            startEditing();
+        }
+
+        saveBtn.click(() => {
+            if (editing && !saving)
+            {
+                saving = true;
+
+                saveBtn.addClass('disabled');
+                cancelBtn.addClass('disabled');
+                deleteBtn.addClass('disabled');
+
+                titleField.attr('contentEditable', false);
+                bodyField.attr('contentEditable', false);
+
+                const data = {
+                    title: titleField[0].innerText,
+                    body: bodyField[0].innerText
+                };
+
+                $.ajax({url: window.location, method: 'POST', data: data}).then(() => {
+                    if (noteId)
+                    {
+                        editBtn.show();
+                        saveBtn.removeClass('disabled').hide();
+                        cancelBtn.removeClass('disabled').hide();
+                        deleteBtn.removeClass('disabled').hide();
+
+                        saving = false;
+                        editing = false;
+                    }
+                    else
+                    {
+                        window.location.reload();
+                    }
+                }, () => {
+                    saveBtn.removeClass('disabled');
+                    cancelBtn.removeClass('disabled');
+                    deleteBtn.removeClass('disabled');
+                });
+            }
+        });
+
+        cancelBtn.click(() => {
+            if (editing && !saving)
+            {
+                editBtn.show();
+                saveBtn.hide();
+                cancelBtn.hide();
+                deleteBtn.hide();
+
+                titleField.text(titleField.data('previous'));
+                bodyField.html(titleField.data('previous'));
+
+                editing = false;
+            }
+        });
+
+        deleteBtn.click(() => {
+            if (editing && !saving)
+            {
+                $.ajax({url: window.location, method: 'DELETE'}).then(() => {
+                    window.location = '/notes';
+                });
+            }
+        });
+    });
+</script>
 {{>footer.hbs}} 

@@ -16,11 +16,15 @@ import * as path from "path";
 
     await db.sync();
 
+    const root = path.join(__dirname, '..');
+    const viewsRoot = path.join(root, 'views');
+    const staticRoot = path.join(root, 'static');
+
     const app = express();
     app.use(BodyParser.urlencoded({extended: false}));
-    app.engine('hbs', createEngine(__dirname + '/../views'));
-    app.set('views', __dirname + '/../views');
+    app.engine('hbs', createEngine(viewsRoot));
+    app.set('views', viewsRoot);
     app.set('view engine', 'hbs');
-    app.use(routes(db));
+    app.use(routes(staticRoot, db));
     app.listen(8080);
 })();

@@ -1,8 +1,4 @@
 {{>header.hbs title='Notes'}}
-<ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="/">Home</a></li>
-    <li class="breadcrumb-item active">Notes</li>
-</ol>
 <div class="page-header">
     <h1><i class="fa fa-book"></i> Notes</h1>
 </div>
@@ -10,6 +6,6 @@
 {{#each notes}}
     <a href="/n/{{slug}}" class="list-group-item"><i class="fa fa-file"></i> {{title}}</a>
 {{/each}}
-    <a href="/notes/create" class="list-group-item"><i class="fa fa-plus"></i> New Note</a>
+    <a href="/create/note" class="list-group-item"><i class="fa fa-plus"></i> New Note</a>
 </div>
 {{>footer.hbs}}
