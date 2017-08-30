@@ -20,7 +20,7 @@ export function labelRouter(db: squell.Database)
 
     router.get('/l/:slug', async (req, res, next) => {
         try {
-            const label = await db.query(Label).where(m => m.slug.eq(req.params.slug)).findOne();
+            const label = await db.query(Label).where(m => m.slug.eq(req.params.slug)).includeAll().findOne();
             if (label) {
                 res.render('label.hbs', {label: label});
             } else {

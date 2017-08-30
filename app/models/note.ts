@@ -1,15 +1,21 @@
 import {Label} from "./label";
+import {Library} from "./library";
 import * as modelsafe from "modelsafe";
 import * as squell from "squell";
 
 @modelsafe.model({name: 'note'})
+@squell.model({indexes: [{name: 'slug', fields: ['libraryId', 'slug']}]})
 export class Note extends modelsafe.Model
 {
     @modelsafe.attr(modelsafe.INTEGER, {optional: true})
     @squell.attr({primaryKey: true, autoIncrement: true})
     public id?: number;
 
-    @modelsafe.attr(modelsafe.STRING, {unique: true})
+    @modelsafe.assoc(modelsafe.BELONGS_TO, Library)
+    @squell.assoc({onDelete: 'CASCADE'})
+    public library: Library;
+
+    @modelsafe.attr(modelsafe.STRING)
     @modelsafe.minLength(1)
     @modelsafe.maxLength(32)
     public slug: string;
@@ -23,7 +29,7 @@ export class Note extends modelsafe.Model
     public body: string;
 
     @modelsafe.assoc(modelsafe.BELONGS_TO_MANY, Label)
-    @squell.assoc({through: 'note_label'})
+    @squell.assoc({through: 'note_label', as: 'labels'})
     public labels: Label[];
 
     public get labelsString(): string

@@ -8,7 +8,7 @@ export function routes(staticRoot: string, db: Database)
     const router = express.Router();
     router.use(noteRouter(db));
     router.use(labelRouter(db));
-    router.get('/', (req, res) => res.render('index.hbs'));
+    router.get('/', (req, res) => res.redirect('/n/home'));
     router.use(express.static(staticRoot));
     return router;
 }

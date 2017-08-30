@@ -18,7 +18,7 @@ function NoteLabels(props)
 function NoteBody(props)
 {
     if (props.editing)
-        return <div className='note-body'><ContentEditable placeholder='Enter MarkDown content. Make [[links]] with double brackets.' onChange={props.onChange}>{props.body}</ContentEditable></div>;
+        return <div className='note-body'><ContentEditable multiline placeholder='Enter MarkDown content. Make [[links]] with double brackets.' onChange={props.onChange}>{props.body}</ContentEditable></div>;
     else
         return <div className='note-body'><RenderMarkup markup={props.body}/></div>
 }
@@ -90,7 +90,6 @@ class Note extends React.Component
                 body: this.state.body,
                 labels: this.state.labels
             };
-            alert(JSON.stringify(data));
 
             $.ajax({url: window.location, method: 'POST', data: data}).then(() => {
                 this.setState({editing: false, saving: false});

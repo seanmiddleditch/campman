@@ -14,6 +14,10 @@ export class Label extends modelsafe.Model
     @modelsafe.maxLength(32)
     public slug: string;
 
+    @modelsafe.assoc(modelsafe.BELONGS_TO_MANY, () => Note)
+    @squell.assoc({through: 'note_label'})
+    public notes: Note[];
+
     public static fromString(input: string): string[]
     {
         return input.split(/[\s,]+/).map(
