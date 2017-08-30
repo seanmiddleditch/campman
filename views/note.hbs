@@ -1,7 +1,10 @@
 {{>header.hbs title=note.title css='notes.css'}}
 <div id="test"></div>
 <div data-id="{{note.id}}" data-title="{{note.title}}" data-labels="{{#each note.labels}}{{slug}},{{/each}}" data-body="{{note.body}}" id="note-data"/>
+<script type="text/babel" src="/scripts/edit.jsx"></script>
+<script type="text/babel" src="/scripts/markup.jsx"></script>
 <script type="text/babel" src="/scripts/notes.jsx"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.7.3/showdown.min.js" integrity="sha256-MqAmGZ1xn14UrrEZsGT2l5nxuayfKbnVgw0LH4NIdj8=" crossorigin="anonymous"></script>
 <script type="text/babel">
     const noteData = document.getElementById('note-data');
     const note = {
