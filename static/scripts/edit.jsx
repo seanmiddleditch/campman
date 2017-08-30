@@ -22,9 +22,26 @@ class ContentEditable extends React.Component
         }
     }
 
+    filter(e)
+    {
+        if (!this.props.multiple && e.key == 'Enter')
+        {
+            e.stopPropagation();
+            e.preventDefault();
+            return false;            
+        }
+        else
+        {
+            return true;
+        }
+    }
+
     render()
     {
-        return <div className='content-editable' placeholder={this.props.placeholder} onInput={() => this.emit()} onBlur={() => this.emit()} suppressContentEditableWarning={true} contentEditable={!this.props.disabled}>{this.props.children}</div>;
+        if (this.props.multiline)
+            return <div className='content-editable' placeholder={this.props.placeholder} onBlur={() => this.emit()} suppressContentEditableWarning={true} contentEditable={!this.props.disabled}>{this.props.children}</div>;
+        else
+            return <span className='content-editable' placeholder={this.props.placeholder} onKeyDown={(e) => this.filter(e)} onBlur={() => this.emit()} suppressContentEditableWarning={true} contentEditable={!this.props.disabled}>{this.props.children}</span>;
     }
 }
 

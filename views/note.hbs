@@ -11,7 +11,7 @@
         id: parseInt('0' + noteData.getAttribute('data-id'), 10),
         title: noteData.getAttribute('data-title'),
         body: noteData.getAttribute('data-body'),
-        labels: noteData.getAttribute('data-labels').split(',').filter(s => s.length)
+        labels: noteData.getAttribute('data-labels')
     };
 
     ReactDOM.render(<Note note={note}/>, document.getElementById('test'));

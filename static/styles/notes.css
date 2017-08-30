@@ -7,4 +7,4 @@
 .note-body { margin: 1em 0 1em 0; padding: 2px }
 .note-body *[contenteditable="true"] { white-space: pre-wrap; font-family: monospace }
 
-.content-editable:empty::before { content: attr(placeholder); display: block; color: grey }
+.content-editable:empty::before { content: attr(placeholder); display: inline; color: grey }

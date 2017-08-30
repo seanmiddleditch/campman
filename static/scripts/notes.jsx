@@ -5,9 +5,12 @@ function NoteTitle(props)
 
 function NoteLabels(props)
 {
-    const labels = props.labels.map(label => <span key={label} className='label note-label'><a href={'/l/' + label}>{label}</a></span>);
-    if (labels.length)
-        return <div className='note-labels'><i className='fa fa-tags'></i> <span>{labels}</span></div>;
+    const labels = props.labels.split(',').filter(s => s.length);
+    const labelSpans = labels.map(label => <span key={label} className='label note-label'><a href={'/l/' + label}>{label}</a></span>);
+    if (props.editing)
+        return <div className='note-labels'><i className='fa fa-tags'></i> <ContentEditable placeholder='label1,label2,label2' onChange={(value) => props.onChange(value.split(/[, ]+/).filter(s => s.length).join(','))}>{labels.join(', ')}</ContentEditable></div>
+    else if (labels.length)
+        return <div className='note-labels'><i className='fa fa-tags'></i> <span>{labelSpans}</span></div>;
     else
         return <span/>;
 }
@@ -84,8 +87,10 @@ class Note extends React.Component
 
             const data = {
                 title: this.state.title,
-                body: this.state.body
+                body: this.state.body,
+                labels: this.state.labels
             };
+            alert(JSON.stringify(data));
 
             $.ajax({url: window.location, method: 'POST', data: data}).then(() => {
                 this.setState({editing: false, saving: false});
@@ -109,7 +114,7 @@ class Note extends React.Component
     {
         return <div>
             <NoteTitle editing={this.state.editing} title={this.state.title} onChange={(value) => this.setState({title: value})}/>
-            <NoteLabels editing={this.props.editing} labels={this.state.labels} onChange={(value) => this.setState({labels: value})}/>
+            <NoteLabels editing={this.state.editing} labels={this.state.labels} onChange={(value) => this.setState({labels: value})}/>
             <NoteBody editing={this.state.editing} body={this.state.body} onChange={(value) => this.setState({body: value})}/>
             <NoteEditBar editing={this.state.editing} isNew={!this.state.id} onEdit={() => this.edit()} onCancel={() => this.cancel()} onSave={() => this.save()} onDelete={() => this.delete()}/>
         </div>;
