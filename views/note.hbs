@@ -1,128 +1,16 @@
 {{>header.hbs title=note.title css='notes.css'}}
-<div class="page-header">
-    <h1 class="note-title" id="input-note-title">{{#if note.title}}{{note.title}}{{else}}Page Title{{/if}}</h1>
-{{#if note.labels}}
-    <div class="note-labels">
-        <i class="fa fa-tags"></i>
-        <span>{{#each note.labels}}<span class="label note-label"><a href="/l/{{slug}}">{{slug}}</a></span>{{/each}}</span>
-    </div>
-{{/if}}
-    <div>
-        <button class="btn btn-default" {{#if note.id}}{{else}}style="display: none"{{/if}} id="editor-edit-btn"><i class="fa fa-pencil"></i> Edit</button>
-        <button class="btn btn-primary" {{#if note.id}}style="display: none"{{/if}} id="editor-save-btn">Save</button>
-        <button class="btn btn-default" style="display: none" id="editor-cancel-btn">Cancel</button>
-        <button class="btn btn-danger" style="display: none" id="editor-delete-btn">DELETE</button>
-    </div>
-</div>
-<div data-markup="{{note.body}}" class="note-body" id="input-note-body">{{markdown note.body}}</div>
-<script>
-    document.addEventListener('DOMContentLoaded', () =>
-    {
-        const editBtn = $('#editor-edit-btn');
-        const saveBtn = $('#editor-save-btn');
-        const cancelBtn = $('#editor-cancel-btn');
-        const deleteBtn = $('#editor-delete-btn');
+<div id="test"></div>
+<div data-id="{{note.id}}" data-title="{{note.title}}" data-labels="{{#each note.labels}}{{slug}},{{/each}}" data-body="{{note.body}}" id="note-data"/>
+<script type="text/babel" src="/scripts/notes.jsx"></script>
+<script type="text/babel">
+    const noteData = document.getElementById('note-data');
+    const note = {
+        id: parseInt('0' + noteData.getAttribute('data-id'), 10),
+        title: noteData.getAttribute('data-title'),
+        body: noteData.getAttribute('data-body'),
+        labels: noteData.getAttribute('data-labels').split(',').filter(s => s.length)
+    };
 
-        const titleField = $('#input-note-title');
-        const bodyField = $('#input-note-body');
-        const labelsField = $('#input-note-labels');
-
-        let noteId = parseInt('0{{note.id}}', 10);
-        let editing = false;
-        let saving = false;
-
-        function startEditing()
-        {
-            if (!editing)
-            {
-                editing = true;
-
-                editBtn.hide();
-                saveBtn.show();
-                if (noteId)
-                {
-                    cancelBtn.show();
-                    deleteBtn.show();
-                }
-
-                titleField.data('previous', titleField[0].innerText);
-                titleField.attr('contentEditable', true);
-
-                bodyField.data('previous', bodyField[0].innerText);
-                bodyField.text(bodyField.data('markup'));
-                bodyField.attr('contentEditable', true);
-            }
-        }
-
-        editBtn.click(startEditing);
-        if (!noteId)
-        {
-            startEditing();
-        }
-
-        saveBtn.click(() => {
-            if (editing && !saving)
-            {
-                saving = true;
-
-                saveBtn.addClass('disabled');
-                cancelBtn.addClass('disabled');
-                deleteBtn.addClass('disabled');
-
-                titleField.attr('contentEditable', false);
-                bodyField.attr('contentEditable', false);
-
-                const data = {
-                    title: titleField[0].innerText,
-                    body: bodyField[0].innerText
-                };
-
-                $.ajax({url: window.location, method: 'POST', data: data}).then(() => {
-                    if (noteId)
-                    {
-                        editBtn.show();
-                        saveBtn.removeClass('disabled').hide();
-                        cancelBtn.removeClass('disabled').hide();
-                        deleteBtn.removeClass('disabled').hide();
-
-                        saving = false;
-                        editing = false;
-                    }
-                    else
-                    {
-                        window.location.reload();
-                    }
-                }, () => {
-                    saveBtn.removeClass('disabled');
-                    cancelBtn.removeClass('disabled');
-                    deleteBtn.removeClass('disabled');
-                });
-            }
-        });
-
-        cancelBtn.click(() => {
-            if (editing && !saving)
-            {
-                editBtn.show();
-                saveBtn.hide();
-                cancelBtn.hide();
-                deleteBtn.hide();
-
-                titleField.text(titleField.data('previous'));
-                bodyField.html(titleField.data('previous'));
-
-                editing = false;
-            }
-        });
-
-        deleteBtn.click(() => {
-            if (editing && !saving)
-            {
-                $.ajax({url: window.location, method: 'DELETE'}).then(() => {
-                    window.location = '/notes';
-                });
-            }
-        });
-    });
+    ReactDOM.render(<Note note={note}/>, document.getElementById('test'));
 </script>
 {{>footer.hbs}} 
