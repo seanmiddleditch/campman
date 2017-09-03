@@ -10,7 +10,7 @@ export default class LabelPage extends React.Component<LabelPageProps>
 {
     private label?: LabelSchema;
 
-    fetch()
+    private fetch()
     {
         $.getJSON('/api/labels/getBySlug/' + this.props.slug).then((data: any) => {
             this.label = data;

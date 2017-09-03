@@ -6,7 +6,7 @@ export default class LabelsPage extends React.Component<any>
 {
     private labels?: LabelSchema[];
 
-    fetch()
+    private fetch()
     {
         $.getJSON('/api/labels/list').then((data: any) => {
             this.labels = data;

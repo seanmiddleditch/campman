@@ -6,7 +6,7 @@ export default class NotesPage extends React.Component<any>
 {
     private notes?: NoteSchema[];
 
-    fetch()
+    private fetch()
     {
         $.getJSON('/api/notes/list').then((data: any) => {
             this.notes = data;

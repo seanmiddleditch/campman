@@ -56,14 +56,14 @@ export function noteRouter(db: squell.Database)
         catch (err)
         {
             console.error(err);
-            res.status(500).end();
+            next(err);
         }
     });
 
-    router.delete('/n/:slug', async (req, res, next) => {
+    router.delete('/api/notes/delete', async (req, res, next) => {
         try
         {
-            const slug = Slug.sanitizeSlug(req.params.slug);
+            const slug = req.body.slug;
             let note = await Note.findBySlug(db, slug);
             if (note)
             {
@@ -72,13 +72,13 @@ export function noteRouter(db: squell.Database)
             }
             else
             {
-                next();
+                res.status(404).end();
             }
         }
         catch (err)
         {
             console.error(err);
-            next();
+            next(err);
         }
     });
 

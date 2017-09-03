@@ -26,7 +26,7 @@ export default class ContentEditable extends React.Component<ContentEditableProp
         return nextProps.value != this.view.innerText;
     }
 
-    emit()
+    private emit()
     {
         const value = this.view.innerText;
         if (value != this.lastValue)
@@ -36,7 +36,7 @@ export default class ContentEditable extends React.Component<ContentEditableProp
         }
     }
 
-    filter(e: React.KeyboardEvent<HTMLSpanElement>)
+    private filter(e: React.KeyboardEvent<HTMLSpanElement>)
     {
         if (!this.props.multiline && e.key == 'Enter')
         {
