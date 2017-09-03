@@ -50,8 +50,13 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
 
     private fetch()
     {
-        $.getJSON('/api/notes/getBySlug/' + this.props.slug).then((data: any) => {
-            this.setState({note: data});
+        fetch('/api/notes/getBySlug/' + this.props.slug, {credentials: 'include'}).then(async (result) => {
+            if (result.ok)
+                this.setState({note: await result.json()});
+            else if (result.status == 404)
+                this.setState({note: {title: '', 'slug': this.props.slug, body: '', labels: []}, editing: true});
+        }).catch(err => {
+            console.error(err, err.stack);
         });
     }
 
@@ -104,16 +109,16 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         if (this.state.note !== undefined)
         {
             const title = <ContentEditable placeholder='Enter Note Title' disabled={!this.state.editing} onChange={t => this.state.note.title = t} value={this.state.note.title}/>;
-            const labels = this.state.editing ?
-                <div className='note-labels'><i className='fa fa-tags'></i> <ContentEditable placeholder='label1,label2,label2' onChange={l => this.state.note.labels = l.split(/[, ]+/).filter(s => s.length)} value={this.state.note.labels.join(',')}/></div> :
-                <div className='note-labels'><i className='fa fa-tags'></i> <span>{this.state.note.labels.map(label => <span key={label} className='label note-label'><a href={'/l/' + label}>{label}</a></span>)}</span></div>;
+            const labels = <div className='note-labels row'><div><i className='col fa fa-tags'></i></div><div className='col'>{this.state.editing ?
+                <ContentEditable placeholder='label1,label2,label2' onChange={l => this.state.note.labels = l.split(/[, ]+/).filter(s => s.length)} value={this.state.note.labels.join(',')}/> :
+                <span>{this.state.note.labels.map(label => <span key={label} className='label note-label'><a href={'/l/' + label}>{label}</a></span>)}</span>}</div></div>;
             const body = this.state.editing ?
                 <ContentEditable multiline placeholder='Enter MarkDown content. Make [[links]] with double brackets.' onChange={b => this.state.note.body = b} value={this.state.note.body}/> :
                 <RenderMarkup markup={this.state.note.body}/>;
     
-            return <div>
+            return <div className='note-page'>
                 <h1 className='note-title'>{title}</h1>
-                {this.state.note.labels.length ? labels : <span/>}
+                {this.state.note.labels.length || this.state.editing ? labels : <span/>}
                 <div className='note-body'>{body}</div>
                 <ButtonBar editing={this.state.editing} exists={this.state.note.id !== undefined} onClick={a => this.action(a)}/>
             </div>;
@@ -121,7 +126,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         else
         {
             this.fetch();
-            return <div>loading...</div>;
+            return <div className='note-page'>loading...</div>;
         }
     }
 }

@@ -23,7 +23,10 @@ export default class ContentEditable extends React.Component<ContentEditableProp
 
     shouldComponentUpdate(nextProps: ContentEditableProps): boolean
     {
-        return nextProps.value != this.view.innerText;
+        return nextProps.value != this.view.innerText ||
+            nextProps.disabled != this.props.disabled ||
+            nextProps.placeholder != this.props.placeholder ||
+            nextProps.multiline != this.props.multiline;
     }
 
     private emit()

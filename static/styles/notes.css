@@ -7,4 +7,7 @@
 .note-body { margin: 1em 0 1em 0; padding: 2px }
 .note-body *[contenteditable="true"] { white-space: pre-wrap; font-family: monospace }
 
-.content-editable:empty::before { content: attr(data-placeholder); display: inline; color: grey }
+.note-page *[contenteditable="true"] { display: block; width: 100%; outline: lightblue solid thin; box-shadow: 0 0 3px darkgrey }
+.note-page *[contenteditable="true"]:focus { outline: orange solid thin; box-shadow: 0 0 3px darkgrey }
+
+.note-page .content-editable:empty::before { content: attr(data-placeholder); display: inline; color: grey }
