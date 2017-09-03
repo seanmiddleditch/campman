@@ -1,34 +1,39 @@
 import {Request, Response, Router} from "express";
 import {Label, Note} from "../models";
 import * as squell from "squell";
-import {Converter} from "showdown";
 
 export function labelRouter(db: squell.Database)
 {
     const router = Router();
-    const converter = new Converter();
 
-    router.get('/labels', async (req, res, next) => {
-        try {
+    router.get('/api/labels/list', async (req, res, next) => {
+        try
+        {
             const all = await db.query(Label).order(m => [[m.slug, squell.ASC]]).find();
-            res.render('labels.hbs', {labels: all});
-        } catch (err) {
+            res.json(all);
+        }
+        catch (err)
+        {
             console.error(err);
-            next();
+            next(err);
         }
     });
 
-    router.get('/l/:slug', async (req, res, next) => {
-        try {
-            const label = await db.query(Label).where(m => m.slug.eq(req.params.slug)).includeAll().findOne();
-            if (label) {
-                res.render('label.hbs', {label: label});
-            } else {
-                next();
+    router.get('/api/labels/getBySlug/:slug', async (req, res, next) => {
+        try
+        {
+            let label = await db.query(Label).where(m => m.slug.eq(req.params.slug)).includeAll().findOne();
+            if (label)
+            {
+                res.json(label);
+            }
+            else
+            {
+                res.status(404).end();
             }
         } catch (err) {
             console.error(err);
-            next();
+            next(err);
         }
     });
 

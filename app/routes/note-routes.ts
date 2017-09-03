@@ -1,65 +1,47 @@
 import {Request, Response, Router} from "express";
 import {Label, Note} from "../models";
 import * as squell from "squell";
-import {Converter} from "showdown";
 import * as Slug from "../util/slug";
 
 export function noteRouter(db: squell.Database)
 {
     const router = Router();
-    const converter = new Converter();
 
-    router.get('/notes', async (req, res, next) => {
+    router.get('/api/notes/list', async (req, res, next) => {
         try
         {
-            const all = await db.query(Note).order(m => [[m.title, squell.ASC]]).find();
-            res.render('notes.hbs', {notes: all});
+            const all = await db.query(Note).includeAll().order(m => [[m.title, squell.ASC]]).find();
+            res.json(all.map(m => ({...m, labels: m.labels.map(l => l.slug)})));
         }
         catch (err)
         {
             console.error(err);
-            next();
+            next(err);
         }
     });
 
-    router.get('/n/:slug', async (req, res, next) => {
+    router.get('/api/notes/getBySlug/:slug', async (req, res, next) => {
         try
         {
-            const slug = Slug.sanitizeSlug(req.params.slug);
-            if (slug != req.params.slug)
-            {
-                res.redirect(308, '/n/' + slug);
-                return;
-            }
-
-            let note = await Note.findBySlug(db, slug);
+            let note = await Note.findBySlug(db, req.params.slug);
             if (note)
             {
-                res.render('note.hbs', {note: note});
+                res.json({...note, labels: note.labels.map(l => l.slug)});
             }
             else
             {
-                note = new Note();
-                note.slug = slug;
-                
-                res.render('note.hbs', {note: note});
+                res.status(404).end();
             }
         } catch (err) {
             console.error(err);
-            res.status(500).end();
+            next(err);
         }
     });
 
-    router.post('/n/:slug', async (req, res, next) => {
+    router.post('/api/notes/update', async (req, res, next) => {
         try
         {
-            const slug = Slug.sanitizeSlug(req.params.slug);
-            if (slug != req.params.slug)
-            {
-                res.redirect(308, '/n/' + slug);
-                return;
-            }
-
+            const slug = req.body.slug;
             let note = await Note.findBySlug(db, slug) || Note.createWithSlug(slug);
             if (req.body.title)
                 note.title = req.body.title;

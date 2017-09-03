@@ -1,21 +1,31 @@
-class RenderMarkup extends React.Component
+import * as React from 'react';
+import * as MarkdownIt from 'markdown-it';
+
+export interface RenderMarkupProps
 {
-    constructor(props)
+    markup: string
+}
+export default class RenderMarkup extends React.Component<RenderMarkupProps, undefined>
+{
+    private md: MarkdownIt.MarkdownIt;
+
+    constructor(props: RenderMarkupProps)
     {
         super(props);
 
-        this.md = new markdownit({
+        this.md = new MarkdownIt({
             html: true,
             breaks: true,
             linkify: true,
             typographer: true
-        }).use(this.wikiPlugin);
+        });
+        this.md.use(RenderMarkup.wikiPlugin);
     }
 
-    wikiPlugin(md)
+    private static wikiPlugin(md: MarkdownIt.MarkdownIt)
     {
         const id = 'WIKI_LINK';
-        md.inline.ruler.push(id, (state, silent) => {
+        md.inline.ruler.push(id, (state: any) => {
             const startPos = state.src.indexOf('[[', state.pos);
             if (startPos != -1)
             {
@@ -28,7 +38,7 @@ class RenderMarkup extends React.Component
                     const token = state.push(id, '', 0);
                     state.pos += 4 + content.length;
 
-                    const [slug, title] = content.split('|', 2).map(s => s.trim());
+                    const [slug, title] = content.split('|', 2).map((s: string) => s.trim());
                     token.meta = {slug, title: title && title.length ? title : slug}
                     
                     return true;

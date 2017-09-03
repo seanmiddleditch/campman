@@ -5,8 +5,9 @@
         "target": "es2017",
         "module": "commonjs",
         "sourceMap": true,
-        "outDir": "./dist",
+        "outDir": "./dist/server",
         "experimentalDecorators": true,
-        "emitDecoratorMetadata": true
+        "emitDecoratorMetadata": true,
+        "jsx": "react"
     }
 }
