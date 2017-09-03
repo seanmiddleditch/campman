@@ -24,7 +24,7 @@ ReactDOM.render(<BrowserRouter>
                 <Switch>
                     <Route path='/notes' exact component={NotesPage}/>
                     <Route path='/labels' exact component={LabelsPage}/>
-                    <Route path='/n/:slug' render={(p) => <NotePage slug={p.match.params.slug}/>}/>
+                    <Route path='/n/:slug' exact component={NotePage}/>
                     <Route path='/l/:slug' render={(p) => <LabelPage slug={p.match.params.slug}/>}/>
                     <Redirect path='/' exact to='/n/home'/>
                     <Route component={NotFoundPage}/>

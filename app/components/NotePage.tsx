@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as ReactRouter from 'react-router';
 import ContentEditable from './ContentEditable';
 import RenderMarkup from './RenderMarkup';
 import NoteSchema from '../schemas/NoteSchema';
@@ -29,20 +30,28 @@ function ButtonBar(props: ButtonBarProps)
 
 export interface NotePageProps
 {
-    slug: string
+    match: ReactRouter.match<{slug: string}>
 }
 interface NotePageState
 {
+    slug: string,
     editing: boolean,
     saving: boolean,
     note?: NoteSchema
 }
 export default class NotePage extends React.Component<NotePageProps, NotePageState>
 {
+    static contextTypes = { router: React.PropTypes.object.isRequired };
+
+    context: ReactRouter.RouterChildContext<NotePageProps>;
+
+    private unblockHistory: () => void;
+
     constructor(props: NotePageProps)
     {
         super(props);
         this.state = {
+            slug: props.match.params.slug,
             editing: false,
             saving: false
         };
@@ -50,11 +59,11 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
 
     private fetch()
     {
-        fetch('/api/notes/getBySlug/' + this.props.slug, {credentials: 'include'}).then(async (result) => {
+        fetch('/api/notes/getBySlug/' + this.state.slug, {credentials: 'include'}).then(async (result) => {
             if (result.ok)
                 this.setState({note: await result.json()});
             else if (result.status == 404)
-                this.setState({note: {title: '', 'slug': this.props.slug, body: '', labels: []}, editing: true});
+                this.setState({note: {title: '', 'slug': this.state.slug, body: '', labels: []}, editing: true});
         }).catch(err => {
             console.error(err, err.stack);
         });
@@ -77,8 +86,8 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         case 'delete':
             if (this.state.editing && !this.state.saving)
             {
-                $.ajax({url: '/api/notes/delete', method: 'DELETE', data: {slug: this.state.note.slug}}).then(() => {
-                    window.location.assign('/notes');
+                $.ajax({url: '/api/notes/delete', method: 'DELETE', data: {slug: this.state.slug}}).then(() => {
+                    this.context.router.history.push('/notes');
                 });
             }
             break;
@@ -102,6 +111,19 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
             }
             break;
         }
+    }
+
+    componentDidMount()
+    {
+        this.unblockHistory = (this.context.router.history as any).block((location: any, action: any) => {
+            if (this.state.editing || this.state.saving)
+                return 'sure?';
+        }) as () => void;
+    }
+
+    componentWillUnmount()
+    {
+        this.unblockHistory();
     }
 
     render()
