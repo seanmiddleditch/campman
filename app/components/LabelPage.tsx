@@ -6,27 +6,36 @@ export interface LabelPageProps
 {
     slug: string
 }
-export default class LabelPage extends React.Component<LabelPageProps>
+interface LabelPageState
 {
-    private label?: LabelSchema;
+    label?: LabelSchema
+}
+export default class LabelPage extends React.Component<LabelPageProps, LabelPageState>
+{
+    constructor(props: LabelPageProps)
+    {
+        super(props);
+        this.state = {};
+    }
 
     private fetch()
     {
-        $.getJSON('/api/labels/getBySlug/' + this.props.slug).then((data: any) => {
-            this.label = data;
-            this.forceUpdate();
-        });
+        fetch('/api/labels/getBySlug/' + this.props.slug).then(result => result.ok ? result.json() : Promise.reject(result.statusText))
+            .then(label => this.setState({label}))
+            .catch(err => console.error(err, err.stack));
+    }
+
+    componentDidMount()
+    {
+        this.fetch();
     }
 
     render()
     {
-        if (!this.label)
-            this.fetch();
-
         const links = (() => {
-            if (this.label !== undefined)
+            if (this.state.label !== undefined)
             {
-                const links = this.label.notes.map(n => <Link key={n.id} to={'/n/' + n.slug} className="list-group-item"><i className="fa fa-file"></i> {n.title}</Link>);
+                const links = this.state.label.notes.map(n => <Link key={n.id} to={'/n/' + n.slug} className="list-group-item"><i className="fa fa-file"></i> {n.title}</Link>);
                 return <div className="list-group">
                     {links}
                 </div>;

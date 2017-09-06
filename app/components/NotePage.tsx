@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as ReactRouter from 'react-router';
+import * as PropTypes from 'prop-types';
 import ContentEditable from './ContentEditable';
 import RenderMarkup from './RenderMarkup';
 import NoteSchema from '../schemas/NoteSchema';
@@ -41,7 +42,7 @@ interface NotePageState
 }
 export default class NotePage extends React.Component<NotePageProps, NotePageState>
 {
-    static contextTypes = { router: React.PropTypes.object.isRequired };
+    static contextTypes = { router: PropTypes.object.isRequired };
 
     context: ReactRouter.RouterChildContext<NotePageProps>;
 
@@ -59,14 +60,9 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
 
     private fetch()
     {
-        fetch('/api/notes/getBySlug/' + this.state.slug, {credentials: 'include'}).then(async (result) => {
-            if (result.ok)
-                this.setState({note: await result.json()});
-            else if (result.status == 404)
-                this.setState({note: {title: '', 'slug': this.state.slug, body: '', labels: []}, editing: true});
-        }).catch(err => {
-            console.error(err, err.stack);
-        });
+        fetch('/api/notes/getBySlug/' + this.state.slug).then(result => result.ok ? result.json() : Promise.reject(result.statusText))
+            .then(note => this.setState({note}))
+            .catch(err => console.error(err, err.stack));
     }
 
     private action(act: 'save'|'edit'|'delete'|'cancel')
@@ -86,9 +82,11 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         case 'delete':
             if (this.state.editing && !this.state.saving)
             {
-                $.ajax({url: '/api/notes/delete', method: 'DELETE', data: {slug: this.state.slug}}).then(() => {
+                fetch('/api/notes/delete', {method: 'DELETE', headers: new Headers({'Content-Type': 'application/json'}), body: JSON.stringify({slug: this.state.slug})}).then(() => {
                     this.context.router.history.push('/notes');
-                });
+                }).catch(err => {
+                    console.error(err, err.stack);
+                })
             }
             break;
         case 'save':
@@ -103,9 +101,13 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
                     labels: this.state.note.labels
                 };
     
-                $.ajax({url: '/api/notes/update', method: 'POST', data: data}).then(() => {
-                    this.setState({editing: false, saving: false});
-                }, () => {
+                fetch('/api/notes/update', {method: 'POST', headers: new Headers({'Content-Type': 'application/json'}), body: JSON.stringify(data)}).then(result => {
+                    if (result.ok)
+                        this.setState({editing: false, saving: false});
+                    else
+                        throw new Error('Result is not OK');
+                }).catch(err => {
+                    console.error(err, err.stack);
                     this.setState({saving: false});
                 });
             }
@@ -115,6 +117,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
 
     componentDidMount()
     {
+        this.fetch();
         this.unblockHistory = (this.context.router.history as any).block((location: any, action: any) => {
             if (this.state.editing || this.state.saving)
                 return 'sure?';
@@ -147,7 +150,6 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         }
         else
         {
-            this.fetch();
             return <div className='note-page'>loading...</div>;
         }
     }

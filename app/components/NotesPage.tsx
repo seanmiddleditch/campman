@@ -2,27 +2,36 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 import NoteSchema from '../schemas/NoteSchema';
 
-export default class NotesPage extends React.Component<any>
+interface NotesPageState
 {
-    private notes?: NoteSchema[];
+    notes?: NoteSchema[];
+}
+export default class NotesPage extends React.Component<{}, NotesPageState>
+{
+    constructor()
+    {
+        super();
+        this.state = {};
+    }
 
     private fetch()
     {
-        $.getJSON('/api/notes/list').then((data: any) => {
-            this.notes = data;
-            this.forceUpdate();
-        });
+        fetch('/api/notes/list').then(result => result.ok ? result.json() : Promise.reject(result.statusText))
+            .then(notes => this.setState({notes}))
+            .catch(err => console.error(err, err.stack));
+    }
+
+    componentDidMount()
+    {  
+        this.fetch();
     }
 
     render()
     {
-        if (!this.notes)
-            this.fetch();
-
         const links = (() => {
-            if (this.notes !== undefined)
+            if (this.state.notes !== undefined)
             {
-                const links = this.notes.map(n => <Link key={n.id} to={'/n/' + n.slug} className="list-group-item"><i className="fa fa-file"></i> {n.title}</Link>);
+                const links = this.state.notes.map(n => <Link key={n.id} to={'/n/' + n.slug} className="list-group-item"><i className="fa fa-file"></i> {n.title}</Link>);
                 return <div className="list-group">
                     {links}
                     <Link to="/create/note" className="list-group-item"><i className="fa fa-plus"></i> New Note</Link>

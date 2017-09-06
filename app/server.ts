@@ -24,6 +24,7 @@ import * as webpackDevMiddleware from 'webpack-dev-middleware';
 
     const app = express();
     app.use(BodyParser.urlencoded({extended: false}));
+    app.use(BodyParser.json());
 
     app.use(webpackDevMiddleware(webpack(webpackConfig), {
         publicPath: webpackConfig.output.publicPath

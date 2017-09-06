@@ -58,6 +58,6 @@ export default class RenderMarkup extends React.Component<RenderMarkupProps, und
     render()
     {
         const html = this.md.render(this.props.markup);
-        return <div dangerouslySetInnerHTML={{__html: html}}/>
+        return <div className='markdown' dangerouslySetInnerHTML={{__html: html}}/>
     }
 }
