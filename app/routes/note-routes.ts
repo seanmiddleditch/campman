@@ -43,12 +43,10 @@ export function noteRouter(db: squell.Database)
         {
             const slug = req.body.slug;
             let note = await Note.findBySlug(db, slug) || Note.createWithSlug(slug);
-            if (req.body.title)
-                note.title = req.body.title;
+            note.title = req.body.title || note.title;
             if (req.body.labels)
                 note.labels = await Label.reify(db, Label.fromString(req.body.labels));
-            if (req.body.body)
-                note.body = req.body.body;
+            note.body = req.body.body || note.body;
 
             await db.query(Note).includeAll().save(note);
             res.status(204).end();

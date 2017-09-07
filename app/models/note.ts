@@ -41,6 +41,9 @@ export class Note extends modelsafe.Model
     {
         const note = new Note;
         note.slug = slug;
+        note.title = '';
+        note.body = '';
+        note.labels = [];
         return note;
     }
 

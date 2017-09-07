@@ -35,7 +35,6 @@ export interface NotePageProps
 }
 interface NotePageState
 {
-    slug: string,
     editing: boolean,
     saving: boolean,
     note?: NoteSchema
@@ -52,7 +51,6 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
     {
         super(props);
         this.state = {
-            slug: props.slug,
             editing: false,
             saving: false
         };
@@ -60,8 +58,21 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
 
     private fetch()
     {
-        fetch('/api/notes/getBySlug/' + this.state.slug).then(result => result.ok ? result.json() : Promise.reject(result.statusText))
-            .then(note => this.setState({note}))
+        fetch('/api/notes/getBySlug/' + this.props.slug).then(result =>
+             {
+                if (result.ok)
+                    return result.json();
+                else if (result.status == 404)
+                    return {
+                        slug: this.props.slug,
+                        title: '',
+                        body: '',
+                        labels: []
+                    };
+                else
+                    return Promise.reject(result.statusText);
+            })
+            .then(note => this.setState({note, editing: !note.id}))
             .catch(err => console.error(err, err.stack));
     }
 
@@ -82,7 +93,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         case 'delete':
             if (this.state.editing && !this.state.saving)
             {
-                fetch('/api/notes/delete', {method: 'DELETE', headers: new Headers({'Content-Type': 'application/json'}), body: JSON.stringify({slug: this.state.slug})}).then(() => {
+                fetch('/api/notes/delete', {method: 'DELETE', headers: new Headers({'Content-Type': 'application/json'}), body: JSON.stringify({slug: this.props.slug})}).then(() => {
                     this.context.router.history.push('/notes');
                 }).catch(err => {
                     console.error(err, err.stack);
@@ -120,8 +131,14 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         this.fetch();
         this.unblockHistory = (this.context.router.history as any).block((location: any, action: any) => {
             if (this.state.editing || this.state.saving)
-                return 'sure?';
+                return 'Navigating away now will lose your changes. Click Cancel to continue editing.';
         }) as () => void;
+    }
+
+    componentDidUpdate()
+    {
+        if (!this.state.note || this.props.slug != this.state.note.slug)
+            this.fetch();
     }
 
     componentWillUnmount()
@@ -139,7 +156,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
                 <span>{this.state.note.labels.map(label => <span key={label} className='label note-label'><a href={'/l/' + label}>{label}</a></span>)}</span>}</div></div>;
             const body = this.state.editing ?
                 <ContentEditable multiline placeholder='Enter MarkDown content. Make [[links]] with double brackets.' onChange={b => this.state.note.body = b} value={this.state.note.body}/> :
-                <RenderMarkup markup={this.state.note.body}/>;
+                <RenderMarkup history={this.context.router.history} markup={this.state.note.body}/>;
     
             return <div className='note-page'>
                 <h1 className='note-title'>{title}</h1>

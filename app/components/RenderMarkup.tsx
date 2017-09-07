@@ -1,9 +1,11 @@
 import * as React from 'react';
 import * as MarkdownIt from 'markdown-it';
+import { History } from 'history';
 
 export interface RenderMarkupProps
 {
-    markup: string
+    markup: string,
+    history?: History
 }
 export default class RenderMarkup extends React.Component<RenderMarkupProps, undefined>
 {
@@ -20,6 +22,28 @@ export default class RenderMarkup extends React.Component<RenderMarkupProps, und
             typographer: true
         });
         this.md.use(RenderMarkup.wikiPlugin);
+    }
+
+    private static escapeHtml(text: string)
+    {
+        const div = document.createElement('div');
+        div.appendChild(document.createTextNode(text));
+        return div.innerHTML;
+    }
+
+    private _interceptLink(ev: React.SyntheticEvent<EventTarget>)
+    {
+        if (this.props.history && ev && ev.target && (ev.target as HTMLLinkElement).href)
+        {
+            const url = new URL((ev.target as HTMLLinkElement).href);
+            if (url.origin == window.location.origin)
+            {
+                this.props.history.push(url.pathname);
+                ev.stopPropagation();
+                ev.preventDefault();
+                return false;
+            }
+        }
     }
 
     private static wikiPlugin(md: MarkdownIt.MarkdownIt)
@@ -51,13 +75,13 @@ export default class RenderMarkup extends React.Component<RenderMarkupProps, und
             const token = tokens[id];
             const slug = token.meta.slug.replace(/[^a-zA-Z0-9]+/, ' ').trim().replace(' ', '-');
             const title = token.meta.title.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;');
-            return '<a href="/n/' + slug + '">' + title + '</a>';
+            return '<a href="/n/' + encodeURIComponent(slug) + '">' + RenderMarkup.escapeHtml(title) + '</a>';
         };
     }
 
     render()
     {
         const html = this.md.render(this.props.markup);
-        return <div className='markdown' dangerouslySetInnerHTML={{__html: html}}/>
+        return <div className='markdown' dangerouslySetInnerHTML={{__html: html}} onClick={(ev) => this._interceptLink(ev)}/>
     }
 }
