@@ -31,7 +31,7 @@ function ButtonBar(props: ButtonBarProps)
 
 export interface NotePageProps
 {
-    match: ReactRouter.match<{slug: string}>
+    slug: string;
 }
 interface NotePageState
 {
@@ -52,7 +52,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
     {
         super(props);
         this.state = {
-            slug: props.match.params.slug,
+            slug: props.slug,
             editing: false,
             saving: false
         };

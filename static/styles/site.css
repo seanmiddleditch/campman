@@ -1,0 +1,9 @@
+#root { padding: 0; margin: 0 }
+
+footer { text-align: center; margin-top: 1em; }
+
+.content-container { margin-left: 130px }
+
+.nav-container { position: fixed; margin: 0; left: 0px; top: 0px; width: 110px; }
+.nav-link { width: 100px; border-right: 1px solid #999; background: #f0f0f0 }
+.nav-link-active { width: 110px; padding-left: 20px; font-weight: bold; background: #ddd }

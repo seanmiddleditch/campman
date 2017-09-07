@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Route, MemoryRouter, Switch, Redirect } from 'react-router';
-import { BrowserRouter, Link } from 'react-router-dom';
+import { BrowserRouter, NavLink } from 'react-router-dom';
 
 import NotePage from './components/NotePage';
 import NotesPage from './components/NotesPage';
@@ -9,28 +9,30 @@ import LabelPage from './components/LabelPage';
 import LabelsPage from './components/LabelsPage';
 import NotFoundPage from './components/NotFoundPage';
 
-const Header = () => <nav className="nav flex-column">
-        <Link className="nav-link" to="/notes">Notes</Link>
-        <Link className="nav-link" to="/labels">Labels</Link>
-    </nav>;
+const Navigation = () => <div className='nav-container'><nav className='nav'>
+        <NavLink className='nav-link' activeClassName='nav-link-active' to='/n/home' exact>Home</NavLink>
+        <NavLink className='nav-link' activeClassName='nav-link-active' to='/notes' isActive={(m, l) => !!m || (l.pathname != '/n/home' && l.pathname.startsWith('/n/')}>Notes</NavLink>
+        <NavLink className='nav-link' activeClassName='nav-link-active' to='/labels' isActive={(m, l) => !!m || l.pathname.startsWith('/l/')}>Labels</NavLink>
+    </nav></div>;
 
-const Footer = () => <div className="footer"><div className="footer-copyright">Copyright (C) 2017 Sean Middleditch</div></div>;
+const Header = () => <div className='header-container'><header></header></div>;
+
+const Footer = () => <div className='footer-container'><footer><div className='footer-copyright'>Copyright (C) 2017 Sean Middleditch</div></footer></div>;
 
 ReactDOM.render(<BrowserRouter>
-    <div id="root" className="container-fluid">
-        <div className="row">
-            {Header()}
-            <div className="content col-md-8">
-                <Switch>
-                    <Route path='/notes' exact component={NotesPage}/>
-                    <Route path='/labels' exact component={LabelsPage}/>
-                    <Route path='/n/:slug' exact component={NotePage}/>
-                    <Route path='/l/:slug' render={(p) => <LabelPage slug={p.match.params.slug}/>}/>
-                    <Redirect path='/' exact to='/n/home'/>
-                    <Route component={NotFoundPage}/>
-                </Switch>
-            </div>
+    <div id='root'>
+        {Header()}
+        <div className='content content-container'>
+            <Switch>
+                <Route path='/notes' exact component={NotesPage}/>
+                <Route path='/labels' exact component={LabelsPage}/>
+                <Route path='/n/:slug' exact render={(p) => <NotePage slug={p.match.params.slug}/>}/>
+                <Route path='/l/:slug' exact render={(p) => <LabelPage slug={p.match.params.slug}/>}/>
+                <Redirect path='/' exact to='/n/home'/>
+                <Route component={NotFoundPage}/>
+            </Switch>
         </div>
+        {Navigation()}
         {Footer()}
     </div>
 </BrowserRouter>, document.getElementById('content'));
