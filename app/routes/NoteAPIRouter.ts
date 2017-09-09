@@ -1,9 +1,9 @@
 import {Request, Response, Router} from "express";
-import {Label, Note} from "../models";
+import {Library, Label, Note} from "../models";
 import * as squell from "squell";
 import * as Slug from "../util/slug";
 
-export function noteRouter(db: squell.Database)
+export default function NoteAPIRouter(db: squell.Database)
 {
     const router = Router();
 
@@ -20,10 +20,21 @@ export function noteRouter(db: squell.Database)
         }
     });
 
-    router.get('/api/notes/getBySlug/:slug', async (req, res, next) => {
+    router.get('/api/notes/fetch', async (req, res, next) => {
         try
         {
-            let note = await Note.findBySlug(db, req.params.slug);
+            const libraryId = req.query.library || 1;
+            const slug = req.query.slug;
+
+            if (!slug)
+            {
+                return res.status(400).end();
+            }
+
+            //const library = await db.query(Library).where(m => m.id.eq(libraryId)).findOne();
+            //.include(() => Library, m => m.library.eq(libraryId))
+            const note = await db.query(Note).includeAll().where(m => m.slug.eq(slug)).findOne();
+
             if (note)
             {
                 res.json({...note, labels: note.labels.map(l => l.slug)});
@@ -34,7 +45,7 @@ export function noteRouter(db: squell.Database)
             }
         } catch (err) {
             console.error(err);
-            next(err);
+            res.status(500).end();
         }
     });
 
@@ -42,7 +53,12 @@ export function noteRouter(db: squell.Database)
         try
         {
             const slug = req.body.slug;
-            let note = await Note.findBySlug(db, slug) || Note.createWithSlug(slug);
+            if (!slug)
+            {
+                return res.status(400).end();
+            }
+
+            const note = (await db.query(Note).includeAll().where(m => m.slug.eq(slug)).findOne()) || Note.createWithSlug(slug);
             note.title = req.body.title || note.title;
             if (req.body.labels)
                 note.labels = await Label.reify(db, Label.fromString(req.body.labels));
@@ -62,16 +78,13 @@ export function noteRouter(db: squell.Database)
         try
         {
             const slug = req.body.slug;
-            let note = await Note.findBySlug(db, slug);
-            if (note)
+            if (!slug)
             {
-                await db.query(Note).where(m => m.id.eq(note.id)).destroy();
-                res.status(204).end();
+                return res.status(400).end();
             }
-            else
-            {
-                res.status(404).end();
-            }
+    
+            const count = await db.query(Note).where(m => m.slug.eq(slug)).destroy();
+            res.status(count ? 204 : 404).end();
         }
         catch (err)
         {

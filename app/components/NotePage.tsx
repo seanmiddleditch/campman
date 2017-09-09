@@ -58,7 +58,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
 
     private fetch()
     {
-        fetch('/api/notes/getBySlug/' + this.props.slug).then(result =>
+        fetch('/api/notes/fetch?slug=' + encodeURIComponent(this.props.slug)).then(result =>
              {
                 if (result.ok)
                     return result.json();

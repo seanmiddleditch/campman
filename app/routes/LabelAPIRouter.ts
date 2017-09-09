@@ -1,15 +1,15 @@
-import {Request, Response, Router} from "express";
-import {Label, Note} from "../models";
-import * as squell from "squell";
+import { Request, Response, Router } from 'express';
+import { Label, Note } from '../models';
+import { Database, ASC } from 'squell';
 
-export function labelRouter(db: squell.Database)
+export default function LabelAPIRouter(db: Database)
 {
     const router = Router();
 
     router.get('/api/labels/list', async (req, res, next) => {
         try
         {
-            const all = await db.query(Label).order(m => [[m.slug, squell.ASC]]).find();
+            const all = await db.query(Label).order(m => [[m.slug, ASC]]).find();
             res.json(all);
         }
         catch (err)

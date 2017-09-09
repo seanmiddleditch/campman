@@ -46,11 +46,6 @@ export class Note extends modelsafe.Model
         note.labels = [];
         return note;
     }
-
-    public static findBySlug(db: squell.Database, slug: string): Promise<Note|null>
-    {
-        return db.query(Note).includeAll().where(m => m.slug.eq(slug)).findOne();
-    }
 }
 
 @modelsafe.model({name: 'note_label'})
