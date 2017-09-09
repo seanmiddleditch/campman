@@ -9,7 +9,8 @@ import * as path from 'path';
 import * as webpack from 'webpack';
 import * as webpackDevMiddleware from 'webpack-dev-middleware';
 import * as passport from 'passport';
-import { OAuth2Strategy } from 'passport-google-oauth';
+import GoogleAuth from './auth/GoogleAuth';
+import UserModel from './models/UserModel';
 
 (async () => {
     const dbPath = 'test.db';
@@ -27,26 +28,9 @@ import { OAuth2Strategy } from 'passport-google-oauth';
 
     const webpackConfig = require(path.join(root, 'webpack.config.js'));
 
-    passport.use(new OAuth2Strategy({
-        clientID: config.auth.google.clientId,
-        clientSecret: config.auth.google.secret,
-        callbackURL: config.auth.google.callbackURL,
-        accessType: 'offline'
-    }, (accessToken: string, refreshToken: string, profile: passport.Profile, callback: (err: Error, profile: any) => void) => {
-        callback(null, {
-            id: profile.id,
-            name: profile.displayName,
-            email: profile.emails[0]
-        });
-    }));
-
-    passport.serializeUser((user, done) => {
-        done(null, user);
-    })
-
-    passport.deserializeUser((user, done) => {
-        done(null, user);
-    });
+    passport.use(GoogleAuth(db, config));
+    passport.serializeUser((user: UserModel, done) => done(null, {id: user.id}));
+    passport.deserializeUser((user: {id: number}, done) => db.query(UserModel).where(m => m.id.eq(user.id)).findOne().then(user => done(null, user)).catch(err => done(err, null)));
 
     const app = express();
     app.use(BodyParser.urlencoded({extended: false}));
