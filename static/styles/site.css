@@ -7,3 +7,10 @@ footer { text-align: center; margin-top: 1em; }
 .nav-container { position: fixed; margin: 0; left: 0px; top: 0px; width: 110px; }
 .nav-link { width: 100px; border-right: 1px solid #999; background: #f0f0f0 }
 .nav-link-active { width: 110px; padding-left: 20px; font-weight: bold; background: #ddd }
+
+.list-item-name { font-weight: bold; color: black }
+.list-item-subtitle { font-style: italic; color: black }
+.list-item-details { font-size: small; color: black }
+
+.comma-separated *::before { content: ", " }
+.comma-separated *:first-child::before { content: "" }

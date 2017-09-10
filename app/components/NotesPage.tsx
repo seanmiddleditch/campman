@@ -26,15 +26,24 @@ export default class NotesPage extends React.Component<{}, NotesPageState>
         this.fetch();
     }
 
+    private renderNote(n: NoteSchema)
+    {
+        return <Link key={n.id} to={'/n/' + n.slug} className='list-group-item'>
+            <div className='list-item-name'><i className='fa fa-file'></i> {n.title}</div>
+            <div className='list-item-subtitle'>subtitle</div>
+            <div className='list-item-details comma-separated'>{n.labels.map(l => <span>{l}</span>)}</div>
+        </Link>;
+    }
+
     render()
     {
         const links = (() => {
             if (this.state.notes !== undefined)
             {
-                const links = this.state.notes.map(n => <Link key={n.id} to={'/n/' + n.slug} className="list-group-item"><i className="fa fa-file"></i> {n.title}</Link>);
-                return <div className="list-group">
+                const links = this.state.notes.map(n => this.renderNote(n));
+                return <div className='list-group'>
                     {links}
-                    <Link to="/create/note" className="list-group-item"><i className="fa fa-plus"></i> New Note</Link>
+                    <Link to='/create/note' className='list-group-item'><i className='fa fa-plus'></i> New Note</Link>
                 </div>;
             }
             else
@@ -44,8 +53,8 @@ export default class NotesPage extends React.Component<{}, NotesPageState>
         })();
 
         return <div>
-            <div className="page-header">
-                <h1><i className="fa fa-book"></i> Notes</h1>
+            <div className='page-header'>
+                <h1><i className='fa fa-book'></i> Notes</h1>
             </div>
             {links}
         </div>;

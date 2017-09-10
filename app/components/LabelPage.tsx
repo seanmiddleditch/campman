@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import LabelSchema from '../schemas/LabelSchema';
+import NoteSchema from '../schemas/NoteSchema';
 
 export interface LabelPageProps
 {
@@ -30,12 +31,20 @@ export default class LabelPage extends React.Component<LabelPageProps, LabelPage
         this.fetch();
     }
 
+    private renderNote(n: NoteSchema)
+    {
+        return <Link key={n.id} to={'/n/' + n.slug} className='list-group-item'>
+            <div className='list-item-name'><i className='fa fa-file'></i> {n.title}</div>
+            <div className='list-item-subtitle'>subtitle</div>
+        </Link>;
+    }
+
     render()
     {
         const links = (() => {
             if (this.state.label !== undefined)
             {
-                const links = this.state.label.notes.map(n => <Link key={n.id} to={'/n/' + n.slug} className="list-group-item"><i className="fa fa-file"></i> {n.title}</Link>);
+                const links = this.state.label.notes.map(n => this.renderNote(n));
                 return <div className="list-group">
                     {links}
                 </div>;

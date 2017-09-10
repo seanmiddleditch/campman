@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import { Label, Note } from '../models';
+import { Label, Note, Library } from '../models';
 import { Database, ASC } from 'squell';
 
 export default function LabelAPIRouter(db: Database)
@@ -9,7 +9,9 @@ export default function LabelAPIRouter(db: Database)
     router.get('/api/labels/list', async (req, res, next) => {
         try
         {
-            const all = await db.query(Label).order(m => [[m.slug, ASC]]).find();
+            const all = await db.query(Label)
+                .include(Note, m => m.notes)
+                .order(m => [[m.slug, ASC]]).find();
             res.json(all);
         }
         catch (err)
@@ -22,7 +24,15 @@ export default function LabelAPIRouter(db: Database)
     router.get('/api/labels/getBySlug/:slug', async (req, res, next) => {
         try
         {
-            let label = await db.query(Label).where(m => m.slug.eq(req.params.slug)).includeAll().findOne();
+            const libraryId = req.query.library || 1
+
+            let label = await db.query(Label)
+                .include(Note,
+                    m => m.notes)
+                        //.include(Library, n => n.library, l => l.where(l => l.id.eq(libraryId))))
+                .where(m => m.slug.eq(req.params.slug))
+                .findOne();
+
             if (label)
             {
                 res.json(label);

@@ -26,6 +26,14 @@ export default class LabelsPage extends React.Component<{}, LabelsPageState>
         this.fetch();
     }
 
+    private renderLabel(l: LabelSchema)
+    {
+        return <Link key={l.id} to={'/l/' + l.slug} className='list-group-item'>
+            <div className='list-item-name'><i className='fa fa-tag'></i> {l.slug}</div>
+            <div className='list-item-details'>details</div>
+        </Link>
+    }
+
     render()
     {
         const links = () => {
@@ -39,16 +47,16 @@ export default class LabelsPage extends React.Component<{}, LabelsPageState>
             }
             else
             {
-                const links = this.state.labels.map(l => <Link key={l.id} to={'/l/' + l.slug} className="list-group-item"><i className="fa fa-tag"></i> {l.slug}</Link>);
-                return <div className="list-group">
+                const links = this.state.labels.map(l => this.renderLabel(l));
+                return <div className='list-group'>
                     {links}
                 </div>;
             }
         };
 
         return <div>
-            <div className="page-header">
-                <h1><i className="fa fa-tags"></i> Labels</h1>
+            <div className='page-header'>
+                <h1><i className='fa fa-tags'></i> Labels</h1>
             </div>
             {links()}
         </div>;

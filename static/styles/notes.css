@@ -1,6 +1,4 @@
 .note-lables { text-transform: lowercase }
-.note-label::before { content: ", " }
-.note-label:first-child::before { content: "" }
 
 .note-title { padding: 2px }
 

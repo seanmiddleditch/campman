@@ -1,5 +1,6 @@
 import * as modelsafe from "modelsafe";
 import * as squell from "squell";
+import { Note } from './note';
 
 @modelsafe.model({name: 'library'})
 export class Library extends modelsafe.Model
@@ -17,6 +18,9 @@ export class Library extends modelsafe.Model
     @modelsafe.maxLength(255)
     @modelsafe.minLength(1)
     public title: string;
+
+    @modelsafe.assoc(modelsafe.HAS_MANY, () => Note)
+    public notes: Note[];
 
     public static findBySlug(db: squell.Database, slug: string): Promise<Library|null>
     {

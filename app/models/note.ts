@@ -12,7 +12,7 @@ export class Note extends modelsafe.Model
     public id?: number;
 
     @modelsafe.assoc(modelsafe.BELONGS_TO, Library)
-    @squell.assoc({onDelete: 'CASCADE'})
+    @squell.assoc({onDelete: 'CASCADE', foreignKey: 'libraryId'})
     public library: Library;
 
     @modelsafe.attr(modelsafe.STRING)
@@ -31,11 +31,6 @@ export class Note extends modelsafe.Model
     @modelsafe.assoc(modelsafe.BELONGS_TO_MANY, Label)
     @squell.assoc({through: 'note_label', as: 'labels'})
     public labels: Label[];
-
-    public get labelsString(): string
-    {
-        return this.labels ? this.labels.map(label => label.slug).join(',') : '';
-    }
 
     public static createWithSlug(slug: string): Note
     {

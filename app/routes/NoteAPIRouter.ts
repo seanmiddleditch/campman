@@ -10,7 +10,14 @@ export default function NoteAPIRouter(db: squell.Database)
     router.get('/api/notes/list', async (req, res, next) => {
         try
         {
-            const all = await db.query(Note).includeAll().order(m => [[m.title, squell.ASC]]).find();
+            const libraryId = req.query.library || 1;
+
+            const all = await db.query(Note)
+                .include(Library, m => m.library, m => m.where(m => m.id.eq(libraryId)))
+                .include(Label, m => m.labels)
+                .order(m => [[m.title, squell.ASC]])
+                .find();
+
             res.json(all.map(m => ({...m, labels: m.labels.map(l => l.slug)})));
         }
         catch (err)
@@ -31,9 +38,10 @@ export default function NoteAPIRouter(db: squell.Database)
                 return res.status(400).end();
             }
 
-            //const library = await db.query(Library).where(m => m.id.eq(libraryId)).findOne();
-            //.include(() => Library, m => m.library.eq(libraryId))
-            const note = await db.query(Note).includeAll().where(m => m.slug.eq(slug)).findOne();
+            const note = await db.query(Note)
+                .include(Library, m => m.library, m => m.where(m => m.id.eq(libraryId)))
+                .include(Label, m => m.labels)
+                .where(m => m.slug.eq(slug)).findOne();
 
             if (note)
             {
@@ -52,13 +60,19 @@ export default function NoteAPIRouter(db: squell.Database)
     router.post('/api/notes/update', async (req, res, next) => {
         try
         {
+            const libraryId = req.query.library || 1;
             const slug = req.body.slug;
+
             if (!slug)
             {
                 return res.status(400).end();
             }
 
-            const note = (await db.query(Note).includeAll().where(m => m.slug.eq(slug)).findOne()) || Note.createWithSlug(slug);
+            const note = (await db.query(Note)
+                .include(Library, m => m.library, m => m.where(m => m.id.eq(libraryId)))
+                .include(Label, m => m.labels)
+                .where(m => m.slug.eq(slug)).findOne()) || Note.createWithSlug(slug);
+
             note.title = req.body.title || note.title;
             if (req.body.labels)
                 note.labels = await Label.reify(db, Label.fromString(req.body.labels));

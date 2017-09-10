@@ -153,7 +153,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
             const title = <ContentEditable placeholder='Enter Note Title' disabled={!this.state.editing} onChange={t => this.state.note.title = t} value={this.state.note.title}/>;
             const labels = <div className='note-labels row'><div><i className='col fa fa-tags'></i></div><div className='col'>{this.state.editing ?
                 <ContentEditable placeholder='label1,label2,label2' onChange={l => this.state.note.labels = l.split(/[, ]+/).filter(s => s.length)} value={this.state.note.labels.join(',')}/> :
-                <span>{this.state.note.labels.map(label => <span key={label} className='label note-label'><a href={'/l/' + label}>{label}</a></span>)}</span>}</div></div>;
+                <span className='comma-separated'>{this.state.note.labels.map(l => <span key={l} className='label note-label'><a href={'/l/' + l}>{l}</a></span>)}</span>}</div></div>;
             const body = this.state.editing ?
                 <ContentEditable multiline placeholder='Enter MarkDown content. Make [[links]] with double brackets.' onChange={b => this.state.note.body = b} value={this.state.note.body}/> :
                 <RenderMarkup history={this.context.router.history} markup={this.state.note.body}/>;
