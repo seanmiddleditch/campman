@@ -10,8 +10,10 @@ export default function LabelAPIRouter(db: Database)
         try
         {
             const all = await db.query(Label)
+                .attributes(m => [m.id, m.slug])
                 .include(Note, m => m.notes)
-                .order(m => [[m.slug, ASC]]).find();
+                .order(m => [[m.slug, ASC]])
+                .find();
             res.json(all);
         }
         catch (err)
@@ -27,9 +29,9 @@ export default function LabelAPIRouter(db: Database)
             const libraryId = req.query.library || 1
 
             let label = await db.query(Label)
-                .include(Note,
-                    m => m.notes)
+                .include(Note, m => m.notes)
                         //.include(Library, n => n.library, l => l.where(l => l.id.eq(libraryId))))
+                .attributes(m => [m.id, m.slug])
                 .where(m => m.slug.eq(req.params.slug))
                 .findOne();
 

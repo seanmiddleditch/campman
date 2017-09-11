@@ -31,7 +31,7 @@ export default class NotesPage extends React.Component<{}, NotesPageState>
         return <Link key={n.id} to={'/n/' + n.slug} className='list-group-item'>
             <div className='list-item-name'><i className='fa fa-file'></i> {n.title}</div>
             <div className='list-item-subtitle'>subtitle</div>
-            <div className='list-item-details comma-separated'>{n.labels.map(l => <span>{l}</span>)}</div>
+            <div className='list-item-details comma-separated'>{n.labels.map(l => <span key={l}>{l}</span>)}</div>
         </Link>;
     }
 
