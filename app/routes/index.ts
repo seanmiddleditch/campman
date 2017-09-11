@@ -1,14 +1,5 @@
-import NoteAPIRouter from './NoteAPIRouter';
-import LabelAPIRouter from './LabelAPIRouter';
+import NoteRouter from './NoteRouter';
+import LabelRouter from './LabelRouter';
 import AuthRouter from './AuthRouter';
-import { Database } from 'squell';
-import { Router } from 'express';
 
-export function routes(db: Database)
-{
-    const router = Router();
-    router.use(AuthRouter());
-    router.use(NoteAPIRouter(db));
-    router.use(LabelAPIRouter(db));
-    return router;
-}
+export {NoteRouter, LabelRouter, AuthRouter};

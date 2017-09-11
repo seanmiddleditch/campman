@@ -1,9 +1,9 @@
-import {Note} from "./note";
-import * as modelsafe from "modelsafe";
-import * as squell from "squell";
+import NoteModel from './NoteModel';
+import * as modelsafe from 'modelsafe';
+import * as squell from 'squell';
 
 @modelsafe.model({name: 'label'})
-export class Label extends modelsafe.Model
+export default class LabelModel extends modelsafe.Model
 {
     @modelsafe.attr(modelsafe.INTEGER, {optional: true})
     @squell.attr({primaryKey: true, autoIncrement: true})
@@ -14,9 +14,9 @@ export class Label extends modelsafe.Model
     @modelsafe.maxLength(32)
     public slug: string;
 
-    @modelsafe.assoc(modelsafe.BELONGS_TO_MANY, () => Note)
+    @modelsafe.assoc(modelsafe.BELONGS_TO_MANY, () => NoteModel)
     @squell.assoc({through: 'note_label'})
-    public notes: Note[];
+    public notes: NoteModel[];
 
     public static fromString(input: string|string[]): string[]
     {
@@ -26,9 +26,9 @@ export class Label extends modelsafe.Model
         return input.map(clean).filter(s => s.length).map(s => s.substring(0, 32));
     }
 
-    public static async reify(db: squell.Database, slugs: string[]) : Promise<Label[]>
+    public static async reify(db: squell.Database, slugs: string[]) : Promise<LabelModel[]>
     {
-        const results = await db.query(Label)
+        const results = await db.query(LabelModel)
             .where(l => l.slug.in(slugs))
             .find();
 
@@ -37,12 +37,12 @@ export class Label extends modelsafe.Model
         {
             if (!results.find(l => l.slug == slug))
             {
-                const newLabel = new Label;
+                const newLabel = new LabelModel;
                 newLabel.slug = slug;
                 missing.push(newLabel);
             }
         }
-        const created = await db.query(Label).bulkCreate(missing);
+        const created = await db.query(LabelModel).bulkCreate(missing);
 
         return results.concat(created);
     }

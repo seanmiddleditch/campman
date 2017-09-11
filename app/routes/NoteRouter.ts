@@ -1,5 +1,5 @@
 import {Request, Response, Router} from "express";
-import {Library, Label, Note} from "../models";
+import {LibraryModel, LabelModel, NoteModel} from "../models";
 import {Database, ASC} from 'squell';
 import * as Slug from "../util/slug";
 
@@ -12,10 +12,10 @@ export default function NoteAPIRouter(db: Database)
         {
             const libraryId = req.query.library || 1;
 
-            const all = await db.query(Note)
+            const all = await db.query(NoteModel)
                 .attributes(m => [m.id, m.slug, m.title, m.body])
-                .include(Library, m => m.library, q => q.attributes(m => [m.id]).where(m => m.id.eq(libraryId)))
-                .include(Label, m => m.labels)
+                .include(LibraryModel, m => m.library, q => q.attributes(m => [m.id]).where(m => m.id.eq(libraryId)))
+                .include(LabelModel, m => m.labels, q => q.attributes(m => [m.id, m.slug]))
                 .order(m => [[m.title, ASC]])
                 .find();
 
@@ -39,9 +39,9 @@ export default function NoteAPIRouter(db: Database)
                 return res.status(400).end();
             }
 
-            const note = await db.query(Note)
-                .include(Library, m => m.library, q => q.attributes(m => []).where(m => m.id.eq(libraryId)))
-                .include(Label, m => m.labels)//, q => q.attributes(m => [m.slug]))
+            const note = await db.query(NoteModel)
+                .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.id.eq(libraryId)))
+                .include(LabelModel, m => m.labels)//, q => q.attributes(m => [m.slug]))
                 .where(m => m.slug.eq(slug)).findOne();
 
             if (note)
@@ -71,26 +71,26 @@ export default function NoteAPIRouter(db: Database)
                 return res.status(400).end();
             }
 
-            const note = (await db.query(Note)
-                .include(Library, m => m.library, m => m.where(m => m.id.eq(libraryId)))
-                .include(Label, m => m.labels)
-                .where(m => m.slug.eq(slug)).findOne()) || Note.createWithSlug(slug);
+            const note = (await db.query(NoteModel)
+                .include(LibraryModel, m => m.library, m => m.where(m => m.id.eq(libraryId)))
+                .include(LabelModel, m => m.labels)
+                .where(m => m.slug.eq(slug)).findOne()) || NoteModel.createWithSlug(slug);
 
             if (!note.library)
             {
-                note.library = await db.query(Library).findById(libraryId);
+                note.library = await db.query(LibraryModel).findById(libraryId);
                 if (!note.library)
                     res.status(400).end();
             }
 
             note.title = req.body.title || note.title;
             if (req.body.labels)
-                note.labels = await Label.reify(db, Label.fromString(req.body.labels));
+                note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body.labels));
             note.body = req.body.body || note.body;
 
-            await db.query(Note)
-                .include(Library, m => m.library)
-                .include(Label, m => m.labels)
+            await db.query(NoteModel)
+                .include(LibraryModel, m => m.library)
+                .include(LabelModel, m => m.labels)
                 .save(note);
 
             res.status(204).end();
@@ -111,7 +111,7 @@ export default function NoteAPIRouter(db: Database)
                 return res.status(400).end();
             }
     
-            const count = await db.query(Note).where(m => m.slug.eq(slug)).destroy();
+            const count = await db.query(NoteModel).where(m => m.slug.eq(slug)).destroy();
             res.status(count ? 204 : 404).end();
         }
         catch (err)

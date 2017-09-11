@@ -1,15 +1,6 @@
-import * as squell from 'squell';
-import {Note} from './note';
-import {Label} from './label';
-import {Library} from './library';
+import NoteModel from './NoteModel';
+import LabelModel from './LabelModel';
+import LibraryModel from './LibraryModel';
 import UserModel from './UserModel';
 
-export {Note, Label, Library};
-
-export function defineModels(db: squell.Database)
-{
-    db.define(Library);
-    db.define(Label);
-    db.define(Note);
-    db.define(UserModel);
-}
+export {NoteModel, LabelModel, LibraryModel, UserModel};

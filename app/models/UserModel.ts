@@ -1,7 +1,7 @@
-import {Label} from "./label";
-import {Library} from "./library";
-import * as modelsafe from "modelsafe";
-import * as squell from "squell";
+import LabelModel from './LabelModel';
+import LibraryModel from './LibraryModel';
+import * as modelsafe from 'modelsafe';
+import * as squell from 'squell';
 import User from '../auth/User';
 
 @modelsafe.model({name: 'user'})

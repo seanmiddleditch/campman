@@ -1,8 +1,10 @@
 {
+    "siteURL": "http://localhost:8080",
     "auth": {
         "google": {
             "clientId": "",
             "secret": ""
-        }
+        },
+        "sessionSecret": "secret"
     }
 }

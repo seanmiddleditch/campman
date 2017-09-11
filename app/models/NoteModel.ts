@@ -1,19 +1,19 @@
-import {Label} from "./label";
-import {Library} from "./library";
-import * as modelsafe from "modelsafe";
-import * as squell from "squell";
+import LabelModel from './LabelModel';
+import LibraryModel from './LibraryModel';
+import * as modelsafe from 'modelsafe';
+import * as squell from 'squell';
 
 @modelsafe.model({name: 'note'})
-@squell.model({indexes: [{name: 'slug', fields: ['libraryId', 'slug']}]})
-export class Note extends modelsafe.Model
+@squell.model({indexes: [{name: 'slug', fields: ['libraryId', 'slug']}], timestamps: true})
+export default class NoteModel extends modelsafe.Model
 {
     @modelsafe.attr(modelsafe.INTEGER, {optional: true})
     @squell.attr({primaryKey: true, autoIncrement: true})
     public id?: number;
 
-    @modelsafe.assoc(modelsafe.BELONGS_TO, Library)
+    @modelsafe.assoc(modelsafe.BELONGS_TO, () => LibraryModel)
     @squell.assoc({onDelete: 'CASCADE', foreignKey: 'libraryId'})
-    public library: Library;
+    public library: LibraryModel;
 
     @modelsafe.attr(modelsafe.STRING)
     @modelsafe.minLength(1)
@@ -28,13 +28,13 @@ export class Note extends modelsafe.Model
     @modelsafe.attr(modelsafe.STRING)
     public body: string;
 
-    @modelsafe.assoc(modelsafe.BELONGS_TO_MANY, Label)
-    @squell.assoc({through: 'note_label', as: 'labels'})
-    public labels: Label[];
+    @modelsafe.assoc(modelsafe.BELONGS_TO_MANY, () => LabelModel)
+    @squell.assoc({through: 'note_label'})
+    public labels: LabelModel[];
 
-    public static createWithSlug(slug: string): Note
+    public static createWithSlug(slug: string): NoteModel
     {
-        const note = new Note;
+        const note = new NoteModel;
         note.slug = slug;
         note.title = '';
         note.body = '';
@@ -44,7 +44,7 @@ export class Note extends modelsafe.Model
 }
 
 @modelsafe.model({name: 'note_label'})
+@squell.model({timestamps: false})
 class NoteLabel extends modelsafe.Model
 {
-
 }
