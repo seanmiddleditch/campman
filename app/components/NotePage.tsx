@@ -3,7 +3,7 @@ import * as ReactRouter from 'react-router';
 import * as PropTypes from 'prop-types';
 import ContentEditable from './ContentEditable';
 import RenderMarkup from './RenderMarkup';
-import NoteSchema from '../schemas/NoteSchema';
+import {default as ClientGateway, RetrieveNoteResponse} from '../common/ClientGateway';
 
 interface ButtonBarProps
 {
@@ -31,13 +31,15 @@ function ButtonBar(props: ButtonBarProps)
 
 export interface NotePageProps
 {
-    slug: string;
+    slug: string,
+    gateway: ClientGateway
 }
 interface NotePageState
 {
     editing: boolean,
     saving: boolean,
-    note?: NoteSchema
+    exists: boolean,
+    note?: RetrieveNoteResponse
 }
 export default class NotePage extends React.Component<NotePageProps, NotePageState>
 {
@@ -52,28 +54,28 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         super(props);
         this.state = {
             editing: false,
+            exists: false,
             saving: false
         };
     }
 
     private fetch()
     {
-        fetch('/api/notes/fetch?slug=' + encodeURIComponent(this.props.slug)).then(result =>
-             {
-                if (result.ok)
-                    return result.json();
-                else if (result.status == 404)
-                    return {
-                        slug: this.props.slug,
-                        title: '',
-                        body: '',
-                        labels: []
-                    };
-                else
-                    return Promise.reject(result.statusText);
-            })
-            .then(note => this.setState({note, editing: !note.id}))
-            .catch(err => console.error(err, err.stack));
+        this.props.gateway.retrieveNote(this.props.slug)
+            .then(note => this.setState({note, editing: false, exists: true}))
+            .catch(err => {
+                if (err.status == 404)
+                    this.setState({
+                        editing: true,
+                        exists: false,
+                        note: {
+                            slug: this.props.slug,
+                            title: '',
+                            body: '',
+                            labels: []
+                        }
+                    });
+            });
     }
 
     private action(act: 'save'|'edit'|'delete'|'cancel')
@@ -158,11 +160,12 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
                 <ContentEditable multiline placeholder='Enter MarkDown content. Make [[links]] with double brackets.' onChange={b => this.state.note.body = b} value={this.state.note.body}/> :
                 <RenderMarkup history={this.context.router.history} markup={this.state.note.body}/>;
     
+            // <i className='fa fa-file'></i> 
             return <div className='note-page'>
                 <h1 className='note-title'>{title}</h1>
                 {this.state.note.labels.length || this.state.editing ? labels : <span/>}
                 <div className='note-body'>{body}</div>
-                <ButtonBar editing={this.state.editing} exists={this.state.note.id !== undefined} onClick={a => this.action(a)}/>
+                <ButtonBar editing={this.state.editing} exists={this.state.exists} onClick={a => this.action(a)}/>
             </div>;
         }
         else

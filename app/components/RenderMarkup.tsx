@@ -57,7 +57,6 @@ export default class RenderMarkup extends React.Component<RenderMarkupProps, und
                 if (endPos != -1)
                 {
                     const content = state.src.slice(startPos + 2, endPos);
-                    console.log(content);
                     
                     const token = state.push(id, '', 0);
                     state.pos += 4 + content.length;

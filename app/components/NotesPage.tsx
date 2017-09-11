@@ -1,12 +1,16 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
-import NoteSchema from '../schemas/NoteSchema';
+import {Link} from 'react-router-dom';
+import {default as ClientGateway, RetrieveNotesResponse} from '../common/ClientGateway';
 
+export interface NotesPageProps
+{
+    gateway: ClientGateway
+}
 interface NotesPageState
 {
-    notes?: NoteSchema[];
+    notes?: RetrieveNotesResponse;
 }
-export default class NotesPage extends React.Component<{}, NotesPageState>
+export default class NotesPage extends React.Component<NotesPageProps, NotesPageState>
 {
     constructor()
     {
@@ -14,21 +18,15 @@ export default class NotesPage extends React.Component<{}, NotesPageState>
         this.state = {};
     }
 
-    private fetch()
-    {
-        fetch('/api/notes/list').then(result => result.ok ? result.json() : Promise.reject(result.statusText))
-            .then(notes => this.setState({notes}))
-            .catch(err => console.error(err, err.stack));
-    }
-
     componentDidMount()
     {  
-        this.fetch();
+        this.props.gateway.retrieveNotes()
+            .then(notes => this.setState({notes}));
     }
 
-    private renderNote(n: NoteSchema)
+    private renderNote(n: {slug: string, title: string, labels: string[]})
     {
-        return <Link key={n.id} to={'/n/' + n.slug} className='list-group-item'>
+        return <Link key={n.slug} to={'/n/' + n.slug} className='list-group-item'>
             <div className='list-item-name'><i className='fa fa-file'></i> {n.title}</div>
             <div className='list-item-subtitle'>subtitle</div>
             <div className='list-item-details comma-separated'>{n.labels.map(l => <span key={l}>{l}</span>)}</div>

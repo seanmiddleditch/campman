@@ -1,12 +1,16 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import LabelSchema from '../schemas/LabelSchema';
+import {default as ClientGateway, RetrieveLabelsResponse} from '../common/ClientGateway';
 
+export interface LabelsPageProps
+{
+    gateway: ClientGateway
+}
 interface LabelsPageState
 {
-    labels?: LabelSchema[];
+    labels?: RetrieveLabelsResponse;
 }
-export default class LabelsPage extends React.Component<{}, LabelsPageState>
+export default class LabelsPage extends React.Component<LabelsPageProps, LabelsPageState>
 {
     constructor()
     {
@@ -14,23 +18,16 @@ export default class LabelsPage extends React.Component<{}, LabelsPageState>
         this.state = {};
     }
 
-    private fetch()
-    {
-        fetch('/api/labels/list').then(result => result.ok ? result.json() : Promise.reject(result.statusText))
-            .then(labels => this.setState({labels}))
-            .catch(err => console.error(err, err.stack));
-    }
-
     componentDidMount()
-    {  
-        this.fetch();
+    {
+        this.props.gateway.retrieveLabels().then(labels => this.setState({labels}));
     }
 
-    private renderLabel(l: LabelSchema)
+    private renderLabel(l: {slug: string, notes: number})
     {
-        return <Link key={l.id} to={'/l/' + l.slug} className='list-group-item'>
+        return <Link key={l.slug} to={'/l/' + l.slug} className='list-group-item'>
             <div className='list-item-name'><i className='fa fa-tag'></i> {l.slug}</div>
-            <div className='list-item-details'>details</div>
+            <div className='list-item-details'>{l.notes} note(s)</div>
         </Link>
     }
 
