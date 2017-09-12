@@ -5,8 +5,6 @@ import * as session from 'express-session';
 import * as BodyParser from 'body-parser';
 import * as squell from 'squell';
 import * as path from 'path';
-import * as webpack from 'webpack';
-import * as webpackDevMiddleware from 'webpack-dev-middleware';
 import * as passport from 'passport';
 
 import {AuthRouter, LabelRouter, NoteRouter} from './routes';
@@ -30,9 +28,6 @@ import GoogleAuth from './auth/GoogleAuth';
     db.define(UserModel);
 
     await db.sync();
-    
-
-    const webpackConfig = require(path.join(root, 'webpack.config.js'));
 
     passport.use(GoogleAuth(db, config.siteURL, config.auth.google));
     passport.serializeUser((user: UserModel, done) => done(null, {id: user.id}));
@@ -45,16 +40,29 @@ import GoogleAuth from './auth/GoogleAuth';
     app.use(passport.initialize());
     app.use(passport.session());
 
-    app.use(webpackDevMiddleware(webpack(webpackConfig), {
-        publicPath: webpackConfig.output.publicPath
-    }));
+    if (process.env.NODE_ENV !== 'production')
+    {
+        console.log('Enabling WebPack development middlware');
+
+        const webpackConfig = require(path.join(root, 'webpack.config.js'));
+        const webpackDevMiddleware = require('webpack-dev-middleware');
+        const webpack = require('webpack');
+        app.use(webpackDevMiddleware(webpack(webpackConfig), {
+            publicPath: webpackConfig.output.publicPath
+        }));
+    }
 
     app.use(AuthRouter());
     app.use(NoteRouter(db));
     app.use(LabelRouter(db));
 
-    app.use(express.static(staticRoot));
-    app.get('*', (req, res) => res.sendFile(path.join(staticRoot, 'index.html')));
+    // production users should be using a reverse proxy
+    if (process.env.NODE_ENV !== 'production')
+    {
+        app.use(express.static(staticRoot));
+        app.get('*', (req, res) => res.sendFile(path.join(staticRoot, 'index.html')));
+    }
 
-    app.listen(8080);
+    const server = await app.listen(process.env.PORT || 8080);
+    console.log(`Listening on port ${server.address().port}`);
 })();
