@@ -1,7 +1,8 @@
-import {Request, Response, Router} from "express";
-import {LibraryModel, LabelModel, NoteModel} from "../models";
+import {Request, Response, Router} from 'express';
+import {LibraryModel, LabelModel, NoteModel} from '../models';
 import {Database, ASC} from 'squell';
-import * as Slug from "../util/slug";
+import * as Slug from '../util/slug';
+import {requireAuth} from '../auth/middleware';
 
 export default function NoteAPIRouter(db: Database)
 {
@@ -23,7 +24,7 @@ export default function NoteAPIRouter(db: Database)
         }
         catch (err)
         {
-            res.status(500).end();
+            res.sendStatus(500);
             console.error(err, err.stack);
         }
     });
@@ -50,17 +51,17 @@ export default function NoteAPIRouter(db: Database)
             }
             else
             {
-                res.status(404).end();
+                res.sendStatus(404);
             }
         }
         catch (err)
         {
-            res.status(500).end();
+            res.sendStatus(500);
             console.error(err, err.stack);
         }
     });
 
-    router.post('/api/notes/update', async (req, res) => {
+    router.post('/api/notes/update', requireAuth(), async (req, res) => {
         try
         {
             const libraryId = req.query.library || 1;
@@ -68,7 +69,7 @@ export default function NoteAPIRouter(db: Database)
 
             if (!slug)
             {
-                return res.status(400).end();
+                return res.sendStatus(400);
             }
 
             const note = (await db.query(NoteModel)
@@ -80,7 +81,7 @@ export default function NoteAPIRouter(db: Database)
             {
                 note.library = await db.query(LibraryModel).findById(libraryId);
                 if (!note.library)
-                    res.status(400).end();
+                    res.sendStatus(400);
             }
 
             note.title = req.body.title || note.title;
@@ -93,30 +94,30 @@ export default function NoteAPIRouter(db: Database)
                 .include(LabelModel, m => m.labels)
                 .save(note);
 
-            res.status(204).end();
+            res.json({});
         }
         catch (err)
         {
-            res.status(500).end();
+            res.sendStatus(500);
             console.error(err, err.stack);
         }
     });
 
-    router.delete('/api/notes/delete', async (req, res) => {
+    router.delete('/api/notes/delete', requireAuth(), async (req, res) => {
         try
         {
             const slug = req.body.slug;
             if (!slug)
             {
-                return res.status(400).end();
+                return res.sendStatus(400);
             }
     
             const count = await db.query(NoteModel).where(m => m.slug.eq(slug)).destroy();
-            res.status(count ? 204 : 404).end();
+            res.sendStatus(count ? 204 : 404);
         }
         catch (err)
         {
-            res.status(500).end();
+            res.sendStatus(500);
             console.error(err, err.stack);
         }
     });

@@ -71,6 +71,16 @@ export default class ClientGateway
         return this._rpcHelper<RetrieveNotesResponse>('/api/notes/list', {library: libraryID});
     }
 
+    deleteNote(slug: string, libraryID?: number) : Promise<void>
+    {
+        return this._rpcHelper('/api/notes/delete', {library: libraryID}, 'DELETE', {slug});
+    }
+
+    saveNote(note: {slug: string, title: string, labels: string[], body: string}, libraryID?: number) : Promise<void>
+    {
+        return this._rpcHelper('/api/notes/update', {library: libraryID}, 'POST', note);
+    }
+
     private _makeQueryParams(params: any)
     {
         const makeQueryVar = (k: string, v: any) => encodeURIComponent(k) + '=' + encodeURIComponent(v);
@@ -90,7 +100,7 @@ export default class ClientGateway
         const jsonBody = body ? JSON.stringify(body) : undefined;
         const headers = body ? new Headers({'Content-Type': 'application/json'}) : undefined;
 
-        const result = await fetch(fullPath, {'method': fetchMethod, headers, body: jsonBody});
+        const result = await fetch(fullPath, {credentials: 'include', method: fetchMethod, headers, body: jsonBody});
         if (!result.ok)
         {
             console.warn(fullPath + ': returned status code ' + result.status);

@@ -4,6 +4,7 @@ import * as PropTypes from 'prop-types';
 import ContentEditable from './ContentEditable';
 import RenderMarkup from './RenderMarkup';
 import {default as ClientGateway, RetrieveNoteResponse} from '../common/ClientGateway';
+import NotFoundPage from './NotFoundPage';
 
 interface ButtonBarProps
 {
@@ -39,6 +40,7 @@ interface NotePageState
     editing: boolean,
     saving: boolean,
     exists: boolean,
+    failed: boolean,
     note?: RetrieveNoteResponse
 }
 export default class NotePage extends React.Component<NotePageProps, NotePageState>
@@ -55,7 +57,8 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         this.state = {
             editing: false,
             exists: false,
-            saving: false
+            saving: false,
+            failed: false
         };
     }
 
@@ -75,6 +78,8 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
                             labels: []
                         }
                     });
+                else if (err.status == 401)
+                    this.setState({failed: true});
             });
     }
 
@@ -95,34 +100,14 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         case 'delete':
             if (this.state.editing && !this.state.saving)
             {
-                fetch('/api/notes/delete', {method: 'DELETE', headers: new Headers({'Content-Type': 'application/json'}), body: JSON.stringify({slug: this.props.slug})}).then(() => {
-                    this.context.router.history.push('/notes');
-                }).catch(err => {
-                    console.error(err, err.stack);
-                })
+                this.props.gateway.deleteNote(this.props.slug).then(() => this.context.router.history.push('/notes'));
             }
             break;
         case 'save':
             if (this.state.editing && !this.state.saving)
             {
                 this.setState({saving: true});
-    
-                const data = {
-                    slug: this.state.note.slug,
-                    title: this.state.note.title,
-                    body: this.state.note.body,
-                    labels: this.state.note.labels
-                };
-    
-                fetch('/api/notes/update', {method: 'POST', headers: new Headers({'Content-Type': 'application/json'}), body: JSON.stringify(data)}).then(result => {
-                    if (result.ok)
-                        this.setState({editing: false, saving: false});
-                    else
-                        throw new Error('Result is not OK');
-                }).catch(err => {
-                    console.error(err, err.stack);
-                    this.setState({saving: false});
-                });
+                this.props.gateway.saveNote(this.state.note).then(() => this.setState({editing: false, saving: false})).catch(err => this.setState({saving: false}));
             }
             break;
         }
@@ -137,20 +122,29 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         }) as () => void;
     }
 
-    componentDidUpdate()
-    {
-        if (!this.state.note || this.props.slug != this.state.note.slug)
-            this.fetch();
-    }
-
     componentWillUnmount()
     {
         this.unblockHistory();
     }
 
+    componentDidUpdate()
+    {
+        if (!this.state.note || this.props.slug != this.state.note.slug)
+            if (!this.state.failed)
+                this.fetch();
+    }
+
     render()
     {
-        if (this.state.note !== undefined)
+        if (this.state.failed)
+        {
+            return <NotFoundPage/>
+        }
+        else if (!this.state.note)
+        {
+            return <div className='note-page'>loading...</div>;
+        }
+        else
         {
             const title = <ContentEditable placeholder='Enter Note Title' disabled={!this.state.editing} onChange={t => this.state.note.title = t} value={this.state.note.title}/>;
             const labels = <div className='note-labels row'><div><i className='col fa fa-tags'></i></div><div className='col'>{this.state.editing ?
@@ -167,10 +161,6 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
                 <div className='note-body'>{body}</div>
                 <ButtonBar editing={this.state.editing} exists={this.state.exists} onClick={a => this.action(a)}/>
             </div>;
-        }
-        else
-        {
-            return <div className='note-page'>loading...</div>;
         }
     }
 }

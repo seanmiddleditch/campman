@@ -30,8 +30,8 @@ import GoogleAuth from './auth/GoogleAuth';
     await db.sync();
 
     passport.use(GoogleAuth(db, config.siteURL, config.auth.google));
-    passport.serializeUser((user: UserModel, done) => done(null, {id: user.id}));
-    passport.deserializeUser((user: {id: number}, done) => db.query(UserModel).where(m => m.id.eq(user.id)).findOne().then(user => done(null, user)).catch(err => done(err, null)));
+    passport.serializeUser((user: UserModel, done) => done(null, user.id));
+    passport.deserializeUser((userID: number, done) => db.query(UserModel).where(m => m.id.eq(userID)).findOne().then(user => done(null, user)).catch(err => done(err)));
 
     const app = express();
     app.use(BodyParser.urlencoded({extended: false}));
@@ -51,6 +51,18 @@ import GoogleAuth from './auth/GoogleAuth';
             publicPath: webpackConfig.output.publicPath
         }));
     }
+
+    app.get('/config.js', (req, res) => {
+        res.json({
+            google: {
+                clientId: config.auth.google.clientId
+            },
+            session: {
+                key: req.sessionID,
+                user: req.user ? {id: req.user.id} : null
+            }
+        });
+    });
 
     app.use(AuthRouter());
     app.use(NoteRouter(db));
