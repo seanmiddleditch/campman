@@ -5,8 +5,8 @@
   "main": "dist/server/server.js",
   "scripts": {
     "start": "node dist/server/server.js",
-    "build": "tsc -p tsconfig.json",
-    "webpack": "webpack"
+    "build-server": "tsc -p app/tsconfig.json",
+    "webpack": "webpack --config client/webpack.config.js"
   },
   "repository": {
     "type": "git",

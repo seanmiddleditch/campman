@@ -1,8 +1,8 @@
 module.exports = {
-    entry: __dirname + '/app/client.tsx',
+    entry: __dirname + '/client.tsx',
     output: {
         filename: 'bundle.js',
-        path: __dirname + '/dist/public',
+        path: __dirname + '/dist',
         publicPath: '/js/'
     },
 
@@ -11,16 +11,26 @@ module.exports = {
 
     resolve: {
         // Add '.ts' and '.tsx' as resolvable extensions.
-        extensions: ['.ts', '.tsx', '.js', '.json']
+        extensions: ['.ts', '.tsx', '.js', '.json'],
     },
 
     module: {
         rules: [
             // All files with a '.ts' or '.tsx' extension will be handled by 'awesome-typescript-loader'.
-            { test: /\.tsx?$/, loader: 'awesome-typescript-loader' },
+            {
+                test: /\.tsx?$/,
+                loader: 'awesome-typescript-loader',
+                options: {
+                    configFileName: __dirname + '/tsconfig.json'
+                }
+             },
 
             // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
-            { enforce: 'pre', test: /\.js$/, loader: 'source-map-loader' }
+            {
+                enforce: 'pre',
+                test: /\.js$/,
+                loader: 'source-map-loader'
+            }
         ]
     },
 

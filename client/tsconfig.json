@@ -3,11 +3,9 @@
     "compilerOptions": {
         "noImplicitAny": true,
         "target": "es2017",
-        "module": "commonjs",
+        "module": "amd",
         "sourceMap": true,
-        "outDir": "./dist/server",
-        "experimentalDecorators": true,
-        "emitDecoratorMetadata": true,
+        "outFile": "./dist/client.js",
         "jsx": "react"
     }
 }

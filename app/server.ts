@@ -14,13 +14,14 @@ import GoogleAuth from './auth/GoogleAuth';
 (async () => {
     
     const root = path.join(__dirname, '..', '..');
-    const viewsRoot = path.join(root, 'app', 'views');
     const staticRoot = path.join(root, 'static');
     
     const config = require(path.join(root, 'config.json'));
     
-    const dbPath = 'test.db';
-    const db = new squell.Database('sqlite://' + dbPath, {dialect: 'sqlite', database: dbPath, define: {timestamps: false}});
+    const dbFileName = 'test.db';
+    const dbPath = path.join(root, dbFileName);
+    console.log(dbPath);
+    const db = new squell.Database('sqlite://' + dbFileName, {dialect: 'sqlite', database: dbPath, define: {timestamps: false}});
     
     db.define(LibraryModel);
     db.define(LabelModel);
@@ -44,7 +45,7 @@ import GoogleAuth from './auth/GoogleAuth';
     {
         console.log('Enabling WebPack development middlware');
 
-        const webpackConfig = require(path.join(root, 'webpack.config.js'));
+        const webpackConfig = require(path.join(root, 'client', 'webpack.config.js'));
         const webpackDevMiddleware = require('webpack-dev-middleware');
         const webpack = require('webpack');
         app.use(webpackDevMiddleware(webpack(webpackConfig), {
