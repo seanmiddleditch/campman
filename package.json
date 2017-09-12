@@ -4,6 +4,7 @@
   "description": "Campaign management software for RPGs",
   "main": "dist/server/server.js",
   "scripts": {
+    "start": "node dist/server/server.js",
     "build": "tsc -p tsconfig.json",
     "webpack": "webpack"
   },
