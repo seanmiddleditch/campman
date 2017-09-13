@@ -44,6 +44,7 @@ class Config
     
     const root = path.join(__dirname, '..', '..');
     const staticRoot = path.join(root, 'static');
+    const clientRoot = path.join(root, 'client');
 
     const config = new Config();
     
@@ -81,7 +82,7 @@ class Config
     {
         console.log('Enabling WebPack development middlware');
 
-        const webpackConfig = require(path.join(root, 'client', 'webpack.config.js'));
+        const webpackConfig = require(path.join(clientRoot, 'webpack.config.js'));
         const webpackDevMiddleware = require('webpack-dev-middleware');
         const webpack = require('webpack');
         app.use(webpackDevMiddleware(webpack(webpackConfig), {
@@ -107,7 +108,8 @@ class Config
 
     if (config.production)
     {
-        app.use('/js', express.static(path.join(root, 'client', 'dist')));
+        console.log('Serving /js');
+        app.use('/js', express.static(path.join(clientRoot, 'dist')));
     }
 
     app.use(express.static(staticRoot));
