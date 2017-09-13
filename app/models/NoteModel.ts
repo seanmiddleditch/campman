@@ -25,7 +25,7 @@ export default class NoteModel extends modelsafe.Model
     @modelsafe.minLength(1)
     public title: string;
     
-    @modelsafe.attr(modelsafe.STRING)
+    @modelsafe.attr(modelsafe.TEXT)
     public body: string;
 
     @modelsafe.assoc(modelsafe.BELONGS_TO_MANY, () => LabelModel)

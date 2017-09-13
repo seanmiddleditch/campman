@@ -6,50 +6,137 @@ import RenderMarkup from './RenderMarkup';
 import {default as ClientGateway, RetrieveNoteResponse} from '../common/ClientGateway';
 import NotFoundPage from './NotFoundPage';
 
-interface ButtonBarProps
+interface EditorProps
 {
-    exists?: boolean,
-    editing?: boolean,
-    onClick: (action: 'save'|'edit'|'cancel'|'delete') => void
+    gateway: ClientGateway
+    note: RetrieveNoteResponse,
+    exists: boolean,
+    onSave: (note: RetrieveNoteResponse) => void,
+    onCancel: () => void
 }
-function ButtonBar(props: ButtonBarProps)
+interface EditorState
 {
-    if (props.editing && props.exists)
-        return <div className='btn-group'>
-            <button id='note-btn-save' className='btn btn-primary' about='Save' onClick={() => props.onClick('save')}><i className='fa fa-floppy-o'></i> Save</button>
-            <button id='note-btn-cancel' className='btn btn-default' about='Cancel' onClick={() => props.onClick('cancel')}><i className='fa fa-ban'></i> Cancel</button>
-            <button id='note-btn-delete' className='btn btn-danger' about='Delete' onClick={() => props.onClick('delete')}><i className='fa fa-trash-o'></i> Delete</button>
-        </div>;
-    else if (props.editing)
-        return <div className='btn-group'>
-            <button id='note-btn-save' className='btn btn-primary' about='Save' onClick={() => props.onClick('save')}><i className='fa fa-floppy-o'></i> Save</button>
-        </div>;
-    else
-        return <div className='btn-group'>
-            <button id='note-btn-edit' className='btn btn-default' about='Edit' onClick={() => props.onClick('edit')}><i className='fa fa-pencil'></i> Edit</button>
-        </div>;
+    saving: boolean,
+    note: RetrieveNoteResponse,
 }
+class Editor extends React.Component<EditorProps, EditorState>
+{
+    static contextTypes = { router: PropTypes.object.isRequired };
+    
+    context: ReactRouter.RouterChildContext<NotePageProps>;
+
+    private unblockHistory: () => void;
+    
+    constructor(props: EditorProps)
+    {
+        super(props);
+        this.state = {
+            saving: false,
+            note: this.props.note
+        };
+    }
+
+    private _hasChanges()
+    {
+        return this.props.note.title != this.state.note.title ||
+            this.props.note.body != this.state.note.body ||
+            this.props.note.labels.join(',') != this.state.note.labels.join(',')
+    }
+
+    private _action(act: 'save'|'edit'|'delete'|'cancel')
+    {
+        switch (act)
+        {
+        case 'cancel':
+            this.unblockHistory();
+            this.props.onCancel();
+            break;
+        case 'delete':
+            if (!this.state.saving)
+            {
+                this.setState({saving: true});
+                this.props.gateway.deleteNote(this.props.note.slug)
+                    .then(() => this.context.router.history.push('/notes'))
+                    .catch((err: Error) => this.setState({saving: false}));
+            }
+            break;
+        case 'save':
+            if (!this.state.saving)
+            {
+                this.setState({saving: true});
+                this.props.gateway.saveNote(this.state.note)
+                    .then(() => {this.setState({saving: false}); this.props.onSave(this.state.note);})
+                    .catch((err: Error) => this.setState({saving: false}));
+            }
+            break;
+        }
+    }
+
+    private _update(fields: {title?: string, labels?: string|string[], body?: string})
+    {
+        if (fields.title)
+            this.state.note.title = fields.title;
+        if (typeof fields.labels === 'string')
+            this.state.note.labels = fields.labels.split(',').filter(s => s.length);
+        else if (fields.labels)
+            this.state.note.labels = fields.labels;
+        if (fields.body)
+            this.state.note.body = fields.body;
+    }
+
+    componentDidMount()
+    {
+        this.unblockHistory = (this.context.router.history as any).block((location: any, action: any) => {
+            if (this._hasChanges())
+                return 'Navigating away now will lose your changes. Click Cancel to continue editing.';
+        }) as () => void;
+    }
+
+    componentWillUnmount()
+    {
+        this.unblockHistory();
+    }
+
+    render()
+    {
+        return <div className='note-editor'>
+            <div className='input-group'>
+                <span className='input-group-addon'>Title</span>
+                <input type='text' className='form-control' onChange={ev => this._update({title: ev.target.value})} defaultValue={this.state.note.title} placeholder='Note Title'/>
+            </div>
+            <div className='input-group mt-sm-2'>
+                <span className='input-group-addon'><i className='col fa fa-tags'></i></span>
+                <input type='text' className='form-control' placeholder='tag1, tag2, ...' onChange={ev => this._update({labels: ev.target.value})} defaultValue={this.state.note.labels.join(', ')}/>
+            </div>
+            <div className='input-group mt-sm-2'>
+                <textarea onChange={ev => this._update({body: ev.target.value})} defaultValue={this.state.note.body} style={{width: '100%', minHeight: '20em'}}/>
+            </div>
+            <div className='btn-group mt-sm-2'>
+                <button id='note-btn-save' className='btn btn-primary' about='Save' onClick={() => this._action('save')}><i className='fa fa-floppy-o'></i> Save</button>
+                <button id='note-btn-cancel' className='btn btn-default' about='Cancel' onClick={() => this._action('cancel')}><i className='fa fa-ban'></i> Cancel</button>
+                <button id='note-btn-delete' className='btn btn-danger' about='Delete' onClick={() => this._action('delete')}><i className='fa fa-trash-o'></i> Delete</button>
+            </div>
+        </div>;
+    }
+};
 
 export interface NotePageProps
 {
     slug: string,
-    gateway: ClientGateway
+    gateway: ClientGateway,
 }
 interface NotePageState
 {
     editing: boolean,
-    saving: boolean,
-    exists: boolean,
     failed: boolean,
+    exists: boolean,
     note?: RetrieveNoteResponse
 }
 export default class NotePage extends React.Component<NotePageProps, NotePageState>
 {
     static contextTypes = { router: PropTypes.object.isRequired };
-
+    
     context: ReactRouter.RouterChildContext<NotePageProps>;
-
-    private unblockHistory: () => void;
 
     constructor(props: NotePageProps)
     {
@@ -57,7 +144,6 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         this.state = {
             editing: false,
             exists: false,
-            saving: false,
             failed: false
         };
     }
@@ -83,48 +169,9 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
             });
     }
 
-    private action(act: 'save'|'edit'|'delete'|'cancel')
-    {
-        switch (act)
-        {
-        case 'edit':
-            this.setState({
-                editing: true
-            });
-            break;
-        case 'cancel':
-            this.setState({
-                editing: false
-            });
-            break;
-        case 'delete':
-            if (this.state.editing && !this.state.saving)
-            {
-                this.props.gateway.deleteNote(this.props.slug).then(() => this.context.router.history.push('/notes'));
-            }
-            break;
-        case 'save':
-            if (this.state.editing && !this.state.saving)
-            {
-                this.setState({saving: true});
-                this.props.gateway.saveNote(this.state.note).then(() => this.setState({editing: false, saving: false})).catch(err => this.setState({saving: false}));
-            }
-            break;
-        }
-    }
-
-    componentDidMount()
+    componentWillMount()
     {
         this.fetch();
-        this.unblockHistory = (this.context.router.history as any).block((location: any, action: any) => {
-            if (this.state.editing || this.state.saving)
-                return 'Navigating away now will lose your changes. Click Cancel to continue editing.';
-        }) as () => void;
-    }
-
-    componentWillUnmount()
-    {
-        this.unblockHistory();
     }
 
     componentDidUpdate()
@@ -144,22 +191,27 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         {
             return <div className='note-page'>loading...</div>;
         }
+        else if (this.state.editing)
+        {
+            return <Editor gateway={this.props.gateway} note={this.state.note} exists={this.state.exists} onSave={(note) => this.setState({note, editing: false})} onCancel={() => this.setState({editing: false})}/>
+        }
         else
         {
-            const title = <ContentEditable placeholder='Enter Note Title' disabled={!this.state.editing} onChange={t => this.state.note.title = t} value={this.state.note.title}/>;
-            const labels = <div className='note-labels row'><div><i className='col fa fa-tags'></i></div><div className='col'>{this.state.editing ?
-                <ContentEditable placeholder='label1,label2,label2' onChange={l => this.state.note.labels = l.split(/[, ]+/).filter(s => s.length)} value={this.state.note.labels.join(',')}/> :
-                <span className='comma-separated'>{this.state.note.labels.map(l => <span key={l} className='label note-label'><a href={'/l/' + l}>{l}</a></span>)}</span>}</div></div>;
-            const body = this.state.editing ?
-                <ContentEditable multiline placeholder='Enter MarkDown content. Make [[links]] with double brackets.' onChange={b => this.state.note.body = b} value={this.state.note.body}/> :
-                <RenderMarkup history={this.context.router.history} markup={this.state.note.body}/>;
-    
             // <i className='fa fa-file'></i> 
             return <div className='note-page'>
-                <h1 className='note-title'>{title}</h1>
-                {this.state.note.labels.length || this.state.editing ? labels : <span/>}
-                <div className='note-body'>{body}</div>
-                <ButtonBar editing={this.state.editing} exists={this.state.exists} onClick={a => this.action(a)}/>
+                <h1 className='note-title'>{this.state.note.title}</h1>
+                <div className='note-labels'>
+                    <i className='fa fa-tags'></i>&nbsp;
+                    <span className='comma-separated'>
+                        {this.state.note.labels.map(l => <span key={l} className='label note-label'><a href={'/l/' + l}>{l}</a></span>)}
+                    </span>
+                </div>
+                <div className='note-body'>
+                    <RenderMarkup history={this.context.router.history} markup={this.state.note.body}/>
+                </div>
+                <div className='btn-group'>
+                    <button id='note-btn-edit' className='btn btn-default' about='Edit' onClick={() => this.setState({editing: true})}><i className='fa fa-pencil'></i> Edit</button>
+                </div>
             </div>;
         }
     }

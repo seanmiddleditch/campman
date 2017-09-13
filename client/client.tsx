@@ -42,6 +42,13 @@ class App extends React.Component<{}, AppState>
         this._gateway.logout().then(() => this.setState({user: null}));
     }
 
+    componentWillMount()
+    {
+        this._gateway.retrieveAuth().then(session => {
+            this.setState({user: session.user});
+        });
+    }
+
     render()
     {
         return <BrowserRouter>
