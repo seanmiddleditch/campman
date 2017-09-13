@@ -77,7 +77,7 @@ class Config
     app.use(passport.initialize());
     app.use(passport.session());
 
-    if (config.production)
+    if (!config.production)
     {
         console.log('Enabling WebPack development middlware');
 
