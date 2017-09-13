@@ -16,12 +16,7 @@ import GoogleAuth from './auth/GoogleAuth';
     const root = path.join(__dirname, '..', '..');
     const staticRoot = path.join(root, 'static');
     
-    const config = require(path.join(root, 'config.json'));
-    
-    const dbFileName = 'test.db';
-    const dbPath = path.join(root, dbFileName);
-    console.log(dbPath);
-    const db = new squell.Database('sqlite://' + dbFileName, {dialect: 'sqlite', database: dbPath, define: {timestamps: false}});
+    const db = new squell.Database(process.env.DATABASE_URL, {dialect: 'postgres', define: {timestamps: false}});
     
     db.define(LibraryModel);
     db.define(LabelModel);
@@ -30,14 +25,17 @@ import GoogleAuth from './auth/GoogleAuth';
 
     await db.sync();
 
-    passport.use(GoogleAuth(db, config.siteURL, config.auth.google));
+    const publicPort = process.env.PORT || 8080;
+    const publicURL = process.env.PUBLIC_URL || ('http://localhost:' + publicPort);
+
+    passport.use(GoogleAuth(db, publicURL, process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_AUTH_SECRET));
     passport.serializeUser((user: UserModel, done) => done(null, user.id));
     passport.deserializeUser((userID: number, done) => db.query(UserModel).where(m => m.id.eq(userID)).findOne().then(user => done(null, user)).catch(err => done(err)));
 
     const app = express();
     app.use(BodyParser.urlencoded({extended: false}));
     app.use(BodyParser.json());
-    app.use(session({secret: config.auth.sessionSecret}));
+    app.use(session({secret: process.env.CM_SESSION_SECRET}));
     app.use(passport.initialize());
     app.use(passport.session());
 
@@ -56,7 +54,7 @@ import GoogleAuth from './auth/GoogleAuth';
     app.get('/config.js', (req, res) => {
         res.json({
             google: {
-                clientId: config.auth.google.clientId
+                clientId: process.env.GOOGLE_CLIENT_ID
             },
             session: {
                 key: req.sessionID,
@@ -76,6 +74,6 @@ import GoogleAuth from './auth/GoogleAuth';
         app.get('*', (req, res) => res.sendFile(path.join(staticRoot, 'index.html')));
     }
 
-    const server = await app.listen(process.env.PORT || 8080);
+    const server = await app.listen(publicPort);
     console.log(`Listening on port ${server.address().port}`);
 })();
