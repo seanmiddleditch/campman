@@ -1,12 +1,9 @@
 import 'reflect-metadata';
 
 import * as express from 'express';
-import * as session from 'express-session';
 import * as BodyParser from 'body-parser';
 import {Database} from 'squell';
 import * as path from 'path';
-import * as passport from 'passport';
-import * as redis from 'connect-redis';
 import * as fs from 'fs';
 
 import {AuthRouter, LabelRouter, NoteRouter} from './routes';
@@ -28,7 +25,7 @@ class Config
     constructor()
     {
         this.publicURL = process.env.PUBLIC_URL || 'http://localhost';
-        this.port = parseInt(process.env.PORT, 10);
+        this.port = parseInt(process.env.PORT || 8080, 10);
         this.googleClientID = process.env.GOOGLE_CLIENT_ID;
         this.googleAuthSecret = process.env.GOOGLE_AUTH_SECRET;
         this.sessionSecret = process.env.CM_SESSION_SECRET;
@@ -64,26 +61,9 @@ class Config
 
     await db.sync();
 
-    const RedisStore = redis(session);
-
-    if (config.googleClientID)
-    {
-        passport.use(GoogleAuth(db, config.publicURL, config.googleClientID, config.googleAuthSecret));
-        passport.serializeUser((user: UserModel, done) => done(null, user.id));
-        passport.deserializeUser((userID: number, done) => db.query(UserModel).where(m => m.id.eq(userID)).findOne().then(user => done(null, user)).catch(err => done(err)));
-    }
-
     const app = express();
     app.use(BodyParser.urlencoded({extended: false}));
     app.use(BodyParser.json());
-    app.use(session({
-        secret: config.sessionSecret,
-        resave: false,
-        saveUninitialized: false,
-        store: config.redisURL ? new RedisStore({url: config.redisURL}) : null
-    }));
-    app.use(passport.initialize());
-    app.use(passport.session());
 
     if (!config.production)
     {
@@ -99,17 +79,11 @@ class Config
 
     app.get('/config.js', (req, res) => {
         res.json({
-            google: {
-                clientId: config.googleClientID
-            },
-            session: {
-                key: req.sessionID,
-                user: req.user ? {id: req.user.id} : null
-            }
+            publicURL: config.publicURL
         });
     });
 
-    app.use(AuthRouter());
+    app.use(AuthRouter(db, config));
     app.use(NoteRouter(db));
     app.use(LabelRouter(db));
 

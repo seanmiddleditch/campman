@@ -1,30 +1,25 @@
 import * as React from 'react';
+import User from '../common/User';
 
 export interface LoginLinksProps
 {
-    sessionKey?: string,
-    onLogin: (sessionKey: string) => void,
+    onLogin: () => void,
     onLogout: () => void,
+    user: User,
     className?: string
 }
 export default class LoginLinks extends React.Component<LoginLinksProps>
 {
-    private _onLogin()
+    constructor(props: LoginLinksProps)
     {
-        (window as any).onLogin = (res: {sessionKey: string}) => this.props.onLogin(res.sessionKey);
-        const popup = window.open('/auth/google/login', 'google_login', 'menubar=false,scrollbars=false,location=false,width=400,height=300');
-    }
-
-    private _onLogout()
-    {
-        fetch('/logout').then(() => this.props.onLogout());
+        super(props);
     }
 
     render()
     {
-        if (this.props.sessionKey)
-            return <a className={this.props.className || ''} onClick={() => this._onLogout()}>Logout</a>;
+        if (this.props.user)
+            return <a className={this.props.className || ''} onClick={this.props.onLogout} href='#'>Logout</a>;
         else
-            return <a className={this.props.className || ''} onClick={() => this._onLogin()}>Login with Google</a>;
+            return <a className={this.props.className || ''} onClick={this.props.onLogin} href='#'>Login with Google</a>;
     }
 }

@@ -1,32 +1,43 @@
-export type RetrieveLabelsResponse =
-    {
-        slug: string,
-        notes: number
-    }[];
+import User from './User';
 
-export type RetrieveLabelResponse =
-    {
-        slug: string,
-        notes: {
-            slug: string,
-            title: string
-        }[]
-    };
+interface RetrieveLabelsResponseLabel
+{
+    slug: string,
+    notes: number
+};
+export type RetrieveLabelsResponse = RetrieveLabelsResponseLabel[];
 
-export type RetrieveNotesResponse =
-    {
+export interface RetrieveLabelResponse
+{
+    slug: string,
+    notes: {
         slug: string,
-        title: string,
-        labels: string[]
-    }[];
+        title: string
+    }[]
+};
 
-export type RetrieveNoteResponse =
-    {
-        slug: string,
-        title: string,
-        body: string,
-        labels: string[]
-    }
+interface RetrieveNotesResponseNote
+{
+    slug: string,
+    title: string,
+    labels: string[]
+}
+export type RetrieveNotesResponse = RetrieveNotesResponseNote[];
+
+export interface RetrieveNoteResponse
+{
+    slug: string,
+    title: string,
+    body: string,
+    labels: string[]
+};
+
+export interface RetrieveSessionResponse
+{
+    googleClientID: string;
+    sessionKey: string;
+    user?: User;
+};
 
 export class APIError extends Error
 {
@@ -79,6 +90,28 @@ export default class ClientGateway
     saveNote(note: {slug: string, title: string, labels: string[], body: string}, libraryID?: number) : Promise<void>
     {
         return this._rpcHelper('/api/notes/update', {library: libraryID}, 'POST', note);
+    }
+
+    retrieveAuth() : Promise<RetrieveSessionResponse>
+    {
+        return this._rpcHelper<RetrieveSessionResponse>('/auth/session.js');
+    }
+
+    login() : Promise<User>
+    {
+        return new Promise<User>((resolve, reject) => {
+            (window as any).onLogin = (res: {sessionKey: string}) => {
+                this.retrieveAuth()
+                    .then(session => session.user ? resolve(session.user) : reject(new Error('Login failed')))
+                    .catch(err => reject(err));
+            };
+            const popup = window.open('/auth/google/login', 'google_login', 'menubar=false,scrollbars=false,location=false,width=400,height=300');
+        });
+    }
+
+    logout() : Promise<void>
+    {
+        return this._rpcHelper('/auth/logout');
     }
 
     private _makeQueryParams(params: any)

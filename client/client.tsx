@@ -4,21 +4,22 @@ import {Route, MemoryRouter, Switch, Redirect} from 'react-router';
 import {BrowserRouter, NavLink} from 'react-router-dom';
 
 import ClientGateway from './common/ClientGateway';
+import User from './common/User';
 
 import NotePage from './components/NotePage';
 import NotesPage from './components/NotesPage';
 import LabelPage from './components/LabelPage';
 import LabelsPage from './components/LabelsPage';
-import Navigation from './components/Navigation';
 import NotFoundPage from './components/NotFoundPage';
 import LoginLinks from './components/LoginLinks';
+import NavBar from './components/NavBar';
 
 const Header = () => <div className='header-container'><header></header></div>;
 const Footer = () => <div className='footer-container'><footer><div className='footer-copyright'>Copyright (C) 2017 Sean Middleditch</div></footer></div>;
 
 interface AppState
 {
-    sessionKey?: string
+    user?: User;
 }
 class App extends React.Component<{}, AppState>
 {
@@ -31,26 +32,25 @@ class App extends React.Component<{}, AppState>
         this._gateway = new ClientGateway();
     }
 
-    private _onLogin(sessionKey: string)
+    private _onLogin()
     {
-        this.setState({sessionKey});
-        this.forceUpdate();
+        this._gateway.login().then(user => this.setState({user: user}));
     }
 
     private _onLogout()
     {
-        this.setState({sessionKey: null});
-        this.forceUpdate();  
+        this._gateway.logout().then(() => this.setState({user: null}));
     }
 
     render()
     {
         return <BrowserRouter>
             <div id='root'>
-                {Header()}
+                <NavBar user={this.state.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()}/>
+                <Header/>
                 <div className='content content-container'>
                     <Switch>
-                        <Route path='/login' exact render={props => <LoginLinks sessionKey={this.state.sessionKey} onLogout={() => this._onLogout()} onLogin={key => this._onLogin(key)}/>}/>
+                        <Route path='/login' exact render={props => <LoginLinks user={this.state.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()}/>}/>
                         <Route path='/notes' exact render={props => <NotesPage gateway={this._gateway} {...props}/>}/>
                         <Route path='/labels' exact render={props => <LabelsPage gateway={this._gateway} {...props}/>}/>
                         <Route path='/n/:slug' exact render={props => <NotePage gateway={this._gateway} slug={props.match.params.slug} {...props}/>}/>
@@ -59,8 +59,7 @@ class App extends React.Component<{}, AppState>
                         <Route component={NotFoundPage}/>
                     </Switch>
                 </div>
-                <Navigation sessionKey={this.state.sessionKey} onLogout={() => this._onLogout()} onLogin={key => this._onLogin(key)}/>
-                {Footer()}
+                <Footer/>
             </div>
         </BrowserRouter>
     }
