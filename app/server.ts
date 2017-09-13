@@ -105,6 +105,11 @@ class Config
     app.use(NoteRouter(db));
     app.use(LabelRouter(db));
 
+    if (config.production)
+    {
+        app.use('/js', express.static(path.join(root, 'client', 'dist')));
+    }
+
     app.use(express.static(staticRoot));
     app.get('*', (req, res) => res.sendFile(path.join(staticRoot, 'index.html')));
 
