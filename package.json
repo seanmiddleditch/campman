@@ -6,7 +6,11 @@
   "scripts": {
     "start": "node dist/server/server.js",
     "build-server": "tsc -p app/tsconfig.json",
-    "webpack": "webpack --config client/webpack.config.js"
+    "webpack": "webpack --config client/webpack.config.js",
+    "postinstall": "npm run build-server && npm run webpack"
+  },
+  "engines": {
+    "node": ">=8.5.0"
   },
   "repository": {
     "type": "git",
