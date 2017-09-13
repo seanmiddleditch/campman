@@ -9,7 +9,8 @@ export default function GoogleAuth(db: Database, publicURL: string, googleClient
         clientID: googleClientId,
         clientSecret: googleAuthSecret,
         callbackURL: publicURL + '/auth/google/callback',
-        accessType: 'offline'
+        accessType: 'offline',
+        approval_prompt: 'force'
     }, (accessToken: string, refreshToken: string, profile: Profile, callback: (err: Error, profile: any) => void) => {
         db.query(UserModel)
             .where(m => m.googleId.eq(profile.id))
