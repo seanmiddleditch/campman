@@ -81,7 +81,7 @@ export default function NoteAPIRouter(db: Database)
             {
                 note.library = await db.query(LibraryModel).findById(libraryId);
                 if (!note.library)
-                    res.sendStatus(400);
+                    return res.sendStatus(400);
             }
 
             note.title = req.body.title || note.title;
