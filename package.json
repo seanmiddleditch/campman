@@ -2,9 +2,9 @@
   "name": "campman",
   "version": "0.0.1",
   "description": "Campaign management software for RPGs",
-  "main": "dist/server/server.js",
+  "main": "app/dist/server.js",
   "scripts": {
-    "start": "node dist/server/server.js",
+    "start": "node app/dist/server.js",
     "build-server": "tsc -p app/tsconfig.json",
     "webpack": "webpack --config client/webpack.config.js",
     "postinstall": "npm run build-server && npm run webpack"
