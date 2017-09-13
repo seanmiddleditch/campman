@@ -3,7 +3,7 @@ import 'reflect-metadata';
 import * as express from 'express';
 import * as session from 'express-session';
 import * as BodyParser from 'body-parser';
-import * as squell from 'squell';
+import {Database} from 'squell';
 import * as path from 'path';
 import * as passport from 'passport';
 import * as redis from 'connect-redis';
@@ -23,6 +23,7 @@ class Config
     readonly redisURL: string;
     readonly databaseURL: string;
     readonly production: boolean;
+    readonly webpackDev: boolean;
 
     constructor()
     {
@@ -31,6 +32,7 @@ class Config
         this.googleClientID = process.env.GOOGLE_CLIENT_ID;
         this.googleAuthSecret = process.env.GOOGLE_AUTH_SECRET;
         this.sessionSecret = process.env.CM_SESSION_SECRET;
+        this.webpackDev = process.env.CM_WEBPACK_DEV === 'true';
         this.redisURL = process.env.REDIS_URL;
         this.databaseURL = process.env.DATABASE_URL;
         this.production = process.env.NODE_ENV === 'production';
@@ -44,8 +46,16 @@ class Config
     const clientRoot = path.join(root, 'client');
 
     const config = new Config();
-    
-    const db = new squell.Database(config.databaseURL, {dialect: 'postgres', define: {timestamps: false}});
+
+    if (!config.production)
+    {
+        process.on('unhandledRejection', (err: Error) => {
+            console.error(err, err.stack);
+            process.exit(2);
+        });
+    }
+
+    const db = new Database(config.databaseURL, {dialect: 'postgres', dialectOptions: {ssl: true}, define: {timestamps: false}});
     
     db.define(LibraryModel);
     db.define(LabelModel);
@@ -114,4 +124,7 @@ class Config
 
     const server = await app.listen(config.port);
     console.log(`Listening on port ${server.address().port}`);
-})();
+})().catch(err => {
+    console.error(err, err.stack);
+    process.exit(1);
+});
