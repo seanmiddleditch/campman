@@ -28,9 +28,6 @@ class Config
     {
         this.publicURL = process.env.PUBLIC_URL || 'http://localhost';
         this.port = parseInt(process.env.PORT, 10);
-        if (this.port != 80)
-            this.publicURL += `:${this.port}`;
-        
         this.googleClientID = process.env.GOOGLE_CLIENT_ID;
         this.googleAuthSecret = process.env.GOOGLE_AUTH_SECRET;
         this.sessionSecret = process.env.CM_SESSION_SECRET;
