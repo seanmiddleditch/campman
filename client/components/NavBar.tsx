@@ -1,0 +1,49 @@
+import * as React from 'react';
+import User from '../common/User';
+import {NavLink} from 'react-router-dom';
+import LoginLinks from './LoginLinks';
+
+export interface NavBarProps
+{
+    user?: User,
+    onLogin: () => void,
+    onLogout: () => void,
+}
+const NavBar = (props: NavBarProps) =>
+    <nav className='navbar fixed-top navbar-expand-lg navbar-light bg-light'>
+    <button className='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarTogglerDemo03' aria-controls='navbarTogglerDemo03' aria-expanded='false' aria-label='Toggle navigation'>
+        <span className='navbar-toggler-icon'></span>
+    </button>
+    <NavLink className='navbar-brand' to='/n/home' exact>Library</NavLink>
+
+    <div className='collapse navbar-collapse' id='navbarTogglerDemo03'>
+        <ul className='navbar-nav mr-auto mt-2 mt-lg-0'>
+            <div className='nav-link disabled'>Adventures</div>
+            <NavLink className='nav-link' activeClassName='nav-link-active' to='/notes' isActive={(m, l) => !!m || l.pathname.startsWith('/n/')}>Notes</NavLink>
+            <NavLink className='nav-link' activeClassName='nav-link-active' to='/labels' isActive={(m, l) => !!m || l.pathname.startsWith('/l/')}>Labels</NavLink>
+            <div className='nav-link disabled'>Maps</div>
+            <div className='nav-link disabled'>Characters</div>
+            <div className='nav-link disabled'>Timeline</div>
+            <div className='nav-link disabled'>Media</div>
+        </ul>
+        <form className='input-group my-2 my-lg-0'>
+            <input className='form-control' type='text' placeholder='Search' aria-label='Search'/>
+            <span className='input-group-btn'>
+                <button className='btn btn-outline-primary my-2 my-sm-0' type='submit'><span className='fa fa-search'></span></button>
+            </span>
+        </form>
+        <ul className='navbar-nav ml-2 ml-lg-2 mt-2 mt-lg-0'>
+            {props.user ?
+                <div className='btn-group' role='group'>
+                    <button className='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>{props.user.nickname}</button>
+                    <div className='dropdown-menu' aria-labelledby='btnGroupDrop1'>
+                        <a className='dropdown-item' href='#account'>Account</a>
+                        <a className='dropdown-item' onClick={props.onLogout} href='#logout'>Logout</a>
+                    </div>
+                </div> :
+                <button className='btn' onClick={props.onLogin}>Login (Google+)</button>}
+        </ul>
+    </div>
+    </nav>;
+export default NavBar;
+
