@@ -23,7 +23,7 @@ class Editor extends React.Component<EditorProps, EditorState>
 {
     static contextTypes = { router: PropTypes.object.isRequired };
     
-    context: ReactRouter.RouterChildContext<NotePageProps>;
+    context: ReactRouter.RouterChildContext<EditorProps>;
 
     private unblockHistory: () => void;
     
