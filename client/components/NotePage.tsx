@@ -32,15 +32,15 @@ class Editor extends React.Component<EditorProps, EditorState>
         super(props);
         this.state = {
             saving: false,
-            note: this.props.note
+            note: JSON.parse(JSON.stringify(this.props.note)) // deepy copy
         };
     }
 
     private _hasChanges()
     {
-        return this.props.note.title != this.state.note.title ||
-            this.props.note.body != this.state.note.body ||
-            this.props.note.labels.join(',') != this.state.note.labels.join(',')
+        return this.props.note.title !== this.state.note.title ||
+            this.props.note.body !== this.state.note.body ||
+            this.props.note.labels.join(',') !== this.state.note.labels.join(',')
     }
 
     private _action(act: 'save'|'edit'|'delete'|'cancel')
@@ -48,11 +48,14 @@ class Editor extends React.Component<EditorProps, EditorState>
         switch (act)
         {
         case 'cancel':
-            this.unblockHistory();
-            this.props.onCancel();
+            if (this._hasChanges() && confirm('Canceling now will lose your changes. Click Cancel to continue editing.'))
+            {
+                this.unblockHistory();
+                this.props.onCancel();
+            }
             break;
         case 'delete':
-            if (!this.state.saving)
+            if (!this.state.saving && confirm('This operation cannot be reversed! Click Cancel to keep this page.'))
             {
                 this.setState({saving: true});
                 this.props.gateway.deleteNote(this.props.note.slug)
@@ -108,13 +111,22 @@ class Editor extends React.Component<EditorProps, EditorState>
                 <span className='input-group-addon'><i className='col fa fa-tags'></i></span>
                 <input type='text' className='form-control' placeholder='tag1, tag2, ...' onChange={ev => this._update({labels: ev.target.value})} defaultValue={this.state.note.labels.join(', ')}/>
             </div>
+            <div className='floating-editbar-container'>
+                <div className='floating-editbar'>
+                    <div className='btn-group mt-sm-2' role='group'>
+                        <button id='note-btn-save' className='btn btn-primary' about='Save' onClick={() => this._action('save')}><i className='fa fa-floppy-o'></i> Save</button>
+                        <div className='btn-group'>
+                            <button className='btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'><span className='caret'/></button>
+                            <div className='dropdown-menu'>
+                                <a id='note-btn-cancel' className='dropdown-item' about='Cancel' onClick={() => this._action('cancel')}><i className='fa fa-ban'></i> Cancel</a>
+                                <a id='note-btn-delete' className='dropdown-item' about='Delete' onClick={() => this._action('delete')}><i className='fa fa-trash-o'></i> Delete</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div className='input-group mt-sm-2'>
                 <textarea onChange={ev => this._update({body: ev.target.value})} defaultValue={this.state.note.body} style={{width: '100%', minHeight: '20em'}}/>
-            </div>
-            <div className='btn-group mt-sm-2'>
-                <button id='note-btn-save' className='btn btn-primary' about='Save' onClick={() => this._action('save')}><i className='fa fa-floppy-o'></i> Save</button>
-                <button id='note-btn-cancel' className='btn btn-default' about='Cancel' onClick={() => this._action('cancel')}><i className='fa fa-ban'></i> Cancel</button>
-                <button id='note-btn-delete' className='btn btn-danger' about='Delete' onClick={() => this._action('delete')}><i className='fa fa-trash-o'></i> Delete</button>
             </div>
         </div>;
     }
@@ -193,7 +205,9 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         }
         else if (this.state.editing)
         {
-            return <Editor gateway={this.props.gateway} note={this.state.note} exists={this.state.exists} onSave={(note) => this.setState({note, editing: false})} onCancel={() => this.setState({editing: false})}/>
+            return <div className='note-page'>
+                <Editor gateway={this.props.gateway} note={this.state.note} exists={this.state.exists} onSave={(note) => this.setState({note, editing: false})} onCancel={() => this.setState({editing: false})}/>
+            </div>;
         }
         else
         {
@@ -206,11 +220,15 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
                         {this.state.note.labels.map(l => <span key={l} className='label note-label'><a href={'/l/' + l}>{l}</a></span>)}
                     </span>
                 </div>
+                <div className='floating-editbar-container'>
+                    <div className='floating-editbar'>
+                        <div className='btn-group'>
+                            <button id='note-btn-edit' className='btn btn-default' about='Edit' onClick={() => this.setState({editing: true})}><i className='fa fa-pencil'></i> Edit</button>
+                        </div>
+                    </div>
+                </div>
                 <div className='note-body'>
                     <RenderMarkup history={this.context.router.history} markup={this.state.note.body}/>
-                </div>
-                <div className='btn-group'>
-                    <button id='note-btn-edit' className='btn btn-default' about='Edit' onClick={() => this.setState({editing: true})}><i className='fa fa-pencil'></i> Edit</button>
                 </div>
             </div>;
         }

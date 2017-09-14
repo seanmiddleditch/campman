@@ -9,3 +9,6 @@
 .note-page *[contenteditable="true"]:focus { outline: orange solid thin; box-shadow: 0 0 3px darkgrey }
 
 .note-page .content-editable:empty::before { content: attr(data-placeholder); display: inline; color: grey }
+
+.floating-editbar-container { position: absolute; left: 0; margin-top: 1em; z-index: 1000 }
+.floating-editbar { position: fixed; padding-right: 1em; transform: translateX(-100%);  }

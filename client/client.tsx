@@ -11,25 +11,30 @@ import NotesPage from './components/NotesPage';
 import LabelPage from './components/LabelPage';
 import LabelsPage from './components/LabelsPage';
 import NotFoundPage from './components/NotFoundPage';
-import LoginLinks from './components/LoginLinks';
 import NavBar from './components/NavBar';
+import Footer from './components/Footer';
 
-const Header = () => <div className='header-container'><header></header></div>;
-const Footer = () => <div className='footer-container'><footer><div className='footer-copyright'>Copyright (C) 2017 Sean Middleditch</div></footer></div>;
+import Routes from './routes';
 
+interface AppProps
+{
+    user?: User;
+    gateway: ClientGateway;
+}
 interface AppState
 {
     user?: User;
 }
-class App extends React.Component<{}, AppState>
+class App extends React.Component<AppProps, AppState>
 {
     private _gateway: ClientGateway;
 
-    constructor()
+    constructor(props: AppProps)
     {
-        super();
-        this.state = {};
-        this._gateway = new ClientGateway();
+        super(props);
+        this.state = {
+            user: props.user
+        };
     }
 
     private _onLogin()
@@ -42,34 +47,26 @@ class App extends React.Component<{}, AppState>
         this._gateway.logout().then(() => this.setState({user: null}));
     }
 
-    componentWillMount()
+    private _onSearch(text: string)
     {
-        this._gateway.retrieveAuth().then(session => {
-            this.setState({user: session.user});
-        });
+        alert(text);
     }
 
     render()
     {
         return <BrowserRouter>
-            <div id='root'>
-                <NavBar user={this.state.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()}/>
-                <Header/>
-                <div className='content content-container'>
-                    <Switch>
-                        <Route path='/login' exact render={props => <LoginLinks user={this.state.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()}/>}/>
-                        <Route path='/notes' exact render={props => <NotesPage gateway={this._gateway} {...props}/>}/>
-                        <Route path='/labels' exact render={props => <LabelsPage gateway={this._gateway} {...props}/>}/>
-                        <Route path='/n/:slug' exact render={props => <NotePage gateway={this._gateway} slug={props.match.params.slug} {...props}/>}/>
-                        <Route path='/l/:slug' exact render={props => <LabelPage gateway={this._gateway} slug={props.match.params.slug} {...props}/>}/>
-                        <Redirect path='/' exact to='/n/home'/>
-                        <Route component={NotFoundPage}/>
-                    </Switch>
+            <div className='content-wrapper'>
+                <NavBar user={this.state.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()} onSearch={text => this._onSearch(text)}/>
+                <div className='content'>
+                    <Routes gateway={this.props.gateway}/>
                 </div>
                 <Footer/>
-            </div>
-        </BrowserRouter>
+           </div>
+        </BrowserRouter>;
     }
 }
 
-ReactDOM.render(<App/>, document.getElementById('content'));
+const gateway = new ClientGateway();
+gateway.retrieveAuth().then(session => {
+    ReactDOM.render(<App gateway={gateway} user={(session && session.user) || null}/>, document.getElementById('content'));
+});
