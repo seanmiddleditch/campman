@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import {default as ClientGateway, RetrieveLabelsResponse} from '../common/ClientGateway';
+import {Library, Labels} from '../common/ClientGateway';
 
 export interface LabelsPageProps
 {
-    gateway: ClientGateway
+    library: Library
 }
 interface LabelsPageState
 {
-    labels?: RetrieveLabelsResponse;
+    labels?: Labels;
 }
 export default class LabelsPage extends React.Component<LabelsPageProps, LabelsPageState>
 {
@@ -20,7 +20,7 @@ export default class LabelsPage extends React.Component<LabelsPageProps, LabelsP
 
     componentDidMount()
     {
-        this.props.gateway.retrieveLabels().then(labels => this.setState({labels}));
+        this.props.library.labels().then(labels => this.setState({labels}));
     }
 
     private renderLabel(l: {slug: string, notes: number})

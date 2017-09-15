@@ -3,21 +3,20 @@ import * as ReactRouter from 'react-router';
 import * as PropTypes from 'prop-types';
 import ContentEditable from './ContentEditable';
 import RenderMarkup from './RenderMarkup';
-import {default as ClientGateway, RetrieveNoteResponse} from '../common/ClientGateway';
+import {Library, Note} from '../common/ClientGateway';
 import NotFoundPage from './NotFoundPage';
 
 interface EditorProps
 {
-    gateway: ClientGateway
-    note: RetrieveNoteResponse,
+    note: Note,
     exists: boolean,
-    onSave: (note: RetrieveNoteResponse) => void,
+    onSave: (note: Note) => void,
     onCancel: () => void
 }
 interface EditorState
 {
     saving: boolean,
-    note: RetrieveNoteResponse,
+    note: Note,
 }
 class Editor extends React.Component<EditorProps, EditorState>
 {
@@ -48,7 +47,7 @@ class Editor extends React.Component<EditorProps, EditorState>
         switch (act)
         {
         case 'cancel':
-            if (this._hasChanges() && confirm('Canceling now will lose your changes. Click Cancel to continue editing.'))
+            if (!this._hasChanges() || confirm('Canceling now will lose your changes. Click Cancel to continue editing.'))
             {
                 this.unblockHistory();
                 this.props.onCancel();
@@ -58,7 +57,7 @@ class Editor extends React.Component<EditorProps, EditorState>
             if (!this.state.saving && confirm('This operation cannot be reversed! Click Cancel to keep this page.'))
             {
                 this.setState({saving: true});
-                this.props.gateway.deleteNote(this.props.note.slug)
+                this.props.note.delete()
                     .then(() => this.context.router.history.push('/notes'))
                     .catch((err: Error) => this.setState({saving: false}));
             }
@@ -67,7 +66,7 @@ class Editor extends React.Component<EditorProps, EditorState>
             if (!this.state.saving)
             {
                 this.setState({saving: true});
-                this.props.gateway.saveNote(this.state.note)
+                this.props.note.update()
                     .then(() => {this.setState({saving: false}); this.props.onSave(this.state.note);})
                     .catch((err: Error) => this.setState({saving: false}));
             }
@@ -92,6 +91,8 @@ class Editor extends React.Component<EditorProps, EditorState>
         this.unblockHistory = (this.context.router.history as any).block((location: any, action: any) => {
             if (this._hasChanges())
                 return 'Navigating away now will lose your changes. Click Cancel to continue editing.';
+            else
+                return undefined;
         }) as () => void;
     }
 
@@ -135,14 +136,14 @@ class Editor extends React.Component<EditorProps, EditorState>
 export interface NotePageProps
 {
     slug: string,
-    gateway: ClientGateway,
+    library: Library,
 }
 interface NotePageState
 {
     editing: boolean,
     failed: boolean,
     exists: boolean,
-    note?: RetrieveNoteResponse
+    note?: Note
 }
 export default class NotePage extends React.Component<NotePageProps, NotePageState>
 {
@@ -162,19 +163,14 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
 
     private fetch()
     {
-        this.props.gateway.retrieveNote(this.props.slug)
+        this.props.library.note(this.props.slug)
             .then(note => this.setState({note, editing: false, exists: true}))
             .catch(err => {
                 if (err.status == 404)
                     this.setState({
                         editing: true,
                         exists: false,
-                        note: {
-                            slug: this.props.slug,
-                            title: '',
-                            body: '',
-                            labels: []
-                        }
+                        note: null
                     });
                 else if (err.status == 401)
                     this.setState({failed: true});
@@ -206,7 +202,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         else if (this.state.editing)
         {
             return <div className='note-page'>
-                <Editor gateway={this.props.gateway} note={this.state.note} exists={this.state.exists} onSave={(note) => this.setState({note, editing: false})} onCancel={() => this.setState({editing: false})}/>
+                <Editor note={this.state.note} exists={this.state.exists} onSave={(note) => this.setState({note, editing: false})} onCancel={() => this.setState({editing: false})}/>
             </div>;
         }
         else

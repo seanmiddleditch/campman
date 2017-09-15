@@ -7,6 +7,7 @@ import {Database} from 'squell';
 import User from '../auth/User';
 import GoogleAuth from '../auth/GoogleAuth';
 import UserModel from '../models/UserModel';
+import {wrap, success, accessDenied} from './helpers';
 
 export interface AuthRouterConfig
 {
@@ -29,43 +30,41 @@ export default function AuthRouter(db: Database, config: AuthRouterConfig)
         secret: config.sessionSecret,
         resave: false,
         saveUninitialized: false,
-        store: config.redisURL ? new RedisStore({url: config.redisURL}) : null
+        store: new RedisStore({url: config.redisURL})
     }));
     router.use(passport.initialize());
     router.use(passport.session());
 
-    router.get('/auth/logout', (req, res) =>
+    router.post('/auth/logout', wrap(async (req) =>
     {
-        req.session.destroy(() => res.json({}));
-    });
+        if (!req.user) return accessDenied();
+        else if (!req.session) return accessDenied();
+        const session = req.session;
+        return (new Promise(res => session.destroy(res))).then(() => success({}));
+    }));
 
-    router.get('/auth/session.js', (req, res) => {
+    router.get('/auth/session', wrap(async (req) => {
+        if (!req.session) return accessDenied();
+
         const user = req.user ? req.user as User : null;
-        res.json({
+        return success({
             googleClientId: config.googleClientID,
-            sessionKey: req.sessionID,
-            user: !req.user ? null : {
+            sessionKey: req.session.id,
+            user: !user ? null : {
                 id: user.id,
                 fullName: user.fullName,
                 nickname: user.nickname || user.fullName
             }
         });
-    });
-
-    const authCallback = (req: express.Request, res: express.Response) =>
-        {
-            const user = req.user as User;
-            const sessionKey = req.sessionID;
-            res.send('<script>try{window.opener.onLogin({sessionKey:"'+encodeURIComponent(sessionKey)+'"});}catch(e){} window.close();</script>');
-        };
+    }));
 
     router.get('/auth/google/callback',
         passport.authenticate('google'),
-        authCallback);
+        (req, res) => res.render('auth-callback', {layout: null, publicURL: config.publicURL, sessionKey: req.sessionID, user: req.user}));
 
     router.get('/auth/google/login',
         passport.authenticate('google', {scope: ['email', 'profile', 'https://www.googleapis.com/auth/drive.file']}),
-        authCallback);
+        (req, res) => res.render('auth-callback', {layout: null, publicURL: config.publicURL, sessionKey: req.sessionID, user: req.user}));
 
     return router;
 }

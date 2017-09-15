@@ -43,8 +43,8 @@ export default class NavBar extends React.Component<NavBarProps, NavBarState>
             <div className='collapse navbar-collapse' id='navbarTogglerDemo03'>
                 <ul className='navbar-nav mr-auto mt-2 mt-lg-0'>
                     <div className='nav-link disabled'>Adventures</div>
-                    <NavLink className='nav-link' activeClassName='nav-link-active' to='/notes' isActive={(m, l) => !!m || l.pathname.startsWith('/n/')}>Notes</NavLink>
-                    <NavLink className='nav-link' activeClassName='nav-link-active' to='/labels' isActive={(m, l) => !!m || l.pathname.startsWith('/l/')}>Labels</NavLink>
+                    <NavLink className='nav-link' activeClassName='nav-link-active' to={'/notes'} isActive={(m, l) => !!m || l.pathname.startsWith('/n/')}>Notes</NavLink>
+                    <NavLink className='nav-link' activeClassName='nav-link-active' to={'/labels'} isActive={(m, l) => !!m || l.pathname.startsWith('/l/')}>Labels</NavLink>
                     <div className='nav-link disabled'>Maps</div>
                     <div className='nav-link disabled'>Characters</div>
                     <div className='nav-link disabled'>Timeline</div>

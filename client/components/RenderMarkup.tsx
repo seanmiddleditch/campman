@@ -44,6 +44,7 @@ export default class RenderMarkup extends React.Component<RenderMarkupProps, und
                 return false;
             }
         }
+        return true;
     }
 
     private static wikiPlugin(md: MarkdownIt.MarkdownIt)

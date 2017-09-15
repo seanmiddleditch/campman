@@ -4,10 +4,11 @@ import * as express from 'express';
 import * as BodyParser from 'body-parser';
 import {Database} from 'squell';
 import * as path from 'path';
+import * as exphbs   from 'express-handlebars';
 import * as fs from 'fs';
 
-import {AuthRouter, LabelRouter, NoteRouter} from './routes';
-import {LibraryModel, LabelModel, NoteModel, UserModel} from './models';
+import {AuthRouter, LabelRouter, LibraryRouter, NoteRouter} from './routes';
+import {LibraryModel, LibraryAccessModel, LabelModel, NoteModel, UserModel} from './models';
 import GoogleAuth from './auth/GoogleAuth';
 
 class Config
@@ -41,6 +42,7 @@ class Config
     const root = path.join(__dirname, '..', '..');
     const staticRoot = path.join(root, 'static');
     const clientRoot = path.join(root, 'client');
+    const viewsRoot = path.join(root, 'views');
 
     const config = new Config();
 
@@ -55,6 +57,7 @@ class Config
     const db = new Database(config.databaseURL, {dialect: 'postgres', dialectOptions: {ssl: true}, define: {timestamps: false}});
     
     db.define(LibraryModel);
+    db.define(LibraryAccessModel);
     db.define(LabelModel);
     db.define(NoteModel);
     db.define(UserModel);
@@ -64,6 +67,14 @@ class Config
     const app = express();
     app.use(BodyParser.urlencoded({extended: false}));
     app.use(BodyParser.json());
+
+    app.engine('handlebars', exphbs({
+        defaultLayout: 'main',
+        partialsDir: path.join(viewsRoot, 'partials'),
+        layoutsDir: path.join(viewsRoot, 'layouts')
+    }));
+    app.set('view engine', 'handlebars');
+    app.set('views', viewsRoot);
 
     if (!config.production)
     {
@@ -86,6 +97,7 @@ class Config
     app.use(AuthRouter(db, config));
     app.use(NoteRouter(db));
     app.use(LabelRouter(db));
+    app.use(LibraryRouter(db));
 
     if (config.production)
     {
@@ -94,7 +106,7 @@ class Config
     }
 
     app.use(express.static(staticRoot));
-    app.get('*', (req, res) => res.sendFile(path.join(staticRoot, 'index.html')));
+    app.use((req, res) => res.render('index'));
 
     const server = await app.listen(config.port);
     console.log(`Listening on port ${server.address().port}`);

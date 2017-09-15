@@ -1,5 +1,5 @@
 import LabelModel from './LabelModel';
-import LibraryModel from './LibraryModel';
+import {LibraryAccessModel} from './LibraryModel';
 import * as modelsafe from 'modelsafe';
 import * as squell from 'squell';
 import User from '../auth/User';
@@ -23,6 +23,9 @@ export default class UserModel extends modelsafe.Model implements User
     @modelsafe.attr(modelsafe.STRING)
     @modelsafe.minLength(1)
     public email: string;
+
+    @modelsafe.assoc(modelsafe.HAS_MANY, () => LibraryAccessModel)
+    public access: LibraryAccessModel[];
     
     @modelsafe.attr(modelsafe.STRING, {optional: true})
     public googleId?: string;

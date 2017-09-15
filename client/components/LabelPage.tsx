@@ -1,15 +1,15 @@
 import * as React from 'react';
-import { Link } from 'react-router-dom';
-import {default as ClientGateway, RetrieveLabelResponse} from '../common/ClientGateway';
+import {Link} from 'react-router-dom';
+import {Library, Label} from '../common/ClientGateway';
 
 export interface LabelPageProps
 {
     slug: string,
-    gateway: ClientGateway
+    library: Library
 }
 interface LabelPageState
 {
-    label?: RetrieveLabelResponse
+    label?: Label
 }
 export default class LabelPage extends React.Component<LabelPageProps, LabelPageState>
 {
@@ -21,7 +21,7 @@ export default class LabelPage extends React.Component<LabelPageProps, LabelPage
 
     componentDidMount()
     {
-        this.props.gateway.retrieveLabel(this.props.slug)
+        this.props.library.label(this.props.slug)
             .then(label => this.setState({label}));
     }
 

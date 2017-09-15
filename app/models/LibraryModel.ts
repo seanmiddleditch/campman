@@ -1,9 +1,10 @@
 import * as modelsafe from 'modelsafe';
 import * as squell from 'squell';
 import NoteModel from './NoteModel';
+import UserModel from './UserModel';
+import Access from '../auth/Access';
 
 @modelsafe.model({name: 'library'})
-@squell.model({timestamps: true})
 export default class LibraryModel extends modelsafe.Model
 {
     @modelsafe.attr(modelsafe.INTEGER, {optional: true})
@@ -20,11 +21,51 @@ export default class LibraryModel extends modelsafe.Model
     @modelsafe.minLength(1)
     public title: string;
 
+    @modelsafe.assoc(modelsafe.BELONGS_TO, () => UserModel)
+    @squell.assoc({foreignKeyConstraint: true, foreignKey: {allowNull: false}})
+    public creator: UserModel;
+
     @modelsafe.assoc(modelsafe.HAS_MANY, () => NoteModel)
+    @squell.assoc({})
     public notes: NoteModel[];
+
+    @modelsafe.assoc(modelsafe.HAS_MANY, () => LibraryAccessModel)
+    public acl: LibraryAccessModel[];
 
     public static findBySlug(db: squell.Database, slug: string): Promise<LibraryModel|null>
     {
         return db.query(LibraryModel).includeAll().where(m => m.slug.eq(slug)).findOne();
     }
+
+    public static async queryAccess(db: squell.Database, librarySlug: string, userID: number): Promise<[LibraryModel|null, number]>
+    {
+         const rs = await db.query(LibraryAccessModel)
+            .attributes(m => [m.access])
+            .include(LibraryModel, m => m.library, q => q.where(m => m.slug.eq(librarySlug)))
+            .include(UserModel, m => m.user, q => q.attributes(m => []).where(m => m.id.eq(userID)))
+            .findOne();
+        return rs ? [rs.library, rs.access] : [null, 0];
+    }
+
+    public static async findBySlugACL(db: squell.Database, librarySlug: string, userID: number, required: Access): Promise<LibraryModel|null>
+    {
+        const rs = await LibraryModel.queryAccess(db, librarySlug, userID);
+        return rs[1] >= required ? rs[0] : null;
+    }
+}
+
+@modelsafe.model({name: 'library_acl'})
+@squell.model({indexes: [{name: 'library_acl_user', fields: ['libraryId', 'userId'], unique: true}], timestamps: false})
+export class LibraryAccessModel extends modelsafe.Model
+{
+    @modelsafe.assoc(modelsafe.BELONGS_TO, () => LibraryModel)
+    @squell.assoc({foreignKeyConstraint: true, foreignKey: {allowNull: false}})
+    public library: LibraryModel;
+
+    @modelsafe.assoc(modelsafe.BELONGS_TO, () => UserModel)
+    @squell.assoc({foreignKeyConstraint: true, foreignKey: {allowNull: true}})
+    public user?: UserModel;
+
+    @modelsafe.attr(modelsafe.INTEGER)
+    public access: number;
 }

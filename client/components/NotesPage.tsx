@@ -1,14 +1,14 @@
 import * as React from 'react';
 import {Link} from 'react-router-dom';
-import {default as ClientGateway, RetrieveNotesResponse} from '../common/ClientGateway';
+import {Library, Note} from '../common/ClientGateway';
 
 export interface NotesPageProps
 {
-    gateway: ClientGateway
+    library: Library
 }
 interface NotesPageState
 {
-    notes?: RetrieveNotesResponse;
+    notes?: Note[];
 }
 export default class NotesPage extends React.Component<NotesPageProps, NotesPageState>
 {
@@ -20,8 +20,7 @@ export default class NotesPage extends React.Component<NotesPageProps, NotesPage
 
     componentDidMount()
     {  
-        this.props.gateway.retrieveNotes()
-            .then(notes => this.setState({notes}));
+        this.props.library.notes().then(notes => this.setState({notes}));
     }
 
     private renderNote(n: {slug: string, title: string, labels: string[]})

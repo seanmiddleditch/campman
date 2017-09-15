@@ -4,7 +4,7 @@ import * as modelsafe from 'modelsafe';
 import * as squell from 'squell';
 
 @modelsafe.model({name: 'note'})
-@squell.model({indexes: [{name: 'slug', fields: ['libraryId', 'slug']}], timestamps: true})
+@squell.model({indexes: [{name: 'library_note_unique_slug', fields: ['libraryId', 'slug'], unique: true}], timestamps: true})
 export default class NoteModel extends modelsafe.Model
 {
     @modelsafe.attr(modelsafe.INTEGER, {optional: true})
@@ -12,7 +12,7 @@ export default class NoteModel extends modelsafe.Model
     public id?: number;
 
     @modelsafe.assoc(modelsafe.BELONGS_TO, () => LibraryModel)
-    @squell.assoc({onDelete: 'CASCADE', foreignKey: 'libraryId'})
+    @squell.assoc({onDelete: 'CASCADE', foreignKey: {name: 'libraryId', allowNull: false}, foreignKeyConstraint: true})
     public library: LibraryModel;
 
     @modelsafe.attr(modelsafe.STRING)

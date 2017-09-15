@@ -1,44 +1,5 @@
 import User from './User';
 
-interface RetrieveLabelsResponseLabel
-{
-    slug: string,
-    notes: number
-};
-export type RetrieveLabelsResponse = RetrieveLabelsResponseLabel[];
-
-export interface RetrieveLabelResponse
-{
-    slug: string,
-    notes: {
-        slug: string,
-        title: string
-    }[]
-};
-
-interface RetrieveNotesResponseNote
-{
-    slug: string,
-    title: string,
-    labels: string[]
-}
-export type RetrieveNotesResponse = RetrieveNotesResponseNote[];
-
-export interface RetrieveNoteResponse
-{
-    slug: string,
-    title: string,
-    body: string,
-    labels: string[]
-};
-
-export interface RetrieveSessionResponse
-{
-    googleClientID: string;
-    sessionKey: string;
-    user?: User;
-};
-
 export class APIError extends Error
 {
     public readonly status?: number;
@@ -50,71 +11,16 @@ export class APIError extends Error
     }
 }
 
-export default class ClientGateway
+class RPCHelper
 {
-    private rootURL: string;
+    private _root: string;
 
-    constructor(rootURL?: string)
+    constructor(root: string)
     {
-        this.rootURL = rootURL || (() => {
-            const loc = window.location;
-            return `${loc.protocol}//${loc.host}`;
-        })();
+        this._root = root;
     }
-
-    retrieveLabels(libraryID?: number) : Promise<RetrieveLabelsResponse>
-    {
-        return this._rpcHelper<RetrieveLabelsResponse>('/api/labels/list', {library: libraryID});
-    }
-
-    retrieveLabel(slug: string, libraryID?: number) : Promise<RetrieveLabelResponse>
-    {
-        return this._rpcHelper<RetrieveLabelResponse>('/api/labels/get', {slug, library: libraryID});
-    }
-
-    retrieveNote(slug: string, libraryID?: number) : Promise<RetrieveNoteResponse>
-    {
-        return this._rpcHelper<RetrieveNoteResponse>('/api/notes/get', {slug, library: libraryID});
-    }
-
-    retrieveNotes(libraryID?: number) : Promise<RetrieveNotesResponse>
-    {
-        return this._rpcHelper<RetrieveNotesResponse>('/api/notes/list', {library: libraryID});
-    }
-
-    deleteNote(slug: string, libraryID?: number) : Promise<void>
-    {
-        return this._rpcHelper('/api/notes/delete', {library: libraryID}, 'DELETE', {slug});
-    }
-
-    saveNote(note: {slug: string, title: string, labels: string[], body: string}, libraryID?: number) : Promise<void>
-    {
-        return this._rpcHelper('/api/notes/update', {library: libraryID}, 'POST', note);
-    }
-
-    retrieveAuth() : Promise<RetrieveSessionResponse>
-    {
-        return this._rpcHelper<RetrieveSessionResponse>('/auth/session.js');
-    }
-
-    login() : Promise<User>
-    {
-        return new Promise<User>((resolve, reject) => {
-            (window as any).onLogin = (res: {sessionKey: string}) => {
-                this.retrieveAuth()
-                    .then(session => session.user ? resolve(session.user) : reject(new Error('Login failed')))
-                    .catch(err => reject(err));
-            };
-            const popup = window.open('/auth/google/login', 'google_login', 'menubar=false,scrollbars=false,location=false,width=400,height=300');
-        });
-    }
-
-    logout() : Promise<void>
-    {
-        return this._rpcHelper('/auth/logout');
-    }
-
-    private _makeQueryParams(params: any)
+  
+    private static _makeQueryParams(params: any)
     {
         const makeQueryVar = (k: string, v: any) => encodeURIComponent(k) + '=' + encodeURIComponent(v);
 
@@ -124,31 +30,184 @@ export default class ClientGateway
             .join('&');
     }
 
-    private async _rpcHelper<T>(path: string, query?: any, method?: 'GET'|'POST'|'PUT'|'DELETE', body?: any) : Promise<T>
+    private static async _processResult<T>(url: string, result: any)
     {
-        const queryArgs = query ? this._makeQueryParams(query) : undefined;
-        const fullPath = this.rootURL + path + (queryArgs ? '?' + queryArgs : '');
-        const fetchMethod = method || 'GET';
-
-        const jsonBody = body ? JSON.stringify(body) : undefined;
-        const headers = body ? new Headers({'Content-Type': 'application/json'}) : undefined;
-
-        const result = await fetch(fullPath, {credentials: 'include', method: fetchMethod, headers, body: jsonBody});
         if (!result.ok)
         {
-            console.warn(fullPath + ': returned status code ' + result.status);
+            console.warn(url + ': returned status code ' + result.status);
             throw new APIError(result.statusText, result.status);
         }
 
         try
         {
             const jsonResult = await result.json();
-            return jsonResult as T;
+            if (jsonResult.status == 'success')
+            {
+                return jsonResult.data as T;
+            }
+            else
+            {
+                throw new APIError(jsonResult.message, jsonResult.code || 400);
+            }
         }
         catch (err)
         {
-            console.error(fullPath + ': ' + err, err.stack);
+            console.error(url + ': ' + err.message, err.stack);
             throw err;
         }
+    }
+
+    async _bodyHelper<T>(params: {method: 'GET'|'POST'|'DELETE'|'PUT', url: string, body?: any}) : Promise<T>
+    {
+        const url = this._root + params.url;
+        const result = await fetch(url, {
+            credentials: 'include',
+            method: params.method,
+            headers: params.body ? new Headers({'Content-Type': 'application/json'}) : undefined,
+            body: params.body ? JSON.stringify(params.body) : undefined
+        });
+        return RPCHelper._processResult<T>(url, result);
+    }
+
+    async get<T>(path: string, query?: any) : Promise<T>
+    {
+        const queryArgs = query ? RPCHelper._makeQueryParams(query) : undefined;
+        const url = this._root + path + (queryArgs ? '?' + queryArgs : '');
+
+        const result = await fetch(url, {credentials: 'include', method: 'GET'});
+        return RPCHelper._processResult<T>(url, result);
+
+    }
+
+    post<T>(url: string, body?: any) : Promise<T>
+    {
+        return this._bodyHelper({method: 'POST', url, body});
+    }
+
+    delete<T>(url: string, body?: any) : Promise<T>
+    {
+        return this._bodyHelper({method: 'DELETE', url, body});
+    }
+}
+
+export class Library
+{
+    readonly slug: string;
+
+    constructor(private helper: RPCHelper, library: {slug: string})
+    {
+        this.slug = library.slug;
+    }
+
+    labels() : Promise<Labels>
+    {
+        return this.helper.get<Labels>('/api/libraries/' + this.slug + '/labels');
+    }
+
+    label(slug: string) : Promise<Label>
+    {
+        return this.helper.get<Label>('/api/libraries/' + this.slug + '/labels/' + slug);
+    }
+
+    notes() : Promise<Note[]>
+    {
+        return this.helper.get<NoteFields[]>('/api/libraries/' + this.slug + '/notes').then(notes => notes.map(note => new Note(this.helper, this, note)));
+    }
+
+    note(slug: string) : Promise<Note>
+    {
+        return this.helper.get<NoteFields>('/api/libraries/' + this.slug + '/notes/' + slug)
+            .then(note => new Note(this.helper, this, note));
+    }
+}
+
+export interface Label
+{
+    slug: string;
+    notes: {slug: string; title: string}[]
+};
+export type Labels = {slug: string, notes: number}[];
+export interface NoteFields
+{
+    slug: string;
+    title: string;
+    body: string;
+    labels: string[];
+};
+export class Note implements NoteFields
+{
+    slug: string;
+    title: string;
+    body: string;
+    labels: string[];
+
+    constructor(private helper: RPCHelper, readonly library: Library, fields: NoteFields)
+    {
+        this.slug = fields.slug;
+        this.title = fields.title;
+        this.body = fields.body;
+        this.labels = fields.labels;
+    }
+
+    delete() : Promise<void>
+    {
+        return this.helper.delete('/api/libraries/' + this.library.slug + '/notes/' + this.slug);
+    }
+
+    update() : Promise<void>
+    {
+        return this.helper.post('/api/libraries/' + this.library.slug + '/notes/' + this.slug, {
+            title: this.title,
+            body: this.body,
+            labels: this.labels
+        });
+    }
+};
+
+export default class ClientGateway
+{
+    private helper: RPCHelper;
+
+    constructor(rootURL?: string)
+    {
+        const root = rootURL || (() => {
+            const loc = window.location;
+            return `${loc.protocol}//${loc.host}`;
+        })();
+        this.helper = new RPCHelper(root);
+    }
+
+    libraries() : Promise<Library[]>
+    {
+        return this.helper.get('/api/libraries');
+    }
+
+    library(slug: string)
+    {
+        return this.helper.get<{slug: string}>('/api/libraries/' + slug).then(library => new Library(this.helper, library));
+    }
+
+    retrieveAuth() : Promise<any>
+    {
+        return this.helper.get('/auth/session');
+    }
+
+    login() : Promise<User>
+    {
+        return new Promise<User>((resolve, reject) => {
+            const handler = (ev: any) => {
+                window.removeEventListener('message', handler);
+                this.retrieveAuth()
+                    .then(session => session.user ? resolve(session.user) : reject(new Error('Login failed')))
+                    .catch(err => reject(err));
+            };
+            window.addEventListener('message', handler, false);
+            const popup = window.open('/auth/google/login', 'google_login', 'menubar=false,scrollbars=false,location=false,width=400,height=300');
+        });
+    }
+
+    logout() : Promise<void>
+    {
+        return this.helper.post('/auth/logout');
     }
 }

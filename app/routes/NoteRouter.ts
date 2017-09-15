@@ -2,125 +2,122 @@ import {Request, Response, Router} from 'express';
 import {LibraryModel, LabelModel, NoteModel} from '../models';
 import {Database, ASC} from 'squell';
 import * as Slug from '../util/slug';
-import {requireAuth} from '../auth/middleware';
+import Access from '../auth/Access';
+import {wrap, success, notFound, accessDenied} from './helpers';
 
 export default function NoteAPIRouter(db: Database)
 {
     const router = Router();
 
-    router.get('/api/notes/list', async (req, res) => {
-        try
-        {
-            const libraryId = req.query.library || 1;
+    router.get('/api/libraries/:library/notes', wrap(async (req) => {
+        const librarySlug = req.params.library;
 
-            const all = await db.query(NoteModel)
-                .attributes(m => [m.id, m.slug, m.title, m.body])
-                .include(LibraryModel, m => m.library, q => q.attributes(m => [m.id]).where(m => m.id.eq(libraryId)))
-                .include(LabelModel, m => m.labels, q => q.attributes(m => [m.id, m.slug]))
+        if (!req.user) return accessDenied();
+
+        const [access, all] = await Promise.all([
+            LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor),
+            db.query(NoteModel)
+                .attributes(m => [m.slug, m.title])
+                .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug)))
+                .include(LabelModel, m => [m.labels, {required: false, }], q => q.attributes(m => [m.slug]))
                 .order(m => [[m.title, ASC]])
-                .find();
+                .find()
+        ]);
 
-            res.json(all.map(n => ({slug: n.slug, title: n.title, body: n.body, labels: n.labels.map(l => l.slug)})));
-        }
-        catch (err)
-        {
-            res.sendStatus(500);
-            console.error(err, err.stack);
-        }
-    });
+        if (!access) return accessDenied();
+        else return success(all.map(n => ({slug: n.slug, title: n.title, body: n.body, labels: n.labels.map(l => l.slug)})));
+    }));
 
-    router.get('/api/notes/get', async (req, res) => {
-        try
-        {
-            const libraryId = req.query.library || 1;
-            const slug = req.query.slug;
+    router.get('/api/libraries/:library/notes/:note', wrap(async (req) => {
+        const librarySlug = req.params.library;
+        const noteSlug = req.params.note;
 
-            if (!slug)
-            {
-                return res.status(400).end();
-            }
+        if (!req.user) return accessDenied();
 
-            const note = await db.query(NoteModel)
-                .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.id.eq(libraryId)))
-                .include(LabelModel, m => m.labels)//, q => q.attributes(m => [m.slug]))
-                .where(m => m.slug.eq(slug)).findOne();
+        const [access, note] = await Promise.all([
+            LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor),
+            db.query(NoteModel)
+                .attributes(m => [m.slug, m.title, m.body])
+                .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug)))
+                .include(LabelModel, m => [m.labels, {required: false}], q => q.attributes(m => [m.slug]))
+                .where(m => m.slug.eq(noteSlug)).findOne()
+        ]);
 
-            if (note)
-            {
-                res.json({...note, labels: note.labels.map(l => l.slug)});
-            }
-            else
-            {
-                res.sendStatus(404);
-            }
-        }
-        catch (err)
-        {
-            res.sendStatus(500);
-            console.error(err, err.stack);
-        }
-    });
+        if (!access) return accessDenied();
+        else if (!note) return notFound();
+        else return success({slug: note.slug, title: note.title, body: note.body, labels: note.labels.map(l => l.slug)});
+    }));
 
-    router.post('/api/notes/update', requireAuth(), async (req, res) => {
-        try
-        {
-            const libraryId = req.query.library || 1;
-            const slug = req.body.slug;
+    router.post('/api/libraries/:library/notes/:note', wrap(async (req) => {
+        const librarySlug = req.params.library;
+        const noteSlug = req.params.note;
 
-            if (!slug)
-            {
-                return res.sendStatus(400);
-            }
+        if (!req.user) return accessDenied();
 
-            const note = (await db.query(NoteModel)
-                .include(LibraryModel, m => m.library, m => m.where(m => m.id.eq(libraryId)))
-                .include(LabelModel, m => m.labels)
-                .where(m => m.slug.eq(slug)).findOne()) || NoteModel.createWithSlug(slug);
+        const [access, note] = await Promise.all([
+            LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.GM),
+            db.query(NoteModel)
+                .include(LibraryModel, m => m.library, m => m.where(m => m.slug.eq(librarySlug)))
+                .include(LabelModel, m => [m.labels, {required: false}])
+                .where(m => m.slug.eq(noteSlug)).findOne()
+        ]);
 
-            if (!note.library)
-            {
-                note.library = await db.query(LibraryModel).findById(libraryId);
-                if (!note.library)
-                    return res.sendStatus(400);
-            }
+        if (!access) return accessDenied();
+        else if (!note) return notFound();
 
-            note.title = req.body.title || note.title;
-            if (req.body.labels)
-                note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body.labels));
-            note.body = req.body.body || note.body;
+        note.title = req.body['title'];
+        if (req.body.labels)
+            note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body.labels));
+        note.body = req.body.body || note.body;
 
-            await db.query(NoteModel)
-                .include(LibraryModel, m => m.library)
-                .include(LabelModel, m => m.labels)
-                .save(note);
+        await db.query(NoteModel)
+            .include(LibraryModel, m => m.library)
+            .include(LabelModel, m => m.labels)
+            .save(note);
 
-            res.json({});
-        }
-        catch (err)
-        {
-            res.sendStatus(500);
-            console.error(err, err.stack);
-        }
-    });
+        return success(note);
+    }));
 
-    router.delete('/api/notes/delete', requireAuth(), async (req, res) => {
-        try
-        {
-            const slug = req.body.slug;
-            if (!slug)
-            {
-                return res.sendStatus(400);
-            }
-    
-            const count = await db.query(NoteModel).where(m => m.slug.eq(slug)).destroy();
-            res.sendStatus(count ? 204 : 404);
-        }
-        catch (err)
-        {
-            res.sendStatus(500);
-            console.error(err, err.stack);
-        }
-    });
+    router.put('/api/libraries/:library/notes/:note', wrap(async (req) => {
+        const librarySlug = req.params.library;
+        const noteSlug = req.params.note;
+
+        if (!req.user) return accessDenied();
+
+        const access = await LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Player);
+
+        if (!access) return accessDenied();
+
+        const note = new NoteModel();
+        note.slug = noteSlug;
+        note.title = req.body.title;
+        note.library = access;
+        note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body.labels));
+        note.body = req.body.body;
+
+        await db.query(NoteModel)
+            .include(LibraryModel, m => m.library)
+            .include(LabelModel, m => m.labels)
+            .save(note);
+
+        return success(note);
+    }));
+
+    router.delete('/api/libraries/:library/notes/:note', wrap(async (req) => {
+        const librarySlug = req.params.library;
+        const noteSlug = req.params.note;
+
+        if (!req.user) return accessDenied();
+
+        const access = await LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.GM);
+
+        if (!access) return accessDenied();
+
+        const count = await db.query(NoteModel).where(m => m.slug.eq(noteSlug)).destroy();
+        if (!count) return notFound();
+
+        return success({count});
+    }));
 
     return router;
 }

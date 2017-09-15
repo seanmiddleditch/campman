@@ -1,61 +1,54 @@
 import {Request, Response, Router} from 'express';
 import {LabelModel, NoteModel, LibraryModel} from '../models';
 import {Database, ASC} from 'squell';
+import * as helpers from './helpers';
+import Access from '../auth/Access';
 
 export default function LabelAPIRouter(db: Database)
 {
     const router = Router();
 
-    router.get('/api/labels/list', async (req, res, next) => {
-        try
-        {
-            const libraryId = req.query.library || 1;
+    router.get('/api/libraries/:library/labels', helpers.wrap(async (req) => {
+        const librarySlug = req.params.library;
 
-            const all = await db.query(LabelModel)
+        if (!req.user) return helpers.accessDenied();
+
+        const [access, all] = await Promise.all([
+            LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor),
+            db.query(LabelModel)
                 .attributes(m => [m.slug])
-                .include(NoteModel, m => m.notes, q => q.attributes(m => [m.id]).include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.id.eq(libraryId))))
+                .include(NoteModel, m => m.notes, q => q.attributes(m => [m.id]).include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug))))
                 .order(m => [[m.slug, ASC]])
-                .find();
+                .find()
+        ]);
 
-            res.json(all.map(l => ({slug: l.slug, notes: l.notes.length})));
-        }
-        catch (err)
-        {
-            console.error(err);
-            next(err);
-        }
-    });
+        if (!access) return helpers.accessDenied();
+        else return helpers.success(all.map(l => ({slug: l.slug, notes: l.notes.length})));
+    }));
 
-    router.get('/api/labels/get', async (req, res, next) => {
-        try
-        {
-            const slug = req.query.slug;
-            const libraryId = req.query.library || 1
+    router.get('/api/libraries/:library/labels/:label', helpers.wrap(async (req) => {
+        const librarySlug = req.params.library;
+        const labelSlug = req.params.label;
 
-            let label = await db.query(LabelModel)
-                .attributes(m => [m.id, m.slug])
-                .where(m => m.slug.eq(slug))
-                .findOne();
+        if (!req.user) return helpers.accessDenied();
 
-            const labelNotes = await db.query(NoteModel)
+        const [access, label, notes] = await Promise.all([
+            LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor),
+            db.query(LabelModel)
+                .attributes(m => [m.slug])
+                .where(m => m.slug.eq(labelSlug))
+                .findOne(),
+            db.query(NoteModel)
                 .attributes(m => [m.slug, m.title])
-                .include(LibraryModel, m => m.library, q => q.where(m => m.id.eq(libraryId)))
-                .include(LabelModel, m => m.labels, q => q.where(m => m.id.eq(label.id)))
-                .find();
+                .include(LibraryModel, m => m.library, q => q.where(m => m.slug.eq(librarySlug)))
+                .include(LabelModel, m => m.labels, q => q.where(m => m.slug.eq(labelSlug)))
+                .find()
+        ]);
 
-            if (label)
-            {
-                res.json({slug: label.slug, notes: labelNotes});
-            }
-            else
-            {
-                res.status(404).end();
-            }
-        } catch (err) {
-            console.error(err);
-            next(err);
-        }
-    });
+        if (!access) return helpers.accessDenied();
+        else if (!label) return helpers.notFound();
+        else return helpers.success({slug: label, notes});
+    }));
 
     return router;
 }
