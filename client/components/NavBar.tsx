@@ -1,5 +1,7 @@
 import * as React from 'react';
 import User from '../common/User';
+import * as PropTypes from 'prop-types';
+import * as ReactRouter from 'react-router';
 import {NavLink} from 'react-router-dom';
 
 export interface NavBarProps
@@ -11,14 +13,20 @@ export interface NavBarProps
 }
 interface NavBarState
 {
-    searchText?: string
+    searchText: string
 }
 export default class NavBar extends React.Component<NavBarProps, NavBarState>
 {
+    static contextTypes = { router: PropTypes.object.isRequired };
+    
+    context: ReactRouter.RouterChildContext<NavBarProps>;
+
     constructor(props: NavBarProps)
     {
         super(props);
-        this.state = {};
+        this.state = {
+            searchText: ''
+        };
     }
 
     private _userBar()
@@ -27,9 +35,19 @@ export default class NavBar extends React.Component<NavBarProps, NavBarState>
             <button className='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>{this.props.user.nickname}<span className='caret'/></button>
             <div className='dropdown-menu'>
                 <a className='dropdown-item' href='#account'>Account</a>
-                <a className='dropdown-item' onClick={this.props.onLogout} href='#logout'>Logout</a>
+                <a className='dropdown-item' onClick={this.props.onLogout}>Logout</a>
             </div>
         </div>;
+    }
+
+    private _search(ev: React.FormEvent<HTMLFormElement>)
+    {
+        if (this.state.searchText !== '')
+        {
+            this.setState({searchText: ''});
+            this.context.router.history.push('/search?q=' + encodeURIComponent(this.state.searchText));
+        }
+        ev.preventDefault();
     }
 
     render()
@@ -38,7 +56,7 @@ export default class NavBar extends React.Component<NavBarProps, NavBarState>
             <button className='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarTogglerDemo03' aria-controls='navbarTogglerDemo03' aria-expanded='false' aria-label='Toggle navigation'>
                 <span className='navbar-toggler-icon'></span>
             </button>
-            <NavLink className='navbar-brand' to='/n/home' exact>Library</NavLink>
+            <NavLink className='navbar-brand' to='/' exact>Library</NavLink>
 
             <div className='collapse navbar-collapse' id='navbarTogglerDemo03'>
                 <ul className='navbar-nav mr-auto mt-2 mt-lg-0'>
@@ -50,8 +68,8 @@ export default class NavBar extends React.Component<NavBarProps, NavBarState>
                     <div className='nav-link disabled'>Timeline</div>
                     <div className='nav-link disabled'>Media</div>
                 </ul>
-                <form className='input-group my-2 my-lg-0'>
-                    <input className='form-control' type='text' placeholder='Search' aria-label='Search'/>
+                <form className='input-group my-2 my-lg-0' onSubmitCapture={ev => this._search(ev)}>
+                    <input className='form-control' type='search' placeholder='Search' aria-label='Search' value={this.state.searchText} onChange={ev => this.setState({searchText: ev.target.value})}/>
                     <span className='input-group-btn'>
                         <button className='btn btn-outline-primary my-2 my-sm-0' type='submit'><span className='fa fa-search'></span></button>
                     </span>

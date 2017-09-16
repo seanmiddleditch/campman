@@ -26,8 +26,7 @@ export default class LabelsPage extends React.Component<LabelsPageProps, LabelsP
     private renderLabel(l: {slug: string, notes: number})
     {
         return <Link key={l.slug} to={'/l/' + l.slug} className='list-group-item'>
-            <div className='list-item-name'><i className='fa fa-tag'></i> {l.slug}</div>
-            <div className='list-item-details'>{l.notes} note(s)</div>
+            <div className='list-item-name'><i className='fa fa-tag'></i> {l.slug} <span className='badge badge-secondary'>{l.notes}</span></div>
         </Link>
     }
 

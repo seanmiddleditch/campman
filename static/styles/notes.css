@@ -1,6 +1,7 @@
 .note-lables { text-transform: lowercase }
 
 .note-title { padding: 2px }
+.note-subtitle { font-style: italic; margin-bottom: 4px }
 
 .note-body { margin: 1em 0 1em 0; padding: 2px }
 .note-body *[contenteditable="true"] { white-space: pre-wrap; font-family: monospace }

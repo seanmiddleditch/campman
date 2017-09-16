@@ -17,7 +17,7 @@ export default function NoteAPIRouter(db: Database)
         const [access, all] = await Promise.all([
             LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor),
             db.query(NoteModel)
-                .attributes(m => [m.slug, m.title])
+                .attributes(m => [m.slug, m.title, m.subtitle])
                 .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug)))
                 .include(LabelModel, m => [m.labels, {required: false, }], q => q.attributes(m => [m.slug]))
                 .order(m => [[m.title, ASC]])
@@ -25,7 +25,7 @@ export default function NoteAPIRouter(db: Database)
         ]);
 
         if (!access) return accessDenied();
-        else return success(all.map(n => ({slug: n.slug, title: n.title, body: n.body, labels: n.labels.map(l => l.slug)})));
+        else return success(all.map(n => ({...n, labels: n.labels.map(l => l.slug)})));
     }));
 
     router.get('/api/libraries/:library/notes/:note', wrap(async (req) => {
@@ -37,7 +37,7 @@ export default function NoteAPIRouter(db: Database)
         const [access, note] = await Promise.all([
             LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor),
             db.query(NoteModel)
-                .attributes(m => [m.slug, m.title, m.body])
+                .attributes(m => [m.slug, m.title, m.subtitle, m.body])
                 .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug)))
                 .include(LabelModel, m => [m.labels, {required: false}], q => q.attributes(m => [m.slug]))
                 .where(m => m.slug.eq(noteSlug)).findOne()
@@ -45,7 +45,7 @@ export default function NoteAPIRouter(db: Database)
 
         if (!access) return accessDenied();
         else if (!note) return notFound();
-        else return success({slug: note.slug, title: note.title, body: note.body, labels: note.labels.map(l => l.slug)});
+        else return success({...note, labels: note.labels.map(l => l.slug)});
     }));
 
     router.post('/api/libraries/:library/notes/:note', wrap(async (req) => {
@@ -66,9 +66,10 @@ export default function NoteAPIRouter(db: Database)
         else if (!note) return notFound();
 
         note.title = req.body['title'];
+        note.subtitle = req.body['subtitle'];
+        note.body = req.body['body'];
         if (req.body.labels)
-            note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body.labels));
-        note.body = req.body.body || note.body;
+            note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body['labels']));
 
         await db.query(NoteModel)
             .include(LibraryModel, m => m.library)
@@ -90,10 +91,11 @@ export default function NoteAPIRouter(db: Database)
 
         const note = new NoteModel();
         note.slug = noteSlug;
-        note.title = req.body.title;
+        note.title = req.body['title'];
+        note.subtitle = req.body['subtitle'];
         note.library = access;
-        note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body.labels));
-        note.body = req.body.body;
+        note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body['labels']));
+        note.body = req.body['body'];
 
         await db.query(NoteModel)
             .include(LibraryModel, m => m.library)

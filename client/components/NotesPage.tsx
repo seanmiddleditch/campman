@@ -23,11 +23,11 @@ export default class NotesPage extends React.Component<NotesPageProps, NotesPage
         this.props.library.notes().then(notes => this.setState({notes}));
     }
 
-    private renderNote(n: {slug: string, title: string, labels: string[]})
+    private renderNote(n: Note)
     {
         return <Link key={n.slug} to={'/n/' + n.slug} className='list-group-item'>
             <div className='list-item-name'><i className='fa fa-file'></i> {n.title}</div>
-            <div className='list-item-subtitle'>subtitle</div>
+            <div className='list-item-subtitle'>{n.subtitle}</div>
             <div className='list-item-details comma-separated'>{n.labels.map(l => <span key={l}>{l}</span>)}</div>
         </Link>;
     }

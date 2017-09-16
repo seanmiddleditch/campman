@@ -26,7 +26,7 @@ export default class LibrariesPage extends React.Component<LibrariesPageProps, L
 
     private renderLibrary(n: {slug: string})
     {
-        return <Link key={n.slug} to={'/l/' + n.slug} className='list-group-item'>
+        return <Link key={n.slug} to={'/library/' + n.slug} className='list-group-item'>
             <div className='list-item-name'><i className='fa fa-file'></i> {n.slug}</div>
         </Link>;
     }

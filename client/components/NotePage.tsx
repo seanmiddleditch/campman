@@ -4,86 +4,110 @@ import * as PropTypes from 'prop-types';
 import ContentEditable from './ContentEditable';
 import RenderMarkup from './RenderMarkup';
 import {Library, Note} from '../common/ClientGateway';
+import LabelInput from './LabelInput';
 import NotFoundPage from './NotFoundPage';
 
-interface EditorProps
+interface NoteEditorProps
 {
     note: Note,
     exists: boolean,
     onSave: (note: Note) => void,
     onCancel: () => void
 }
-interface EditorState
+interface NoteEditorState
 {
     saving: boolean,
-    note: Note,
+    label: string,
+    title: string,
+    subtitle: string,
+    labels: string[],
+    body: string
 }
-class Editor extends React.Component<EditorProps, EditorState>
+class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState>
 {
     static contextTypes = { router: PropTypes.object.isRequired };
     
-    context: ReactRouter.RouterChildContext<EditorProps>;
+    context: ReactRouter.RouterChildContext<NoteEditorProps>;
 
     private unblockHistory: () => void;
     
-    constructor(props: EditorProps)
+    constructor(props: NoteEditorProps)
     {
         super(props);
         this.state = {
             saving: false,
-            note: JSON.parse(JSON.stringify(this.props.note)) // deepy copy
+            title: props.note.title,
+            subtitle: props.note.subtitle,
+            labels: props.note.labels,
+            body: props.note.body,
+            label: ''
         };
     }
 
     private _hasChanges()
     {
-        return this.props.note.title !== this.state.note.title ||
-            this.props.note.body !== this.state.note.body ||
-            this.props.note.labels.join(',') !== this.state.note.labels.join(',')
+        return this.props.note.title !== this.state.title ||
+            this.props.note.subtitle !== this.state.subtitle ||
+            this.props.note.body !== this.state.body ||
+            this.props.note.labels.join(',') !== this.state.labels.join(',')
     }
 
-    private _action(act: 'save'|'edit'|'delete'|'cancel')
+    private _save()
     {
-        switch (act)
+        if (!this.state.saving)
         {
-        case 'cancel':
-            if (!this._hasChanges() || confirm('Canceling now will lose your changes. Click Cancel to continue editing.'))
-            {
-                this.unblockHistory();
-                this.props.onCancel();
-            }
-            break;
-        case 'delete':
-            if (!this.state.saving && confirm('This operation cannot be reversed! Click Cancel to keep this page.'))
-            {
-                this.setState({saving: true});
-                this.props.note.delete()
-                    .then(() => this.context.router.history.push('/notes'))
-                    .catch((err: Error) => this.setState({saving: false}));
-            }
-            break;
-        case 'save':
-            if (!this.state.saving)
-            {
-                this.setState({saving: true});
-                this.props.note.update()
-                    .then(() => {this.setState({saving: false}); this.props.onSave(this.state.note);})
-                    .catch((err: Error) => this.setState({saving: false}));
-            }
-            break;
+            this.setState({saving: true});
+            this.props.note.title = this.state.title;
+            this.props.note.subtitle = this.state.subtitle;
+            this.props.note.labels = this.state.labels;
+            this.props.note.body = this.state.body;
+            this.props.note.update()
+                .then(() => {this.setState({saving: false}); this.props.onSave(this.props.note);})
+                .catch((err: Error) => this.setState({saving: false}));
         }
     }
 
-    private _update(fields: {title?: string, labels?: string|string[], body?: string})
+    private _cancel()
+    {
+        if (!this._hasChanges() || confirm('Canceling now will lose your changes. Click Cancel to continue editing.'))
+        {
+            this.unblockHistory();
+            this.props.onCancel();
+        }
+    }
+
+    private _removeLabel(label: string)
+    {
+        const index = this.state.labels.findIndex(l => l === label);
+        if (index !== -1)
+        {
+            this.state.labels.splice(index, 1);
+            this.setState({labels: this.state.labels});
+        }
+    }
+
+    private _addLabel(label: string)
+    {
+        const index = this.state.labels.findIndex(l => l === label);
+        if (index === -1)
+        {
+            this.state.labels.push(label);
+            this.setState({labels: this.state.labels, label: ''});
+        }
+    }
+
+    private _update(fields: {title?: string, subtitle?: string, labels?: string|string[], body?: string})
     {
         if (fields.title)
-            this.state.note.title = fields.title;
+            this.setState({title: fields.title});
+        if (fields.subtitle)
+            this.setState({subtitle: fields.subtitle});
         if (typeof fields.labels === 'string')
-            this.state.note.labels = fields.labels.split(',').filter(s => s.length);
+            this.setState({labels: fields.labels.split(',').filter(s => s.length)});
         else if (fields.labels)
-            this.state.note.labels = fields.labels;
+            this.setState({labels: fields.labels});
         if (fields.body)
-            this.state.note.body = fields.body;
+            this.setState({body: fields.body});
     }
 
     componentDidMount()
@@ -103,31 +127,35 @@ class Editor extends React.Component<EditorProps, EditorState>
 
     render()
     {
+        //<input type='text' className='form-control' placeholder='tag1, tag2, ...' onChange={ev => this._update({labels: ev.target.value})} defaultValue={this.state.note.labels.join(', ')}/>
         return <div className='note-editor'>
             <div className='input-group'>
                 <span className='input-group-addon'>Title</span>
-                <input type='text' className='form-control' onChange={ev => this._update({title: ev.target.value})} defaultValue={this.state.note.title} placeholder='Note Title'/>
+                <input type='text' className='form-control' onChange={ev => this._update({title: ev.target.value})} defaultValue={this.state.title} placeholder='Note Title'/>
+            </div>
+            <div className='input-group mt-sm-2'>
+                <span className='input-group-addon'>Subtitle</span>
+                <input type='text' className='form-control' onChange={ev => this._update({subtitle: ev.target.value})} defaultValue={this.state.subtitle} placeholder='Subtitle'/>
             </div>
             <div className='input-group mt-sm-2'>
                 <span className='input-group-addon'><i className='col fa fa-tags'></i></span>
-                <input type='text' className='form-control' placeholder='tag1, tag2, ...' onChange={ev => this._update({labels: ev.target.value})} defaultValue={this.state.note.labels.join(', ')}/>
+                <LabelInput labels={this.state.labels} onAdd={label => this._addLabel(label)} onRemove={label => this._removeLabel(label)}/>
             </div>
             <div className='floating-editbar-container'>
                 <div className='floating-editbar'>
                     <div className='btn-group mt-sm-2' role='group'>
-                        <button id='note-btn-save' className='btn btn-primary' about='Save' onClick={() => this._action('save')}><i className='fa fa-floppy-o'></i> Save</button>
+                        <button id='note-btn-save' className='btn btn-primary' about='Save' onClick={() => this._save()}><i className='fa fa-floppy-o'></i> Save</button>
                         <div className='btn-group'>
-                            <button className='btn btn-primary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'><span className='caret'/></button>
+                            <button className='btn btn-primary dropdown-toggle dropdown-toggle-split' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'><span className='caret'/></button>
                             <div className='dropdown-menu'>
-                                <a id='note-btn-cancel' className='dropdown-item' about='Cancel' onClick={() => this._action('cancel')}><i className='fa fa-ban'></i> Cancel</a>
-                                <a id='note-btn-delete' className='dropdown-item' about='Delete' onClick={() => this._action('delete')}><i className='fa fa-trash-o'></i> Delete</a>
+                                <button id='note-btn-cancel' className='dropdown-item' about='Cancel' onClick={() => this._cancel()}><i className='fa fa-ban'></i> Cancel</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div className='input-group mt-sm-2'>
-                <textarea onChange={ev => this._update({body: ev.target.value})} defaultValue={this.state.note.body} style={{width: '100%', minHeight: '20em'}}/>
+                <textarea onChange={ev => this._update({body: ev.target.value})} defaultValue={this.state.body} style={{width: '100%', minHeight: '20em'}}/>
             </div>
         </div>;
     }
@@ -159,6 +187,15 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
             exists: false,
             failed: false
         };
+    }
+
+    private _delete()
+    {
+        if (confirm('This operation cannot be reversed! Click Cancel to keep this page.'))
+        {
+            this.state.note.delete()
+                .then(() => this.context.router.history.push('/notes'));
+        }
     }
 
     private fetch()
@@ -202,7 +239,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         else if (this.state.editing)
         {
             return <div className='note-page'>
-                <Editor note={this.state.note} exists={this.state.exists} onSave={(note) => this.setState({note, editing: false})} onCancel={() => this.setState({editing: false})}/>
+                <NoteEditor note={this.state.note} exists={this.state.exists} onSave={(note) => this.setState({note, editing: false})} onCancel={() => this.setState({editing: false})}/>
             </div>;
         }
         else
@@ -210,16 +247,21 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
             // <i className='fa fa-file'></i> 
             return <div className='note-page'>
                 <h1 className='note-title'>{this.state.note.title}</h1>
+                <div className='note-subtitle'>{this.state.note.subtitle}</div>
                 <div className='note-labels'>
                     <i className='fa fa-tags'></i>&nbsp;
-                    <span className='comma-separated'>
-                        {this.state.note.labels.map(l => <span key={l} className='label note-label'><a href={'/l/' + l}>{l}</a></span>)}
-                    </span>
+                    {this.state.note.labels.map(l => <span key={l}><span className='label note-label badge badge-pill badge-light'>{l}</span> </span>)}
                 </div>
                 <div className='floating-editbar-container'>
                     <div className='floating-editbar'>
                         <div className='btn-group'>
                             <button id='note-btn-edit' className='btn btn-default' about='Edit' onClick={() => this.setState({editing: true})}><i className='fa fa-pencil'></i> Edit</button>
+                            <div className='btn-group'>
+                                <button className='btn dropdown-toggle dropdown-toggle-split' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'><span className='caret'/></button>
+                                <div className='dropdown-menu'>
+                                    <button id='note-btn-delete btn-danger' className='dropdown-item btn-danger' about='Delete' onClick={() => this._delete()}><i className='fa fa-trash-o'></i> Delete</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -131,6 +131,7 @@ export interface NoteFields
 {
     slug: string;
     title: string;
+    subtitle: string;
     body: string;
     labels: string[];
 };
@@ -138,6 +139,7 @@ export class Note implements NoteFields
 {
     slug: string;
     title: string;
+    subtitle: string;
     body: string;
     labels: string[];
 
@@ -145,6 +147,7 @@ export class Note implements NoteFields
     {
         this.slug = fields.slug;
         this.title = fields.title;
+        this.subtitle = fields.subtitle;
         this.body = fields.body;
         this.labels = fields.labels;
     }
@@ -158,6 +161,7 @@ export class Note implements NoteFields
     {
         return this.helper.post('/api/libraries/' + this.library.slug + '/notes/' + this.slug, {
             title: this.title,
+            subtitle: this.subtitle,
             body: this.body,
             labels: this.labels
         });

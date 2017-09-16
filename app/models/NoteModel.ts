@@ -25,6 +25,11 @@ export default class NoteModel extends modelsafe.Model
     @modelsafe.minLength(1)
     public title: string;
     
+    @modelsafe.attr(modelsafe.STRING)
+    @modelsafe.maxLength(255)
+    @modelsafe.minLength(0)
+    public subtitle: string;
+
     @modelsafe.attr(modelsafe.TEXT)
     public body: string;
 
