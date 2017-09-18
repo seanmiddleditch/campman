@@ -106,7 +106,12 @@ class Config
     }
 
     app.use(express.static(staticRoot));
-    app.use((req, res) => res.render('index'));
+    app.use(async (req, res) => res.render('index', {
+        session: JSON.stringify({
+            user: req.user || {},
+            library: await db.query(LibraryModel).where(m => m.slug.eq('default')).findOne() || {}
+        })
+    }));
 
     const server = await app.listen(config.port);
     console.log(`Listening on port ${server.address().port}`);

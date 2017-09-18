@@ -1,8 +1,9 @@
 import * as React from 'react';
-import User from '../common/User';
 import * as PropTypes from 'prop-types';
 import * as ReactRouter from 'react-router';
 import {NavLink} from 'react-router-dom';
+
+import User from '../../common/User';
 
 export interface NavBarProps
 {

@@ -14,6 +14,8 @@ interface LabalInputState
 }
 export default class LabelInput extends React.Component<LabelInputProps, LabalInputState>
 {
+    refs: {input: HTMLInputElement};
+
     constructor(props: LabelInputProps)
     {
         super(props);
@@ -57,6 +59,14 @@ export default class LabelInput extends React.Component<LabelInputProps, LabalIn
         this.setState({focused: true});
     }
 
+    private _handleClick(ev: React.MouseEvent<HTMLElement>)
+    {
+        if (!ev.defaultPrevented)
+        {
+            this.refs.input.focus();
+        }
+    }
+
     private _handleKeyDown(ev: React.KeyboardEvent<HTMLInputElement>)
     {
         if (ev.key === 'Enter' || ev.key === ',' || ev.key === ' ')
@@ -68,23 +78,22 @@ export default class LabelInput extends React.Component<LabelInputProps, LabalIn
 
     render()
     {
-        return <span className={'form-control form-control-label-input ' + (this.state.focused ? 'focused' : 'blurred')}>
-            <span>
+        return <span className={'form-control form-control-label-input ' + (this.state.focused ? 'focused' : 'blurred')} onClick={ev => this._handleClick(ev)}>
+            <span className='form-control-label-input-wrapper'>
                 {this.props.labels.map(label => 
                     <span key={label} className='label badge badge-light'>
                         {label}<span className='fa fa-times' onClick={() => this.props.onRemove(label)}></span>
                     </span>
                 )}
-            </span>
-            <span>
-                <input type='text'
+                <input ref='input' type='text'
                     value={this.state.input}
                     onChange={ev => this._handleChange(ev.target.value)}
                     onBlur={ev => this._handleBlur(ev)}
                     onFocus={ev => this._handleFocus(ev)}
                     onKeyDown={ev => this._handleKeyDown(ev)}
                     placeholder='Enter tag here'
-            /></span>
+                />
+            </span>
         </span>;
     }
 }

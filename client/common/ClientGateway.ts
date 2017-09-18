@@ -170,7 +170,7 @@ export class Note implements NoteFields
 
 export default class ClientGateway
 {
-    private helper: RPCHelper;
+    private _helper: RPCHelper;
 
     constructor(rootURL?: string)
     {
@@ -178,22 +178,24 @@ export default class ClientGateway
             const loc = window.location;
             return `${loc.protocol}//${loc.host}`;
         })();
-        this.helper = new RPCHelper(root);
+        this._helper = new RPCHelper(root);
     }
+
+    get helper() { return this._helper; }
 
     libraries() : Promise<Library[]>
     {
-        return this.helper.get('/api/libraries');
+        return this._helper.get('/api/libraries');
     }
 
     library(slug: string)
     {
-        return this.helper.get<{slug: string}>('/api/libraries/' + slug).then(library => new Library(this.helper, library));
+        return this._helper.get<{slug: string}>('/api/libraries/' + slug).then(library => new Library(this._helper, library));
     }
 
     retrieveAuth() : Promise<any>
     {
-        return this.helper.get('/auth/session');
+        return this._helper.get('/auth/session');
     }
 
     login() : Promise<User>
@@ -212,6 +214,6 @@ export default class ClientGateway
 
     logout() : Promise<void>
     {
-        return this.helper.post('/auth/logout');
+        return this._helper.post('/auth/logout');
     }
 }
