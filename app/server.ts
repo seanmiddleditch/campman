@@ -7,10 +7,13 @@ import * as path from 'path';
 import * as exphbs   from 'express-handlebars';
 import * as fs from 'fs';
 import * as favicon from 'serve-favicon';
+import * as passport from 'passport';
+import * as session from 'express-session';
+import * as redis from 'connect-redis';
 
 import * as routes from './routes';
 import * as models from './models';
-import GoogleAuth from './auth/GoogleAuth';
+import {GoogleAuth, User} from './auth';
 
 class Config
 {
@@ -72,10 +75,6 @@ class Config
     await db.sync();
 
     const app = express();
-    app.use(favicon(path.join(staticRoot, 'images', 'favicon.ico')));
-    app.use(BodyParser.urlencoded({extended: false}));
-    app.use(BodyParser.json());
-
     app.engine('handlebars', exphbs({
         defaultLayout: 'main',
         partialsDir: path.join(viewsRoot, 'partials'),
@@ -83,6 +82,24 @@ class Config
     }));
     app.set('view engine', 'handlebars');
     app.set('views', viewsRoot);
+
+    app.use(favicon(path.join(staticRoot, 'images', 'favicon.ico')));
+    app.use(BodyParser.urlencoded({extended: false}));
+    app.use(BodyParser.json());
+    
+    passport.use(GoogleAuth(db, config.publicURL, config.googleClientID, config.googleAuthSecret));
+    passport.serializeUser((user: models.UserModel, done) => done(null, user));
+    passport.deserializeUser((user: User, done) => done(null, user));
+
+    const RedisStore = redis(session);
+    app.use(session({
+        secret: config.sessionSecret,
+        resave: false,
+        saveUninitialized: false,
+        store: new RedisStore({url: config.redisURL})
+    }));
+    app.use(passport.initialize());
+    app.use(passport.session());
 
     if (!config.production)
     {
@@ -102,11 +119,11 @@ class Config
         });
     });
 
-    app.use(routes.AuthRouter(db, config));
+    app.use(routes.AuthRoutes(db, config));
     app.use(routes.NoteRouter(db));
     app.use(routes.LabelRouter(db));
     app.use(routes.LibraryRouter(db));
-    app.use(routes.MediaRouter(config));
+    app.use(routes.MediaRoutes(config));
 
     if (config.production)
     {

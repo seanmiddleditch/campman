@@ -2,11 +2,11 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as PropTypes from 'prop-types';
 
-import ClientGateway, {Library} from '../../common/ClientGateway';
-import User from '../../common/User';
+import ClientGateway, {Library} from '../../common/gateway';
+import User from '../../common/user';
 
-import NavBar from './NavBar';
-import Footer from './Footer';
+import NavigationBar from './navigation-bar';
+import PageFooter from './page-footer';
 
 export interface AppProps
 {
@@ -48,11 +48,11 @@ export default class App extends React.Component<AppProps, AppState>
     {
         //(new URLSearchParams(window.location.search)).get('q')
         return <div className='content-wrapper'>
-            <NavBar user={this.state.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()} onSearch={text => this._onSearch(text)}/>
+            <NavigationBar user={this.state.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()} onSearch={text => this._onSearch(text)}/>
             <div className='content'>
                 {this.props.children}
             </div>
-            <Footer/>
+            <PageFooter/>
         </div>;
     }
 }

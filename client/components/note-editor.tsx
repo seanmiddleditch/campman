@@ -2,9 +2,9 @@ import * as React from 'react';
 import * as ReactRouter from 'react-router';
 import * as PropTypes from 'prop-types';
 
-import LabelInput from '../LabelInput';
+import LabelInput from './label-input';
 
-import {Note} from '../../common/ClientGateway';
+import {Note} from '../common/gateway';
 
 export interface NoteEditorProps
 {

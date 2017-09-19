@@ -1,16 +1,16 @@
 import * as React from 'react';
 import {Link} from 'react-router-dom';
-import {default as ClientGateway, Library} from '../common/ClientGateway';
+import {default as ClientGateway, Library} from '../common/gateway';
 
-export interface LibrariesPageProps
+export interface LibrariesViewProps
 {
     gateway: ClientGateway
 }
-interface LibrariesPageState
+interface LibrariesViewState
 {
     libraries?: Library[];
 }
-export default class LibrariesPage extends React.Component<LibrariesPageProps, LibrariesPageState>
+export default class LibrariesView extends React.Component<LibrariesViewProps, LibrariesViewState>
 {
     constructor()
     {

@@ -3,26 +3,26 @@ import * as PropTypes from 'prop-types';
 import * as ReactRouter from 'react-router';
 import {NavLink} from 'react-router-dom';
 
-import User from '../../common/User';
+import User from '../../common/user';
 
-export interface NavBarProps
+export interface NavigationBarProps
 {
     user?: User,
     onLogin: () => void,
     onLogout: () => void,
     onSearch: (text: string) => void
 }
-interface NavBarState
+interface NavigationBarState
 {
     searchText: string
 }
-export default class NavBar extends React.Component<NavBarProps, NavBarState>
+export default class NavigationBar extends React.Component<NavigationBarProps, NavigationBarState>
 {
     static contextTypes = { router: PropTypes.object.isRequired };
     
-    context: ReactRouter.RouterChildContext<NavBarProps>;
+    context: ReactRouter.RouterChildContext<NavigationBarProps>;
 
-    constructor(props: NavBarProps)
+    constructor(props: NavigationBarProps)
     {
         super(props);
         this.state = {

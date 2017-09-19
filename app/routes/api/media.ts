@@ -2,16 +2,16 @@ import * as aws from 'aws-sdk';
 import {S3} from 'aws-sdk';
 import {Request, Response, Router} from "express";
 import * as express from 'express';
-import {wrap, success} from './helpers';
+import {wrap, success} from '../helpers';
 
-export interface MediaRouterConfig
+export interface MediaRoutesConfig
 {
     publicURL: string,
     awsAccessKey: string,
     awsAuthSecret: string,
     s3Bucket: string
 }
-export default function MediaRouter(config: MediaRouterConfig)
+export default function MediaRoutes(config: MediaRoutesConfig)
 {
     const router = Router();
 

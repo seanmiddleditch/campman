@@ -1,8 +1,8 @@
-import LabelModel from './LabelModel';
-import {LibraryAccessModel} from './LibraryModel';
+import LabelModel from './label';
+import {LibraryAccessModel} from './library';
 import * as modelsafe from 'modelsafe';
 import * as squell from 'squell';
-import User from '../auth/User';
+import User from '../auth/user';
 
 @modelsafe.model({name: 'user'})
 @squell.model({indexes: [{name: 'google', fields: ['googleId']}]})

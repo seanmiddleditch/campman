@@ -1,16 +1,16 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import {Library, Labels} from '../common/ClientGateway';
+import {Library, Labels} from '../common/gateway';
 
-export interface LabelsPageProps
+export interface LabelsViewProps
 {
     library: Library
 }
-interface LabelsPageState
+interface LabelsViewState
 {
     labels?: Labels;
 }
-export default class LabelsPage extends React.Component<LabelsPageProps, LabelsPageState>
+export default class LabelsView extends React.Component<LabelsViewProps, LabelsViewState>
 {
     constructor()
     {

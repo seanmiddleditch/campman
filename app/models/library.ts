@@ -1,8 +1,8 @@
 import * as modelsafe from 'modelsafe';
 import * as squell from 'squell';
-import NoteModel from './NoteModel';
-import UserModel from './UserModel';
-import Access from '../auth/Access';
+import NoteModel from './note';
+import UserModel from './user';
+import Access from '../auth/access';
 
 @modelsafe.model({name: 'library'})
 export default class LibraryModel extends modelsafe.Model

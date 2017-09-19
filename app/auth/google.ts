@@ -1,8 +1,8 @@
 import {Profile, Strategy} from 'passport';
 import {OAuth2Strategy} from 'passport-google-oauth';
 import {Database} from 'squell';
-import UserModel from '../models/UserModel';
-import User from './User';
+import {UserModel} from '../models';
+import User from './user';
 
 export default function GoogleAuth(db: Database, publicURL: string, googleClientId: string, googleAuthSecret: string) : Strategy
 {

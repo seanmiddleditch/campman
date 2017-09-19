@@ -1,17 +1,17 @@
 import * as React from 'react';
-import ClientGateway from '../common/ClientGateway';
+import ClientGateway from '../common/gateway';
 
-export interface SearchPageProps
+export interface SearchViewProps
 {
     gateway: ClientGateway,
     query: string
 }
-interface SearchPageState
+interface SearchViewState
 {
 }
-export default class SearchPage extends React.Component<SearchPageProps, SearchPageState>
+export default class SearchView extends React.Component<SearchViewProps, SearchViewState>
 {
-    constructor(props: SearchPageProps)
+    constructor(props: SearchViewProps)
     {
         super(props);
         this.state = {

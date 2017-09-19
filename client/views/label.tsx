@@ -1,19 +1,19 @@
 import * as React from 'react';
 import {Link} from 'react-router-dom';
-import {Library, Label} from '../common/ClientGateway';
+import {Library, Label} from '../common/gateway';
 
-export interface LabelPageProps
+export interface LabelViewProps
 {
     slug: string,
     library: Library
 }
-interface LabelPageState
+interface LabelViewState
 {
     label?: Label
 }
-export default class LabelPage extends React.Component<LabelPageProps, LabelPageState>
+export default class LabelView extends React.Component<LabelViewProps, LabelViewState>
 {
-    constructor(props: LabelPageProps)
+    constructor(props: LabelViewProps)
     {
         super(props);
         this.state = {};

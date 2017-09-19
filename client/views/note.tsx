@@ -2,35 +2,33 @@ import * as React from 'react';
 import * as ReactRouter from 'react-router';
 import * as PropTypes from 'prop-types';
 
-import {Library, Note} from '../../common/ClientGateway';
+import {Library, Note} from '../common/gateway';
 
-import ContentEditable from '../ContentEditable';
-import Labels from '../Labels';
-import RenderMarkup from '../RenderMarkup';
-import LabelInput from '../LabelInput';
-import NotFoundPage from '../NotFoundPage';
+import ContentEditable from '../components/content-editable';
+import Labels from '../components/labels';
+import Markdown from '../components/markdown';
+import NotFound from '../components/not-found';
+import NoteEditor from '../components/note-editor';
 
-import NoteEditor from './NoteEditor';
-
-export interface NotePageProps
+export interface NoteViewProps
 {
     slug: string,
     library: Library,
 }
-interface NotePageState
+interface NoteViewState
 {
     editing: boolean,
     failed: boolean,
     exists: boolean,
     note?: Note
 }
-export default class NotePage extends React.Component<NotePageProps, NotePageState>
+export default class NoteView extends React.Component<NoteViewProps, NoteViewState>
 {
     static contextTypes = { router: PropTypes.object.isRequired };
     
-    context: ReactRouter.RouterChildContext<NotePageProps>;
+    context: ReactRouter.RouterChildContext<NoteViewProps>;
 
-    constructor(props: NotePageProps)
+    constructor(props: NoteViewProps)
     {
         super(props);
         this.state = {
@@ -81,7 +79,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
     {
         if (this.state.failed)
         {
-            return <NotFoundPage/>
+            return <NotFound/>
         }
         else if (!this.state.note)
         {
@@ -117,7 +115,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
                     </div>
                 </div>
                 <div className='note-body'>
-                    <RenderMarkup history={this.context.router.history} markup={this.state.note.body}/>
+                    <Markdown history={this.context.router.history} markup={this.state.note.body}/>
                 </div>
             </div>;
         }

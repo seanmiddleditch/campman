@@ -1,16 +1,16 @@
 import * as React from 'react';
 import {Link} from 'react-router-dom';
-import {Library, Note} from '../common/ClientGateway';
+import {Library, Note} from '../common/gateway';
 
-export interface NotesPageProps
+export interface NotesViewProps
 {
     library: Library
 }
-interface NotesPageState
+interface NotesViewState
 {
     notes?: Note[];
 }
-export default class NotesPage extends React.Component<NotesPageProps, NotesPageState>
+export default class NotesView extends React.Component<NotesViewProps, NotesViewState>
 {
     constructor()
     {

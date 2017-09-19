@@ -2,16 +2,16 @@ import * as React from 'react';
 import * as MarkdownIt from 'markdown-it';
 import { History } from 'history';
 
-export interface RenderMarkupProps
+export interface MarkupProps
 {
     markup: string,
     history?: History
 }
-export default class RenderMarkup extends React.Component<RenderMarkupProps, undefined>
+export default class Markdown extends React.Component<MarkupProps, undefined>
 {
     private md: MarkdownIt.MarkdownIt;
 
-    constructor(props: RenderMarkupProps)
+    constructor(props: MarkupProps)
     {
         super(props);
 
@@ -21,7 +21,7 @@ export default class RenderMarkup extends React.Component<RenderMarkupProps, und
             linkify: true,
             typographer: true
         });
-        this.md.use(RenderMarkup.wikiPlugin);
+        this.md.use(Markdown.wikiPlugin);
     }
 
     private static escapeHtml(text: string)
@@ -75,7 +75,7 @@ export default class RenderMarkup extends React.Component<RenderMarkupProps, und
             const token = tokens[id];
             const slug = token.meta.slug.replace(/[^a-zA-Z0-9]+/, ' ').trim().replace(' ', '-');
             const title = token.meta.title.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;');
-            return '<a href="/n/' + encodeURIComponent(slug) + '">' + RenderMarkup.escapeHtml(title) + '</a>';
+            return '<a href="/n/' + encodeURIComponent(slug) + '">' + Markdown.escapeHtml(title) + '</a>';
         };
     }
 

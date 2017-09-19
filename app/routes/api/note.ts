@@ -1,11 +1,11 @@
 import {Request, Response, Router} from 'express';
-import {LibraryModel, LabelModel, NoteModel} from '../models';
+import {LibraryModel, LabelModel, NoteModel} from '../../models';
 import {Database, ASC} from 'squell';
-import * as Slug from '../util/slug';
-import Access from '../auth/Access';
-import {wrap, success, notFound, accessDenied} from './helpers';
+import * as Slug from '../../util/slug';
+import Access from '../../auth/access';
+import {wrap, success, notFound, accessDenied} from '../helpers';
 
-export default function NoteAPIRouter(db: Database)
+export default function NoteAPIRoutes(db: Database)
 {
     const router = Router();
 

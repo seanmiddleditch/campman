@@ -1,10 +1,10 @@
 import {Request, Response, Router} from 'express';
-import {LabelModel, NoteModel, LibraryModel} from '../models';
+import {LabelModel, NoteModel, LibraryModel} from '../../models';
 import {Database, ASC} from 'squell';
-import * as helpers from './helpers';
-import Access from '../auth/Access';
+import * as helpers from '../helpers';
+import Access from '../../auth/access';
 
-export default function LabelAPIRouter(db: Database)
+export default function LabelAPIRoutes(db: Database)
 {
     const router = Router();
 

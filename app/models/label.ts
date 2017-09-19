@@ -1,4 +1,4 @@
-import NoteModel from './NoteModel';
+import NoteModel from './note';
 import * as modelsafe from 'modelsafe';
 import * as squell from 'squell';
 

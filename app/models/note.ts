@@ -1,5 +1,5 @@
-import LabelModel from './LabelModel';
-import LibraryModel from './LibraryModel';
+import LabelModel from './label';
+import LibraryModel from './library';
 import * as modelsafe from 'modelsafe';
 import * as squell from 'squell';
 

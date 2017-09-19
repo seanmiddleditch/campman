@@ -1,15 +1,12 @@
-import {Request, Response, Router} from "express";
+import {Request, Response, Router} from 'express';
 import * as passport from 'passport';
-import * as express from 'express';
-import * as session from 'express-session';
-import * as redis from 'connect-redis';
 import {Database} from 'squell';
-import User from '../auth/User';
-import GoogleAuth from '../auth/GoogleAuth';
-import UserModel from '../models/UserModel';
+import User from '../auth/user';
+import GoogleAuth from '../auth/google';
+import UserModel from '../models/user';
 import {wrap, success, accessDenied} from './helpers';
 
-export interface AuthRouterConfig
+export interface AuthRoutesConfig
 {
     publicURL: string,
     googleClientID: string,
@@ -17,23 +14,9 @@ export interface AuthRouterConfig
     sessionSecret: string,
     redisURL: string,
 }
-export default function AuthRouter(db: Database, config: AuthRouterConfig)
+export default function AuthRoutes(db: Database, config: AuthRoutesConfig)
 {
     const router = Router();
-
-    passport.use(GoogleAuth(db, config.publicURL, config.googleClientID, config.googleAuthSecret));
-    passport.serializeUser((user: UserModel, done) => done(null, user));
-    passport.deserializeUser((user: User, done) => done(null, user));
-
-    const RedisStore = redis(session);
-    router.use(session({
-        secret: config.sessionSecret,
-        resave: false,
-        saveUninitialized: false,
-        store: new RedisStore({url: config.redisURL})
-    }));
-    router.use(passport.initialize());
-    router.use(passport.session());
 
     router.post('/auth/logout', wrap(async (req) =>
     {

@@ -1,5 +1,5 @@
 import {Request, Response} from 'express';
-import User from '../auth/User';
+import User from '../auth/user';
 
 export interface ErrorSchema
 {

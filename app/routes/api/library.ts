@@ -1,10 +1,10 @@
 import {Request, Response, Router} from 'express';
-import {LibraryModel, LibraryAccessModel, UserModel} from '../models';
+import {LibraryModel, LibraryAccessModel, UserModel} from '../../models';
 import * as squell from 'squell';
-import Access from '../auth/Access';
-import {wrap, success, accessDenied, notFound} from './helpers';
+import Access from '../../auth/access';
+import {wrap, success, accessDenied, notFound} from '../helpers';
 
-export default function LabelAPIRouter(db: squell.Database)
+export default function LabelAPIRoutes(db: squell.Database)
 {
     const router = Router();
 
