@@ -22,8 +22,8 @@ export default function AuthRouter(db: Database, config: AuthRouterConfig)
     const router = Router();
 
     passport.use(GoogleAuth(db, config.publicURL, config.googleClientID, config.googleAuthSecret));
-    passport.serializeUser((user: UserModel, done) => done(null, user.id));
-    passport.deserializeUser((userID: number, done) => db.query(UserModel).where(m => m.id.eq(userID)).findOne().then(user => done(null, user)).catch(err => done(err)));
+    passport.serializeUser((user: UserModel, done) => done(null, user));
+    passport.deserializeUser((user: User, done) => done(null, user));
 
     const RedisStore = redis(session);
     router.use(session({

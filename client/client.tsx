@@ -14,6 +14,8 @@ import SearchPage from './components/SearchPage';
 import LibrariesPage from './components/LibrariesPage';
 import NotFoundPage from './components/NotFoundPage';
 
+import MediaView from './components/views/media';
+
 import ClientGateway, {Library} from './common/ClientGateway';
 
 const Routes = (props: {gateway: ClientGateway, library: Library, user: User}) => <BrowserRouter>
@@ -23,6 +25,7 @@ const Routes = (props: {gateway: ClientGateway, library: Library, user: User}) =
             <Route path='/notes' exact render={p => <NotesPage library={props.library} {...p}/>}/>
             <Route path='/search' exact render={p => <SearchPage gateway={props.gateway} {...p} query={(new URLSearchParams(p.location.search)).get('q')}/>}/>
             <Route path='/labels' exact render={p => <LabelsPage library={props.library} {...p}/>}/>
+            <Route path='/media' exact render={p => <MediaView {...p}/>}/>
             <Route path='/n/:slug' exact render={p => <NotePage library={props.library} slug={p.match.params.slug} {...p}/>}/>
             <Route path='/l/:slug' exact render={p => <LabelPage library={props.library} slug={p.match.params.slug} {...p}/>}/>
             <Redirect path='/' exact to={props.user ? '/n/home' : '/libraries'}/>

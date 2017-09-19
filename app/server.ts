@@ -6,9 +6,10 @@ import {Database} from 'squell';
 import * as path from 'path';
 import * as exphbs   from 'express-handlebars';
 import * as fs from 'fs';
+import * as favicon from 'serve-favicon';
 
-import {AuthRouter, LabelRouter, LibraryRouter, NoteRouter} from './routes';
-import {LibraryModel, LibraryAccessModel, LabelModel, NoteModel, UserModel} from './models';
+import * as routes from './routes';
+import * as models from './models';
 import GoogleAuth from './auth/GoogleAuth';
 
 class Config
@@ -22,6 +23,9 @@ class Config
     readonly databaseURL: string;
     readonly production: boolean;
     readonly webpackDev: boolean;
+    readonly awsAccessKey: string;
+    readonly awsAuthSecret: string;
+    readonly s3Bucket: string;
 
     constructor()
     {
@@ -33,6 +37,9 @@ class Config
         this.webpackDev = process.env.CM_WEBPACK_DEV === 'true';
         this.redisURL = process.env.REDIS_URL;
         this.databaseURL = process.env.DATABASE_URL;
+        this.awsAccessKey = process.env.AWS_ACCESS_KEY;
+        this.awsAuthSecret = process.env.AWS_SECRET;
+        this.s3Bucket = process.env.S3_BUCKET;
         this.production = process.env.NODE_ENV === 'production';
     }
 };
@@ -56,15 +63,16 @@ class Config
 
     const db = new Database(config.databaseURL, {dialect: 'postgres', dialectOptions: {ssl: true}, define: {timestamps: false}});
     
-    db.define(LibraryModel);
-    db.define(LibraryAccessModel);
-    db.define(LabelModel);
-    db.define(NoteModel);
-    db.define(UserModel);
+    db.define(models.LibraryModel);
+    db.define(models.LibraryAccessModel);
+    db.define(models.LabelModel);
+    db.define(models.NoteModel);
+    db.define(models.UserModel);
 
     await db.sync();
 
     const app = express();
+    app.use(favicon(path.join(staticRoot, 'images', 'favicon.ico')));
     app.use(BodyParser.urlencoded({extended: false}));
     app.use(BodyParser.json());
 
@@ -94,10 +102,11 @@ class Config
         });
     });
 
-    app.use(AuthRouter(db, config));
-    app.use(NoteRouter(db));
-    app.use(LabelRouter(db));
-    app.use(LibraryRouter(db));
+    app.use(routes.AuthRouter(db, config));
+    app.use(routes.NoteRouter(db));
+    app.use(routes.LabelRouter(db));
+    app.use(routes.LibraryRouter(db));
+    app.use(routes.MediaRouter(config));
 
     if (config.production)
     {
@@ -109,7 +118,7 @@ class Config
     app.use(async (req, res) => res.render('index', {
         session: JSON.stringify({
             user: req.user || {},
-            library: await db.query(LibraryModel).where(m => m.slug.eq('default')).findOne() || {}
+            library: await db.query(models.LibraryModel).where(m => m.slug.eq('default')).findOne() || {}
         })
     }));
 
