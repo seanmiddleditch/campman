@@ -1,9 +1,7 @@
 import * as React from 'react';
-import ClientGateway from '../common/gateway';
 
 export interface SearchViewProps
 {
-    gateway: ClientGateway,
     query: string
 }
 interface SearchViewState

@@ -2,22 +2,19 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as PropTypes from 'prop-types';
 
-import ClientGateway, {Library} from '../../common/gateway';
-import User from '../../common/user';
+import * as api from '../../api/index';
 
 import NavigationBar from './navigation-bar';
 import PageFooter from './page-footer';
 
 export interface AppProps
 {
-    user?: User;
-    gateway: ClientGateway;
-    library: Library;
+    user?: api.UserData;
     children: any;
 }
 interface AppState
 {
-    user?: User;
+    user?: api.UserData;
 }
 export default class App extends React.Component<AppProps, AppState>
 {
@@ -31,12 +28,12 @@ export default class App extends React.Component<AppProps, AppState>
 
     private _onLogin()
     {
-        this.props.gateway.login().then(() => window.location.reload(true));
+        api.auth.login().then(() => window.location.reload(true));
     }
 
     private _onLogout()
     {
-        this.props.gateway.logout().then(() => window.location.reload(true));
+        api.auth.logout().then(() => window.location.reload(true));
     }
 
     private _onSearch(text: string)

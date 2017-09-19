@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactRouter from 'react-router';
 import * as PropTypes from 'prop-types';
 
-import {Library, Note} from '../common/gateway';
+import * as api from '../api/index';
 
 import ContentEditable from '../components/content-editable';
 import Labels from '../components/labels';
@@ -12,16 +12,15 @@ import NoteEditor from '../components/note-editor';
 
 export interface NoteViewProps
 {
-    slug: string,
-    library: Library,
-}
+    slug: string
+};
 interface NoteViewState
 {
     editing: boolean,
     failed: boolean,
     exists: boolean,
-    note?: Note
-}
+    note?: api.NoteData
+};
 export default class NoteView extends React.Component<NoteViewProps, NoteViewState>
 {
     static contextTypes = { router: PropTypes.object.isRequired };
@@ -42,14 +41,14 @@ export default class NoteView extends React.Component<NoteViewProps, NoteViewSta
     {
         if (confirm('This operation cannot be reversed! Click Cancel to keep this page.'))
         {
-            this.state.note.delete()
+            api.notes.delete(this.props.slug)
                 .then(() => this.context.router.history.push('/notes'));
         }
     }
 
     private fetch()
     {
-        this.props.library.note(this.props.slug)
+        api.notes.fetch(this.props.slug)
             .then(note => this.setState({note, editing: false, exists: true}))
             .catch(err => {
                 if (err.status == 404)

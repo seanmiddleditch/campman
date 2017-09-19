@@ -9,8 +9,8 @@ export default function NoteAPIRoutes(db: Database)
 {
     const router = Router();
 
-    router.get('/api/libraries/:library/notes', wrap(async (req) => {
-        const librarySlug = req.params.library;
+    router.get('/api/notes', wrap(async (req) => {
+        const librarySlug = 'default';
 
         if (!req.user) return accessDenied();
 
@@ -28,8 +28,8 @@ export default function NoteAPIRoutes(db: Database)
         else return success(all.map(n => ({...n, labels: n.labels.map(l => l.slug)})));
     }));
 
-    router.get('/api/libraries/:library/notes/:note', wrap(async (req) => {
-        const librarySlug = req.params.library;
+    router.get('/api/notes/:note', wrap(async (req) => {
+        const librarySlug = 'default';
         const noteSlug = req.params.note;
 
         if (!req.user) return accessDenied();
@@ -48,8 +48,8 @@ export default function NoteAPIRoutes(db: Database)
         else return success({...note, labels: note.labels.map(l => l.slug)});
     }));
 
-    router.post('/api/libraries/:library/notes/:note', wrap(async (req) => {
-        const librarySlug = req.params.library;
+    router.post('/api/notes/:note', wrap(async (req) => {
+        const librarySlug = 'default';
         const noteSlug = req.params.note;
 
         if (!req.user) return accessDenied();
@@ -79,8 +79,8 @@ export default function NoteAPIRoutes(db: Database)
         return success(note);
     }));
 
-    router.put('/api/libraries/:library/notes/:note', wrap(async (req) => {
-        const librarySlug = req.params.library;
+    router.put('/api/notes/:note', wrap(async (req) => {
+        const librarySlug = 'default';
         const noteSlug = req.params.note;
 
         if (!req.user) return accessDenied();
@@ -105,8 +105,8 @@ export default function NoteAPIRoutes(db: Database)
         return success(note);
     }));
 
-    router.delete('/api/libraries/:library/notes/:note', wrap(async (req) => {
-        const librarySlug = req.params.library;
+    router.delete('/api/notes/:note', wrap(async (req) => {
+        const librarySlug = 'default';
         const noteSlug = req.params.note;
 
         if (!req.user) return accessDenied();

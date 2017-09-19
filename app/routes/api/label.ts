@@ -8,8 +8,8 @@ export default function LabelAPIRoutes(db: Database)
 {
     const router = Router();
 
-    router.get('/api/libraries/:library/labels', helpers.wrap(async (req) => {
-        const librarySlug = req.params.library;
+    router.get('/api/labels', helpers.wrap(async (req) => {
+        const librarySlug ='default';
 
         if (!req.user) return helpers.accessDenied();
 
@@ -23,11 +23,11 @@ export default function LabelAPIRoutes(db: Database)
         ]);
 
         if (!access) return helpers.accessDenied();
-        else return helpers.success(all.map(l => ({slug: l.slug, notes: l.notes.length})));
+        else return helpers.success(all.map(l => ({slug: l.slug, numNotes: l.notes.length})));
     }));
 
-    router.get('/api/libraries/:library/labels/:label', helpers.wrap(async (req) => {
-        const librarySlug = req.params.library;
+    router.get('/api/labels/:label', helpers.wrap(async (req) => {
+        const librarySlug = 'default';
         const labelSlug = req.params.label;
 
         if (!req.user) return helpers.accessDenied();

@@ -1,16 +1,12 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import {Library, Labels} from '../common/gateway';
+import * as api from '../api/index';
 
-export interface LabelsViewProps
-{
-    library: Library
-}
 interface LabelsViewState
 {
-    labels?: Labels;
+    labels?: api.LabelData[];
 }
-export default class LabelsView extends React.Component<LabelsViewProps, LabelsViewState>
+export default class LabelsView extends React.Component<{}, LabelsViewState>
 {
     constructor()
     {
@@ -20,13 +16,13 @@ export default class LabelsView extends React.Component<LabelsViewProps, LabelsV
 
     componentDidMount()
     {
-        this.props.library.labels().then(labels => this.setState({labels}));
+        api.labels.fetchAll().then(labels => this.setState({labels}));
     }
 
-    private renderLabel(l: {slug: string, notes: number})
+    private renderLabel(l: api.LabelData)
     {
         return <Link key={l.slug} to={'/l/' + l.slug} className='list-group-item'>
-            <div className='list-item-name'><i className='fa fa-tag'></i> {l.slug} <span className='badge badge-secondary'>{l.notes}</span></div>
+            <div className='list-item-name'><i className='fa fa-tag'></i> {l.slug} <span className='badge badge-secondary'>{l.numNotes || 0}</span></div>
         </Link>
     }
 

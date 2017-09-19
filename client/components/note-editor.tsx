@@ -4,13 +4,13 @@ import * as PropTypes from 'prop-types';
 
 import LabelInput from './label-input';
 
-import {Note} from '../common/gateway';
+import * as api from '../api/index';
 
 export interface NoteEditorProps
 {
-    note: Note,
+    note: api.NoteData,
     exists: boolean,
-    onSave: (note: Note) => void,
+    onSave: (note: api.NoteData) => void,
     onCancel: () => void
 }
 interface NoteEditorState
@@ -60,7 +60,8 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
             this.props.note.subtitle = this.state.subtitle;
             this.props.note.labels = this.state.labels;
             this.props.note.body = this.state.body;
-            this.props.note.update()
+
+            api.notes.update(this.props.note.slug, this.props.note)
                 .then(() => {this.setState({saving: false}); this.props.onSave(this.props.note);})
                 .catch((err: Error) => this.setState({saving: false}));
         }

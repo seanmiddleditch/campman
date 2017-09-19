@@ -1,16 +1,12 @@
 import * as React from 'react';
 import {Link} from 'react-router-dom';
-import {Library, Note} from '../common/gateway';
+import * as api from '../api/index';
 
-export interface NotesViewProps
-{
-    library: Library
-}
 interface NotesViewState
 {
-    notes?: Note[];
+    notes?: api.NoteData[];
 }
-export default class NotesView extends React.Component<NotesViewProps, NotesViewState>
+export default class NotesView extends React.Component<{}, NotesViewState>
 {
     constructor()
     {
@@ -20,10 +16,10 @@ export default class NotesView extends React.Component<NotesViewProps, NotesView
 
     componentDidMount()
     {  
-        this.props.library.notes().then(notes => this.setState({notes}));
+        api.notes.fetchAll().then(notes => this.setState({notes}));
     }
 
-    private renderNote(n: Note)
+    private renderNote(n: api.NoteData)
     {
         return <Link key={n.slug} to={'/n/' + n.slug} className='list-group-item'>
             <div className='list-item-name'><i className='fa fa-file'></i> {n.title}</div>

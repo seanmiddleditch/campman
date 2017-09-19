@@ -1,16 +1,13 @@
 import * as React from 'react';
 import {Link} from 'react-router-dom';
-import {default as ClientGateway, Library} from '../common/gateway';
 
-export interface LibrariesViewProps
-{
-    gateway: ClientGateway
-}
+import * as api from '../api/index';
+
 interface LibrariesViewState
 {
-    libraries?: Library[];
+    libraries?: api.LibraryData[];
 }
-export default class LibrariesView extends React.Component<LibrariesViewProps, LibrariesViewState>
+export default class LibrariesView extends React.Component<{}, LibrariesViewState>
 {
     constructor()
     {
@@ -20,11 +17,11 @@ export default class LibrariesView extends React.Component<LibrariesViewProps, L
 
     componentDidMount()
     {  
-        this.props.gateway.libraries()
+        api.libraries.fetchAll()
             .then(libraries => this.setState({libraries}));
     }
 
-    private renderLibrary(n: {slug: string})
+    private renderLibrary(n: api.LibraryData)
     {
         return <Link key={n.slug} to={'/library/' + n.slug} className='list-group-item'>
             <div className='list-item-name'><i className='fa fa-file'></i> {n.slug}</div>

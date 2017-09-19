@@ -3,11 +3,11 @@ import * as PropTypes from 'prop-types';
 import * as ReactRouter from 'react-router';
 import {NavLink} from 'react-router-dom';
 
-import User from '../../common/user';
+import * as api from '../../api/index';
 
 export interface NavigationBarProps
 {
-    user?: User,
+    user?: api.UserData,
     onLogin: () => void,
     onLogout: () => void,
     onSearch: (text: string) => void

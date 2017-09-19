@@ -3,7 +3,6 @@ import * as ReactDOM from 'react-dom';
 import {Route, MemoryRouter, Switch, Redirect} from 'react-router';
 import {BrowserRouter, NavLink} from 'react-router-dom';
 
-import User from './common/user';
 import App from './components/app/index';
 import NotFoundPage from './components/not-found';
 
@@ -16,18 +15,18 @@ import LabelView from './views/label';
 import LabelsView from './views/labels';
 import LibrariesView from './views/libraries';
 
-import ClientGateway, {Library} from './common/gateway';
+import * as api from './api/index';
 
-const Routes = (props: {gateway: ClientGateway, library: Library, user: User}) => <BrowserRouter>
-    <App gateway={props.gateway} library={props.library}>
+const Routes = (props: {library: api.LibraryData, user: api.UserData}) => <BrowserRouter>
+    <App>
         <Switch>
-            <Route path='/libraries' exact render={p => <LibrariesView gateway={props.gateway} {...p}/>}/>
-            <Route path='/notes' exact render={p => <NotesView library={props.library} {...p}/>}/>
-            <Route path='/search' exact render={p => <SearchPage gateway={props.gateway} {...p} query={(new URLSearchParams(p.location.search)).get('q')}/>}/>
-            <Route path='/labels' exact render={p => <LabelsView library={props.library} {...p}/>}/>
+            <Route path='/libraries' exact render={p => <LibrariesView {...p}/>}/>
+            <Route path='/notes' exact render={p => <NotesView {...p}/>}/>
+            <Route path='/search' exact render={p => <SearchPage {...p} query={(new URLSearchParams(p.location.search)).get('q')}/>}/>
+            <Route path='/labels' exact render={p => <LabelsView {...p}/>}/>
             <Route path='/media' exact render={p => <MediaView {...p}/>}/>
-            <Route path='/n/:slug' exact render={p => <NoteView library={props.library} slug={p.match.params.slug} {...p}/>}/>
-            <Route path='/l/:slug' exact render={p => <LabelView library={props.library} slug={p.match.params.slug} {...p}/>}/>
+            <Route path='/n/:slug' exact render={p => <NoteView slug={p.match.params.slug} {...p}/>}/>
+            <Route path='/l/:slug' exact render={p => <LabelView slug={p.match.params.slug} {...p}/>}/>
             <Route path='/' exact render={p => <HomeView/>}/>
             <Route component={NotFoundPage}/>
         </Switch>
@@ -35,9 +34,8 @@ const Routes = (props: {gateway: ClientGateway, library: Library, user: User}) =
 </BrowserRouter>;
 
 (() => {
-    const gateway = new ClientGateway();
     const session = (window as any).CM_SESSION;
-    const user = session ? session.user as User : null;
-    const library = session ? new Library(gateway.helper, session.library) : null;
-    ReactDOM.render(<Routes gateway={gateway} user={user} library={library}/>, document.getElementById('content'));
+    const user = session ? session.user : null;
+    const library = session ? session.library : null;
+    ReactDOM.render(<Routes user={user} library={library}/>, document.getElementById('content'));
 })();

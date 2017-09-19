@@ -1,15 +1,14 @@
 import * as React from 'react';
 import {Link} from 'react-router-dom';
-import {Library, Label} from '../common/gateway';
+import * as api from '../api/index';
 
 export interface LabelViewProps
 {
-    slug: string,
-    library: Library
+    slug: string
 }
 interface LabelViewState
 {
-    label?: Label
+    label?: api.LabelData
 }
 export default class LabelView extends React.Component<LabelViewProps, LabelViewState>
 {
@@ -21,7 +20,7 @@ export default class LabelView extends React.Component<LabelViewProps, LabelView
 
     componentDidMount()
     {
-        this.props.library.label(this.props.slug)
+        api.labels.fetch(this.props.slug)
             .then(label => this.setState({label}));
     }
 
