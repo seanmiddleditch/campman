@@ -34,9 +34,11 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
         const access = await LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor);
         if (!access) return accessDenied();
 
+        const key = `/library/${librarySlug}/media/${filename}`;
+
         const params = {
             Bucket: config.s3Bucket,
-            Key: filename,
+            Key: key,
             Expires: 60, 
             ContentType: filetype,
             ACL: 'public-read'
@@ -55,6 +57,31 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
             signedRequest: signed,
             putURL: `https://${config.s3Bucket}.s3.amazonnaws.com/${filename}`
         });
+    }));
+
+    router.get('/api/media/list', wrap(async (req) => {
+        const librarySlug = 'default';
+
+        if (!req.user) return accessDenied();
+        const access = await LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor);
+        if (!access) return accessDenied();
+
+        const key = `/library/${librarySlug}/media/`;
+
+        const params = {
+            Delimiter: '/',
+            Bucket: config.s3Bucket,
+            Prefix: key
+        };
+
+        const result = await new Promise<S3.Types.ListObjectsV2Output>((resolve, reject) => {
+            s3.listObjectsV2(params, (err, data) => {
+                if (err) reject(err);
+                else resolve(data);
+            });
+        });
+
+        return success({folders: result.CommonPrefixes, files: result.Contents});
     }));
 
     return router;
