@@ -34,7 +34,7 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
         const access = await LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor);
         if (!access) return accessDenied();
 
-        const key = `/library/${librarySlug}/media/${filename}`;
+        const key = `library/${librarySlug}/media/${filename}`;
 
         const params = {
             Bucket: config.s3Bucket,
@@ -59,14 +59,16 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
         });
     }));
 
-    router.get('/api/media/list', wrap(async (req) => {
+    router.get('/api/media/list/:path*', wrap(async (req) => {
         const librarySlug = 'default';
 
         if (!req.user) return accessDenied();
         const access = await LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor);
         if (!access) return accessDenied();
+        
+        const path = req.params.path;
 
-        const key = `/library/${librarySlug}/media/`;
+        const key = `library/${librarySlug}/media/${path}`;
 
         const params = {
             Delimiter: '/',
