@@ -59,14 +59,14 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
         });
     }));
 
-    router.get('/api/media/list/:path?*', wrap(async (req) => {
+    router.get('/api/media/list/*?', wrap(async (req) => {
         const librarySlug = 'default';
 
         if (!req.user) return accessDenied();
         const access = await LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor);
         if (!access) return accessDenied();
         
-        const path = req.params.path;
+        const path = req.params[0];
 
         const key = `library/${librarySlug}/media/${path}`;
         console.log(key);
