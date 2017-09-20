@@ -22,7 +22,7 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
 
     aws.config.region = config.awsRegion;
     
-    const makeMediaURL = (key: string) => `https://s3-${config.awsRegion}.amazonnaws.com/${config.s3Bucket}/${key}`;
+    const makeMediaURL = (key: string) => `https://s3-${config.awsRegion}.amazonaws.com/${config.s3Bucket}/${key}`;
 
     const s3 = new aws.S3();
     s3.config.accessKeyId = config.awsAccessKey;
