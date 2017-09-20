@@ -18,7 +18,7 @@ import LibrariesView from './views/libraries';
 import * as api from './api/index';
 
 const Routes = (props: {library: api.LibraryData, user: api.UserData}) => <BrowserRouter>
-    <App>
+    <App user={props.user}>
         <Switch>
             <Route path='/libraries' exact render={p => <LibrariesView {...p}/>}/>
             <Route path='/notes' exact render={p => <NotesView {...p}/>}/>

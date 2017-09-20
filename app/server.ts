@@ -26,6 +26,7 @@ class Config
     readonly databaseURL: string;
     readonly production: boolean;
     readonly webpackDev: boolean;
+    readonly awsRegion: string;
     readonly awsAccessKey: string;
     readonly awsAuthSecret: string;
     readonly s3Bucket: string;
@@ -40,6 +41,7 @@ class Config
         this.webpackDev = process.env.CM_WEBPACK_DEV === 'true';
         this.redisURL = process.env.REDIS_URL;
         this.databaseURL = process.env.DATABASE_URL;
+        this.awsRegion = process.env.AWS_REGION;
         this.awsAccessKey = process.env.AWS_ACCESS_KEY;
         this.awsAuthSecret = process.env.AWS_SECRET;
         this.s3Bucket = process.env.S3_BUCKET;
@@ -123,7 +125,7 @@ class Config
     app.use(routes.NoteRouter(db));
     app.use(routes.LabelRouter(db));
     app.use(routes.LibraryRouter(db));
-    app.use(routes.MediaRoutes(config));
+    app.use(routes.MediaRoutes(db, config));
 
     if (config.production)
     {

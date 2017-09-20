@@ -3,7 +3,7 @@ import {RPCHelper} from './helpers';
 export class UserData
 {
     id?: number;
-    fullname?: string;
+    fullName?: string;
     nickname?: string;
 };
 export class SessionData

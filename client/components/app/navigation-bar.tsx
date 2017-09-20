@@ -33,7 +33,7 @@ export default class NavigationBar extends React.Component<NavigationBarProps, N
     private _userBar()
     {
         return <div className='btn-group' role='group'>
-            <button className='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>{this.props.user.nickname}<span className='caret'/></button>
+            <button className='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>{this.props.user.nickname || this.props.user.fullName}<span className='caret'/></button>
             <div className='dropdown-menu'>
                 <a className='dropdown-item' href='#account'>Account</a>
                 <a className='dropdown-item' onClick={this.props.onLogout}>Logout</a>
@@ -67,7 +67,7 @@ export default class NavigationBar extends React.Component<NavigationBarProps, N
                     <div className='nav-link disabled'>Maps</div>
                     <div className='nav-link disabled'>Characters</div>
                     <div className='nav-link disabled'>Timeline</div>
-                    <div className='nav-link disabled'>Media</div>
+                    <NavLink className='nav-link' activeClassName='nav-link-active' to={'/media'}>Media</NavLink>
                 </ul>
                 <form className='input-group my-2 my-lg-0' onSubmitCapture={ev => this._search(ev)}>
                     <input className='form-control' type='search' placeholder='Search' aria-label='Search' value={this.state.searchText} onChange={ev => this.setState({searchText: ev.target.value})}/>
@@ -76,7 +76,7 @@ export default class NavigationBar extends React.Component<NavigationBarProps, N
                     </span>
                 </form>
                 <ul className='navbar-nav ml-2 ml-lg-2 mt-2 mt-lg-0'>
-                    {this.props.user ? this._userBar() : <button className='btn' onClick={this.props.onLogin}>Login (Google+)</button>}
+                    {this.props.user && this.props.user.id ? this._userBar() : <button className='btn' onClick={this.props.onLogin}>Login (Google+)</button>}
                 </ul>
             </div>
         </nav>;
