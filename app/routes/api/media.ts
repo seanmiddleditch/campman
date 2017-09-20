@@ -91,7 +91,7 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
         const folders = (result.CommonPrefixes || []).map(dir => path.basename(dir.Prefix || '/'));
         
         // files need a full URL instead of just a key
-        const files = (result.Contents || []).map(file => ({key: file.Key, url: makeMediaURL(file.Key)}));
+        const files = (result.Contents || []).map(file => ({key: file.Key, url: makeMediaURL(file.Key || '')}));
 
         return success({folders, files});
     }));
