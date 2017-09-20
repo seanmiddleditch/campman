@@ -6,6 +6,7 @@ import {Database} from 'squell';
 import {wrap, success, accessDenied} from '../helpers';
 import {LibraryModel} from '../../models';
 import {Access} from '../../auth';
+import * as path from 'path';
 
 export interface MediaRoutesConfig
 {
@@ -59,16 +60,16 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
         });
     }));
 
-    router.get('/api/media/list/:path?', wrap(async (req) => {
+    router.get('/api/media/list/:pathspec?', wrap(async (req) => {
         const librarySlug = 'default';
 
         if (!req.user) return accessDenied();
         const access = await LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor);
         if (!access) return accessDenied();
         
-        const path = req.params.path ? `${req.params.path}/` : '';
+        const pathspec = req.params.path ? `${req.params.path}/` : '';
 
-        const key = `library/${librarySlug}/media/${path}`;
+        const key = `library/${librarySlug}/media/${pathspec}`;
         console.log(key);
         console.log(JSON.stringify(req.params));
 
