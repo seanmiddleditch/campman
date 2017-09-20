@@ -59,7 +59,7 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
         });
     }));
 
-    router.get('/api/media/list/*?', wrap(async (req) => {
+    router.get('/api/media/list(/.*)?', wrap(async (req) => {
         const librarySlug = 'default';
 
         if (!req.user) return accessDenied();
