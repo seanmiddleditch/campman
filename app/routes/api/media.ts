@@ -87,7 +87,7 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
         });
         
         // folders will have a trailing / so we need to extract the dirname first
-        const folders = (result.CommonPrefixes || []).map(dir => path.basename(path.dirname(dir.Prefix)));
+        const folders = (result.CommonPrefixes || []).map(dir => path.basename(path.dirname(dir.Prefix || '/')));
         
         // files need a full URL instead of just a key
         const files = (result.Contents || []).map(file => ({key: file.Key, url: `https://${config.s3Bucket}.s3.amazonnaws.com/${file.Key}`}));
