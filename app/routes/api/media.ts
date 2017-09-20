@@ -69,6 +69,8 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
         const path = req.params.path;
 
         const key = `library/${librarySlug}/media/${path}`;
+        console.log(key);
+        console.log(JSON.stringify(req.params));
 
         const params = {
             Delimiter: '/',
