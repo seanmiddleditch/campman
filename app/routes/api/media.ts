@@ -21,6 +21,8 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
     const router = Router();
 
     aws.config.region = config.awsRegion;
+    
+    const makeMediaURL = (key: string) => `https://s3-${config.awsRegion}.s3.amazonnaws.com/${config.s3Bucket}/${key}`;
 
     const s3 = new aws.S3();
     s3.config.accessKeyId = config.awsAccessKey;
@@ -56,7 +58,7 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
 
         return success({
             signedRequest: signed,
-            putURL: `https://${config.s3Bucket}.s3.amazonnaws.com/${filename}`
+            url: makeMediaURL(key)
         });
     }));
 
@@ -89,7 +91,7 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
         const folders = (result.CommonPrefixes || []).map(dir => path.basename(dir.Prefix || '/'));
         
         // files need a full URL instead of just a key
-        const files = (result.Contents || []).map(file => ({key: file.Key, url: `https://${config.s3Bucket}.s3.amazonnaws.com/${file.Key}`}));
+        const files = (result.Contents || []).map(file => ({key: file.Key, url: makeMediaURL(key)}));
 
         return success({folders, files});
     }));
