@@ -1,5 +1,11 @@
 import {RPCHelper} from './helpers';
 
+export interface ListResults
+{
+    files: string[];
+    folders: string[];
+}
+
 export class MediaAPI
 {
     private _rpc = new RPCHelper();
@@ -17,8 +23,14 @@ export class MediaAPI
 
         const signed = await this.presign({filename, filetype, filesize});
         const put = await fetch(signed.signedRequest, {method: 'put', mode: 'cors', body: file});
-        
+
         return new URL(signed.putURL);
+    }
+
+    async list(path: string = '') : Promise<ListResults>
+    {
+        const results = await this._rpc.get<{folders: string[], files: {key: string, url: string}[]}>('/api/media/list/' + path);
+        return {folders: results.folders, files: results.files.filter(f => f.key && f.key !== '').map(f => f.url)};
     }
 };
 

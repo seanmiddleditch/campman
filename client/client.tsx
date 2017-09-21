@@ -24,7 +24,7 @@ const Routes = (props: {library: api.LibraryData, user: api.UserData}) => <Brows
             <Route path='/notes' exact render={p => <NotesView {...p}/>}/>
             <Route path='/search' exact render={p => <SearchPage {...p} query={(new URLSearchParams(p.location.search)).get('q')}/>}/>
             <Route path='/labels' exact render={p => <LabelsView {...p}/>}/>
-            <Route path='/media' exact render={p => <MediaView {...p}/>}/>
+            <Route path='/media/:path*' render={p => <MediaView path={p.match.params.path} {...p}/>}/>
             <Route path='/n/:slug' exact render={p => <NoteView slug={p.match.params.slug} {...p}/>}/>
             <Route path='/l/:slug' exact render={p => <LabelView slug={p.match.params.slug} {...p}/>}/>
             <Route path='/' exact render={p => <HomeView/>}/>

@@ -72,8 +72,6 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
         const pathspec = req.params.pathspec ? `${req.params.pathspec}/` : '';
 
         const key = `library/${librarySlug}/media/${pathspec}`;
-        console.log(key);
-        console.log(JSON.stringify(req.params));
 
         const params = {
             Delimiter: '/',
@@ -88,10 +86,24 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
             });
         });
         
-        const folders = (result.CommonPrefixes || []).map(dir => path.basename(dir.Prefix || '/'));
+        const folders = result.CommonPrefixes ? result.CommonPrefixes.map(dir => path.basename(dir.Prefix || '/')) : [];
         
         // files need a full URL instead of just a key
-        const files = (result.Contents || []).map(file => ({key: file.Key, url: makeMediaURL(file.Key || '')}));
+        const files = result.Contents ? result.Contents.map(file => ({key: file.Key || '', url: makeMediaURL(file.Key || '')})) : [];
+
+        files.forEach(f => {
+            if (f.url.endsWith('/'))
+            {
+                console.log('deleting ' + f.key);
+                s3.deleteObject({
+                    Bucket: config.s3Bucket,
+                    Key: f.key
+                }, (err, data) => {
+                    if (err) console.error(err);
+                    else console.log(data);
+                });
+            }
+        });
 
         return success({folders, files});
     }));
