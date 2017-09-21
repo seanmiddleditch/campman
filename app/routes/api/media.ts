@@ -69,7 +69,7 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
         const access = await LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor);
         if (!access) return accessDenied();
         
-        const pathspec = req.params.path ? `${req.params.path}/` : '';
+        const pathspec = req.params.pathspec ? `${req.params.pathspec}/` : '';
 
         const key = `library/${librarySlug}/media/${pathspec}`;
         console.log(key);
