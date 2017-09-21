@@ -1,6 +1,6 @@
 {
   "name": "campman",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Campaign management software for RPGs",
   "main": "app/dist/server.js",
   "scripts": {
