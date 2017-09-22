@@ -1,9 +1,9 @@
 import {Request, Response, Router} from 'express';
 import {LibraryModel, LabelModel, NoteModel} from '../../models';
 import {Database, ASC} from 'squell';
-import * as Slug from '../../util/slug';
+import * as slug from '../../util/slug';
 import Access from '../../auth/access';
-import {wrap, success, notFound, accessDenied} from '../helpers';
+import {wrap, success, notFound, accessDenied, badInput} from '../helpers';
 
 export default function NoteAPIRoutes(db: Database)
 {
@@ -57,7 +57,7 @@ export default function NoteAPIRoutes(db: Database)
         const librarySlug = req.library.slug;
         const noteSlug = req.params.note;
 
-        const [access, note] = await Promise.all([
+        const [access, currentNote] = await Promise.all([
             LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.GM),
             db.query(NoteModel)
                 .include(LibraryModel, m => m.library, m => m.where(m => m.slug.eq(librarySlug)))
@@ -66,40 +66,23 @@ export default function NoteAPIRoutes(db: Database)
         ]);
 
         if (!access) return accessDenied();
-        else if (!note) return notFound();
 
-        note.title = req.body['title'];
-        note.subtitle = req.body['subtitle'];
-        note.body = req.body['body'];
-        if (req.body.labels)
-            note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body['labels']));
+        const note = currentNote || new NoteModel();
 
-        await db.query(NoteModel)
-            .include(LibraryModel, m => m.library)
-            .include(LabelModel, m => m.labels)
-            .save(note);
+        note.slug = slug.sanitize(noteSlug);
+        if (!slug.isValid(noteSlug))
+            return badInput();
 
-        return success(note);
-    }));
-
-    router.put('/api/notes/:note', wrap(async (req) => {
-        if (!req.user) return accessDenied();
-        if (!req.library) return notFound();
-        
-        const librarySlug = req.library.slug;
-        const noteSlug = req.params.note;
-
-        const access = await LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Player);
-
-        if (!access) return accessDenied();
-
-        const note = new NoteModel();
-        note.slug = noteSlug;
-        note.title = req.body['title'];
-        note.subtitle = req.body['subtitle'];
         note.library = access;
-        note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body['labels']));
-        note.body = req.body['body'];
+
+        if (req.body['title'])
+            note.title = req.body['title'];
+        if (req.body['subtitle'])
+        note.subtitle = req.body['subtitle'];
+        if (req.body['body'])
+            note.body = req.body['body'];
+        if (req.body['labels'])
+            note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body['labels']));
 
         await db.query(NoteModel)
             .include(LibraryModel, m => m.library)

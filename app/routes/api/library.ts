@@ -2,7 +2,8 @@ import {Request, Response, Router} from 'express';
 import {LibraryModel, LibraryAccessModel, UserModel} from '../../models';
 import * as squell from 'squell';
 import Access from '../../auth/access';
-import {wrap, success, accessDenied, notFound} from '../helpers';
+import {wrap, success, accessDenied, notFound, badInput} from '../helpers';
+import * as slug from '../../util/slug';
 
 export default function LabelAPIRoutes(db: squell.Database)
 {
@@ -42,6 +43,9 @@ export default function LabelAPIRoutes(db: squell.Database)
 
         const librarySlug = req.params.library;
         const title = req.body.title;
+
+        if (!slug.isValid(librarySlug))
+            return badInput();
 
         const library = await db.transaction(async (tx) => {
             const newLibrary = new LibraryModel();

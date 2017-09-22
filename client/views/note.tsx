@@ -69,7 +69,7 @@ export default class NoteView extends React.Component<NoteViewProps, NoteViewSta
 
     componentDidUpdate()
     {
-        if (!this.state.note || this.props.slug != this.state.note.slug)
+        if (!this.state.editing && (!this.state.note || this.props.slug != this.state.note.slug))
             if (!this.state.failed)
                 this.fetch();
     }
@@ -80,15 +80,15 @@ export default class NoteView extends React.Component<NoteViewProps, NoteViewSta
         {
             return <NotFound/>
         }
-        else if (!this.state.note)
-        {
-            return <div className='note-page'>loading...</div>;
-        }
         else if (this.state.editing)
         {
             return <div className='note-page'>
-                <NoteEditor note={this.state.note} exists={this.state.exists} onSave={(note) => this.setState({note, editing: false})} onCancel={() => this.setState({editing: false})}/>
+                <NoteEditor slug={this.props.slug} note={this.state.note} exists={this.state.exists} onSave={(note) => this.setState({note, editing: false})} onCancel={() => this.setState({editing: false})}/>
             </div>;
+        }
+        else if (!this.state.note)
+        {
+            return <div className='note-page'>loading...</div>;
         }
         else
         {

@@ -9,6 +9,7 @@ import * as api from '../api/index';
 export interface NoteEditorProps
 {
     note: api.NoteData,
+    slug: string,
     exists: boolean,
     onSave: (note: api.NoteData) => void,
     onCancel: () => void
@@ -35,20 +36,21 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
         super(props);
         this.state = {
             saving: false,
-            title: props.note.title,
-            subtitle: props.note.subtitle,
-            labels: props.note.labels,
-            body: props.note.body,
-            label: ''
+            label: '',
+
+            title: props.note && props.note.title ? props.note.title : '',
+            subtitle: props.note && props.note.subtitle ? props.note.subtitle : '',
+            body: props.note && props.note.body ? props.note.body : '',
+            labels: props.note && props.note.labels ? props.note.labels.slice() : []
         };
     }
 
     private _hasChanges()
     {
-        return this.props.note.title !== this.state.title ||
+        return this.props.note && (this.props.note.title !== this.state.title ||
             this.props.note.subtitle !== this.state.subtitle ||
             this.props.note.body !== this.state.body ||
-            this.props.note.labels.join(',') !== this.state.labels.join(',')
+            this.props.note.labels.join(',') !== this.state.labels.join(','));
     }
 
     private _save()
@@ -56,13 +58,15 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
         if (!this.state.saving)
         {
             this.setState({saving: true});
-            this.props.note.title = this.state.title;
-            this.props.note.subtitle = this.state.subtitle;
-            this.props.note.labels = this.state.labels;
-            this.props.note.body = this.state.body;
+            const note = {
+                title: this.state.title,
+                subtitle: this.state.subtitle,
+                labels: this.state.labels,
+                body: this.state.body,
+            };
 
-            api.notes.update(this.props.note.slug, this.props.note)
-                .then(() => {this.setState({saving: false}); this.props.onSave(this.props.note);})
+            api.notes.update(this.props.slug, note)
+                .then(() => {this.setState({saving: false}); this.props.onSave(note);})
                 .catch((err: Error) => this.setState({saving: false}));
         }
     }
