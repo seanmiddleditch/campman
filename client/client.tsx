@@ -3,67 +3,39 @@ import * as ReactDOM from 'react-dom';
 import {Route, MemoryRouter, Switch, Redirect} from 'react-router';
 import {BrowserRouter, NavLink} from 'react-router-dom';
 
-import ClientGateway from './common/ClientGateway';
+import App from './components/app/index';
+import NotFoundPage from './components/not-found';
 
-import NotePage from './components/NotePage';
-import NotesPage from './components/NotesPage';
-import LabelPage from './components/LabelPage';
-import LabelsPage from './components/LabelsPage';
-import Navigation from './components/Navigation';
-import NotFoundPage from './components/NotFoundPage';
-import LoginLinks from './components/LoginLinks';
+import NoteView from './views/note';
+import NotesView from './views/notes';
+import HomeView from './views/home';
+import MediaView from './views/media';
+import SearchPage from './views/search';
+import LabelView from './views/label';
+import LabelsView from './views/labels';
+import LibrariesView from './views/libraries';
 
-const Header = () => <div className='header-container'><header></header></div>;
-const Footer = () => <div className='footer-container'><footer><div className='footer-copyright'>Copyright (C) 2017 Sean Middleditch</div></footer></div>;
+import * as api from './api/index';
 
-interface AppState
-{
-    sessionKey?: string
-}
-class App extends React.Component<{}, AppState>
-{
-    private _gateway: ClientGateway;
+const Routes = (props: {library: api.LibraryData, user: api.UserData}) => <BrowserRouter>
+    <App user={props.user}>
+        <Switch>
+            <Route path='/libraries' exact render={p => <LibrariesView {...p}/>}/>
+            <Route path='/notes' exact render={p => <NotesView {...p}/>}/>
+            <Route path='/search' exact render={p => <SearchPage {...p} query={(new URLSearchParams(p.location.search)).get('q')}/>}/>
+            <Route path='/labels' exact render={p => <LabelsView {...p}/>}/>
+            <Route path='/media/:path*' render={p => <MediaView path={p.match.params.path} {...p}/>}/>
+            <Route path='/n/:slug' exact render={p => <NoteView slug={p.match.params.slug} {...p}/>}/>
+            <Route path='/l/:slug' exact render={p => <LabelView slug={p.match.params.slug} {...p}/>}/>
+            <Route path='/' exact render={p => <HomeView/>}/>
+            <Route component={NotFoundPage}/>
+        </Switch>
+    </App>
+</BrowserRouter>;
 
-    constructor()
-    {
-        super();
-        this.state = {};
-        this._gateway = new ClientGateway();
-    }
-
-    private _onLogin(sessionKey: string)
-    {
-        this.setState({sessionKey});
-        this.forceUpdate();
-    }
-
-    private _onLogout()
-    {
-        this.setState({sessionKey: null});
-        this.forceUpdate();  
-    }
-
-    render()
-    {
-        return <BrowserRouter>
-            <div id='root'>
-                {Header()}
-                <div className='content content-container'>
-                    <Switch>
-                        <Route path='/login' exact render={props => <LoginLinks sessionKey={this.state.sessionKey} onLogout={() => this._onLogout()} onLogin={key => this._onLogin(key)}/>}/>
-                        <Route path='/notes' exact render={props => <NotesPage gateway={this._gateway} {...props}/>}/>
-                        <Route path='/labels' exact render={props => <LabelsPage gateway={this._gateway} {...props}/>}/>
-                        <Route path='/n/:slug' exact render={props => <NotePage gateway={this._gateway} slug={props.match.params.slug} {...props}/>}/>
-                        <Route path='/l/:slug' exact render={props => <LabelPage gateway={this._gateway} slug={props.match.params.slug} {...props}/>}/>
-                        <Redirect path='/' exact to='/n/home'/>
-                        <Route component={NotFoundPage}/>
-                    </Switch>
-                </div>
-                <Navigation sessionKey={this.state.sessionKey} onLogout={() => this._onLogout()} onLogin={key => this._onLogin(key)}/>
-                {Footer()}
-            </div>
-        </BrowserRouter>
-    }
-}
-
-ReactDOM.render(<App/>, document.getElementById('content'));
+(() => {
+    const session = (window as any).CM_SESSION;
+    const user = session ? session.user : null;
+    const library = session ? session.library : null;
+    ReactDOM.render(<Routes user={user} library={library}/>, document.getElementById('content'));
+})();

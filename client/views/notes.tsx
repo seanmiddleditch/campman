@@ -1,16 +1,12 @@
 import * as React from 'react';
 import {Link} from 'react-router-dom';
-import {default as ClientGateway, RetrieveNotesResponse} from '../common/ClientGateway';
+import * as api from '../api/index';
 
-export interface NotesPageProps
+interface NotesViewState
 {
-    gateway: ClientGateway
+    notes?: api.NoteData[];
 }
-interface NotesPageState
-{
-    notes?: RetrieveNotesResponse;
-}
-export default class NotesPage extends React.Component<NotesPageProps, NotesPageState>
+export default class NotesView extends React.Component<{}, NotesViewState>
 {
     constructor()
     {
@@ -20,15 +16,14 @@ export default class NotesPage extends React.Component<NotesPageProps, NotesPage
 
     componentDidMount()
     {  
-        this.props.gateway.retrieveNotes()
-            .then(notes => this.setState({notes}));
+        api.notes.fetchAll().then(notes => this.setState({notes}));
     }
 
-    private renderNote(n: {slug: string, title: string, labels: string[]})
+    private renderNote(n: api.NoteData)
     {
         return <Link key={n.slug} to={'/n/' + n.slug} className='list-group-item'>
             <div className='list-item-name'><i className='fa fa-file'></i> {n.title}</div>
-            <div className='list-item-subtitle'>subtitle</div>
+            <div className='list-item-subtitle'>{n.subtitle}</div>
             <div className='list-item-details comma-separated'>{n.labels.map(l => <span key={l}>{l}</span>)}</div>
         </Link>;
     }

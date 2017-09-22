@@ -1,5 +1,4 @@
-import NoteRouter from './NoteRouter';
-import LabelRouter from './LabelRouter';
-import AuthRouter from './AuthRouter';
+import {LabelRouter, LibraryRouter, MediaRoutes, NoteRouter} from './api';
+import AuthRoutes from './auth';
 
-export {NoteRouter, LabelRouter, AuthRouter};
+export {AuthRoutes, LabelRouter, LibraryRouter, MediaRoutes, NoteRouter};

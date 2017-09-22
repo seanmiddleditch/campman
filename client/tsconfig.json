@@ -2,6 +2,9 @@
     "compileOnSave": true,
     "compilerOptions": {
         "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
         "target": "es2017",
         "module": "amd",
         "sourceMap": true,

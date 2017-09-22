@@ -1,0 +1,8 @@
+<script>
+try {
+    window.opener.postMessage({name:"login", sessionKey:"{{sessionKey}}"}, "{{publicURL}}");
+} catch(e) {
+    console.error(e, e.stack);
+}
+window.close();
+</script>

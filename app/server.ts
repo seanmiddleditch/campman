@@ -1,51 +1,113 @@
 import 'reflect-metadata';
 
 import * as express from 'express';
-import * as session from 'express-session';
 import * as BodyParser from 'body-parser';
-import * as squell from 'squell';
+import {Database} from 'squell';
 import * as path from 'path';
+import * as exphbs   from 'express-handlebars';
+import * as fs from 'fs';
+import * as favicon from 'serve-favicon';
 import * as passport from 'passport';
+import * as session from 'express-session';
+import * as redis from 'connect-redis';
 
-import {AuthRouter, LabelRouter, NoteRouter} from './routes';
-import {LibraryModel, LabelModel, NoteModel, UserModel} from './models';
-import GoogleAuth from './auth/GoogleAuth';
+import * as routes from './routes';
+import * as models from './models';
+import {GoogleAuth, User} from './auth';
+
+class Config
+{
+    readonly publicURL: string;
+    readonly googleClientID: string;
+    readonly googleAuthSecret: string;
+    readonly sessionSecret: string;
+    readonly port: number;
+    readonly redisURL: string;
+    readonly databaseURL: string;
+    readonly production: boolean;
+    readonly webpackDev: boolean;
+    readonly awsRegion: string;
+    readonly awsAccessKey: string;
+    readonly awsAuthSecret: string;
+    readonly s3Bucket: string;
+
+    constructor()
+    {
+        this.publicURL = process.env.PUBLIC_URL || 'http://localhost';
+        this.port = parseInt(process.env.PORT || 8080, 10);
+        this.googleClientID = process.env.GOOGLE_CLIENT_ID;
+        this.googleAuthSecret = process.env.GOOGLE_AUTH_SECRET;
+        this.sessionSecret = process.env.CM_SESSION_SECRET;
+        this.webpackDev = process.env.CM_WEBPACK_DEV === 'true';
+        this.redisURL = process.env.REDIS_URL;
+        this.databaseURL = process.env.DATABASE_URL;
+        this.awsRegion = process.env.AWS_REGION;
+        this.awsAccessKey = process.env.AWS_ACCESS_KEY;
+        this.awsAuthSecret = process.env.AWS_SECRET;
+        this.s3Bucket = process.env.S3_BUCKET;
+        this.production = process.env.NODE_ENV === 'production';
+    }
+};
 
 (async () => {
     
     const root = path.join(__dirname, '..', '..');
     const staticRoot = path.join(root, 'static');
+    const clientRoot = path.join(root, 'client');
+    const viewsRoot = path.join(root, 'views');
+
+    const config = new Config();
+
+    if (!config.production)
+    {
+        process.on('unhandledRejection', (err: Error) => {
+            console.error(err, err.stack);
+            process.exit(2);
+        });
+    }
+
+    const db = new Database(config.databaseURL, {dialect: 'postgres', dialectOptions: {ssl: true}, define: {timestamps: false}});
     
-    const config = require(path.join(root, 'config.json'));
-    
-    const dbFileName = 'test.db';
-    const dbPath = path.join(root, dbFileName);
-    console.log(dbPath);
-    const db = new squell.Database('sqlite://' + dbFileName, {dialect: 'sqlite', database: dbPath, define: {timestamps: false}});
-    
-    db.define(LibraryModel);
-    db.define(LabelModel);
-    db.define(NoteModel);
-    db.define(UserModel);
+    db.define(models.LibraryModel);
+    db.define(models.LibraryAccessModel);
+    db.define(models.LabelModel);
+    db.define(models.NoteModel);
+    db.define(models.UserModel);
 
     await db.sync();
 
-    passport.use(GoogleAuth(db, config.siteURL, config.auth.google));
-    passport.serializeUser((user: UserModel, done) => done(null, user.id));
-    passport.deserializeUser((userID: number, done) => db.query(UserModel).where(m => m.id.eq(userID)).findOne().then(user => done(null, user)).catch(err => done(err)));
-
     const app = express();
+    app.engine('handlebars', exphbs({
+        defaultLayout: 'main',
+        partialsDir: path.join(viewsRoot, 'partials'),
+        layoutsDir: path.join(viewsRoot, 'layouts')
+    }));
+    app.set('view engine', 'handlebars');
+    app.set('views', viewsRoot);
+
+    app.use(favicon(path.join(staticRoot, 'images', 'favicon.ico')));
     app.use(BodyParser.urlencoded({extended: false}));
     app.use(BodyParser.json());
-    app.use(session({secret: config.auth.sessionSecret}));
+    
+    passport.use(GoogleAuth(db, config.publicURL, config.googleClientID, config.googleAuthSecret));
+    passport.serializeUser((user: models.UserModel, done) => done(null, user));
+    passport.deserializeUser((user: User, done) => done(null, user));
+
+    const RedisStore = redis(session);
+    app.use(session({
+        secret: config.sessionSecret,
+        resave: false,
+        saveUninitialized: false,
+        store: new RedisStore({url: config.redisURL})
+    }));
     app.use(passport.initialize());
     app.use(passport.session());
 
-    if (process.env.NODE_ENV !== 'production')
+    if (!config.production)
     {
         console.log('Enabling WebPack development middlware');
 
-        const webpackConfig = require(path.join(root, 'client', 'webpack.config.js'));
+        const webpackConfig = require(path.join(clientRoot, 'webpack.config.js'));
         const webpackDevMiddleware = require('webpack-dev-middleware');
         const webpack = require('webpack');
         app.use(webpackDevMiddleware(webpack(webpackConfig), {
@@ -55,27 +117,33 @@ import GoogleAuth from './auth/GoogleAuth';
 
     app.get('/config.js', (req, res) => {
         res.json({
-            google: {
-                clientId: config.auth.google.clientId
-            },
-            session: {
-                key: req.sessionID,
-                user: req.user ? {id: req.user.id} : null
-            }
+            publicURL: config.publicURL
         });
     });
 
-    app.use(AuthRouter());
-    app.use(NoteRouter(db));
-    app.use(LabelRouter(db));
+    app.use(routes.AuthRoutes(db, config));
+    app.use(routes.NoteRouter(db));
+    app.use(routes.LabelRouter(db));
+    app.use(routes.LibraryRouter(db));
+    app.use(routes.MediaRoutes(db, config));
 
-    // production users should be using a reverse proxy
-    if (process.env.NODE_ENV !== 'production')
+    if (config.production)
     {
-        app.use(express.static(staticRoot));
-        app.get('*', (req, res) => res.sendFile(path.join(staticRoot, 'index.html')));
+        console.log('Serving /js');
+        app.use('/js', express.static(path.join(clientRoot, 'dist')));
     }
 
-    const server = await app.listen(process.env.PORT || 8080);
+    app.use(express.static(staticRoot));
+    app.use(async (req, res) => res.render('index', {
+        session: JSON.stringify({
+            user: req.user || {},
+            library: await db.query(models.LibraryModel).where(m => m.slug.eq('default')).findOne() || {}
+        })
+    }));
+
+    const server = await app.listen(config.port);
     console.log(`Listening on port ${server.address().port}`);
-})();
+})().catch(err => {
+    console.error(err, err.stack);
+    process.exit(1);
+});

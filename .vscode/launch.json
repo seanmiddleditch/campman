@@ -11,6 +11,7 @@
             "preLaunchTask": "tsc: build - app\\tsconfig.json",
             "program": "${workspaceRoot}/app/dist/server.js",
             "sourceMaps": true,
+            "envFile": "${workspaceRoot}/.env",
             "outFiles": [
                 "${workspaceRoot}/server/dist/**/*.js"
             ]
