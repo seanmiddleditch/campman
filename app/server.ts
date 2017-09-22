@@ -127,7 +127,7 @@ class Config
         store: new RedisStore({url: config.redisURL}),
         cookie: {
             domain: config.publicURL.hostname,
-            maxAge: 1000 * 60 * 24 // 24 hours
+            maxAge: 1000 * 60 * 60 * 24 // 24 hours
         }
     }));
     app.use(passport.initialize());
