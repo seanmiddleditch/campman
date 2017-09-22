@@ -166,6 +166,9 @@ class Config
     app.use(express.static(staticRoot));
     app.use(async (req, res) => res.render('index', {
         session: JSON.stringify({
+            config: {
+                publicURL: config.publicURL
+            },
             user: req.user || {},
             library: req.library
         })

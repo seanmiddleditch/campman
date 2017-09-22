@@ -28,9 +28,10 @@ export default class LibrariesView extends React.Component<{}, LibrariesViewStat
 
     private _renderLibrary(n: api.LibraryData)
     {
-        return <Link key={n.slug} to={'/library/' + n.slug} className='list-group-item'>
+        const url = `${window.location.protocol}//${n.slug}.${window.location.host}/`;
+        return <a key={n.slug} href={url} className='list-group-item'>
             <div className='list-item-name'><i className='fa fa-file'></i> {n.slug}</div>
-        </Link>;
+        </a>;
     }
 
     private _handleClick(ev: React.MouseEvent<HTMLButtonElement>)

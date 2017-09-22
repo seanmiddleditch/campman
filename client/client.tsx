@@ -8,7 +8,6 @@ import NotFoundPage from './components/not-found';
 
 import NoteView from './views/note';
 import NotesView from './views/notes';
-import HomeView from './views/home';
 import MediaView from './views/media';
 import SearchPage from './views/search';
 import LabelView from './views/label';
@@ -27,7 +26,7 @@ const Routes = (props: {library: api.LibraryData, user: api.UserData}) => <Brows
             <Route path='/media/:path*' render={p => <MediaView path={p.match.params.path} {...p}/>}/>
             <Route path='/n/:slug' exact render={p => <NoteView slug={p.match.params.slug} {...p}/>}/>
             <Route path='/l/:slug' exact render={p => <LabelView slug={p.match.params.slug} {...p}/>}/>
-            <Route path='/' exact render={p => <HomeView/>}/>
+            {props.library ? <Redirect to='/n/home'/> : <Redirect to='/libraries'/>}
             <Route component={NotFoundPage}/>
         </Switch>
     </App>
@@ -35,7 +34,8 @@ const Routes = (props: {library: api.LibraryData, user: api.UserData}) => <Brows
 
 (() => {
     const session = (window as any).CM_SESSION;
-    const user = session ? session.user : null;
-    const library = session ? session.library : null;
+    const config = session.config;
+    const user = session.user;
+    const library = session.library;
     ReactDOM.render(<Routes user={user} library={library}/>, document.getElementById('content'));
 })();
