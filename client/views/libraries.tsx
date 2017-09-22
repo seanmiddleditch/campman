@@ -9,6 +9,11 @@ interface LibrariesViewState
 }
 export default class LibrariesView extends React.Component<{}, LibrariesViewState>
 {
+    refs: {
+        slug: HTMLInputElement,
+        title: HTMLInputElement
+    }
+
     constructor()
     {
         super();
@@ -21,11 +26,17 @@ export default class LibrariesView extends React.Component<{}, LibrariesViewStat
             .then(libraries => this.setState({libraries}));
     }
 
-    private renderLibrary(n: api.LibraryData)
+    private _renderLibrary(n: api.LibraryData)
     {
         return <Link key={n.slug} to={'/library/' + n.slug} className='list-group-item'>
             <div className='list-item-name'><i className='fa fa-file'></i> {n.slug}</div>
         </Link>;
+    }
+
+    private _handleClick(ev: React.MouseEvent<HTMLButtonElement>)
+    {
+        api.libraries.create({slug: this.refs.slug.value, title: this.refs.title.value});
+        ev.preventDefault();
     }
 
     render()
@@ -33,10 +44,9 @@ export default class LibrariesView extends React.Component<{}, LibrariesViewStat
         const links = (() => {
             if (this.state.libraries !== undefined)
             {
-                const links = this.state.libraries.map(n => this.renderLibrary(n));
+                const links = this.state.libraries.map(n => this._renderLibrary(n));
                 return <div className='list-group'>
                     {links}
-                    <Link to='/create/library' className='list-group-item'><i className='fa fa-plus'></i> New Note</Link>
                 </div>;
             }
             else
@@ -48,6 +58,9 @@ export default class LibrariesView extends React.Component<{}, LibrariesViewStat
         return <div>
             <div className='page-header'>
                 <h1><i className='fa fa-book'></i> Libraries</h1>
+            </div>
+            <div>
+                <form><input ref='slug' type='text' placeholder='slug'/><input ref='title' type='text' placeholder='title'/><button onClick={ev => this._handleClick(ev)}>Create Library</button></form>
             </div>
             {links}
         </div>;

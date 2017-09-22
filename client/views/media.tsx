@@ -82,14 +82,22 @@ export default class MediaView extends React.Component<MediaViewProps, MediaView
         }
     }
 
+    private _renderMedia(url: string)
+    {
+        return <figure className='figure'>
+                <img src={url} className='figure-img img-fluid rounded img-thumbnail' style={{width: '100px'}} alt={url}/>
+                <figcaption className='figure-caption'>{url}</figcaption>
+            </figure>
+    }
+
     render()
     {
         return <div>
                 <ul>
                     {this.props.path && <li><Link to={path.normalize(this.props.path + '/..')}>..</Link></li>}
-                    {this.state.folders && this.state.folders.map(f => <li><Link to={path.normalize('/media/' + (this.props.path || '') + '/' + f)}>{f}</Link></li>)}
+                    {this.state.folders && this.state.folders.map(f => <li key={f}><Link to={path.normalize('/media/' + (this.props.path || '') + '/' + f)}>{f}</Link></li>)}
                 </ul>
-                {this.state.files && this.state.files.map(f => <a href={f}><figure className='figure'><img src={f} className='figure-img img-fluid rounded img-thumbnail' style={{width: '100px'}} alt={f}/><figcaption className='figure-caption'>{f}</figcaption></figure></a>)}
+                {this.state.files && this.state.files.map(f => <a key={f} href={f}>{this._renderMedia(f)}</a>)}
                 <div>
                     <img ref='image' style={{maxWidth: '100%'}}/>
                     <input type='file' onChange={ev => this._handleFileSelect(ev)}/>

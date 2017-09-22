@@ -75,6 +75,11 @@ export class RPCHelper
         return this._bodyHelper({method: 'POST', url, body});
     }
 
+    put<T>(url: string, body?: any) : Promise<T>
+    {
+        return this._bodyHelper({method: 'PUT', url, body});
+    }
+
     delete<T>(url: string, body?: any) : Promise<T>
     {
         return this._bodyHelper({method: 'DELETE', url, body});

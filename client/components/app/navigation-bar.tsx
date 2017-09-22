@@ -7,10 +7,11 @@ import * as api from '../../api/index';
 
 export interface NavigationBarProps
 {
-    user?: api.UserData,
-    onLogin: () => void,
-    onLogout: () => void,
-    onSearch: (text: string) => void
+    library?: api.LibraryData;
+    user?: api.UserData;
+    onLogin: () => void;
+    onLogout: () => void;
+    onSearch: (text: string) => void;
 }
 interface NavigationBarState
 {
@@ -57,7 +58,7 @@ export default class NavigationBar extends React.Component<NavigationBarProps, N
             <button className='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarTogglerDemo03' aria-controls='navbarTogglerDemo03' aria-expanded='false' aria-label='Toggle navigation'>
                 <span className='navbar-toggler-icon'></span>
             </button>
-            <NavLink className='navbar-brand' to='/' exact>Library</NavLink>
+            <NavLink className='navbar-brand' to='/' exact>{(this.props.library && this.props.library.title) || 'Library'}</NavLink>
 
             <div className='collapse navbar-collapse' id='navbarTogglerDemo03'>
                 <ul className='navbar-nav mr-auto mt-2 mt-lg-0'>

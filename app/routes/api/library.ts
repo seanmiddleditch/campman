@@ -34,5 +34,38 @@ export default function LabelAPIRoutes(db: squell.Database)
         else return success(library);
     }));
 
+    router.put('/api/libraries/:library', wrap(async (req) => {
+        if (!req.user) return accessDenied();
+
+        const user = await db.query(UserModel).findById(req.user.id);
+        if (!user) return accessDenied();
+
+        const librarySlug = req.params.library;
+        const title = req.body.title;
+
+        const library = await db.transaction(async (tx) => {
+            const newLibrary = new LibraryModel();
+            newLibrary.slug = librarySlug;
+            newLibrary.title = title;
+            newLibrary.creator = user;
+
+            const library = await db.query(LibraryModel)
+                .include(UserModel, m => m.creator)
+                .create(newLibrary, {transaction: tx});
+            
+            const newAccess = new LibraryAccessModel();
+            newAccess.library = library;
+            newAccess.user = user;
+            newAccess.access = Access.Owner;
+            const access = await db.query(LibraryAccessModel).includeAll().save(newAccess, {transaction: tx});
+
+            return library;
+        });
+
+        return success({
+            library
+        });
+    }));
+
     return router;
 }
