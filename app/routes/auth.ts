@@ -46,7 +46,7 @@ export default function AuthRoutes(db: Database, config: AuthRoutesConfig)
         (req, res) => res.render('auth-callback', {layout: null, publicURL: config.publicURL, sessionKey: req.sessionID, user: req.user}));
 
     router.get('/auth/google/login',
-        passport.authenticate('google', {scope: ['email', 'profile', 'https://www.googleapis.com/auth/drive.file']}),
+        passport.authenticate('google', {scope: ['email', 'profile']}),
         (req, res) => res.render('auth-callback', {layout: null, publicURL: config.publicURL, sessionKey: req.sessionID, user: req.user}));
 
     return router;
