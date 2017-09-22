@@ -10,9 +10,10 @@ export default function NoteAPIRoutes(db: Database)
     const router = Router();
 
     router.get('/api/notes', wrap(async (req) => {
-        const librarySlug = 'default';
-
         if (!req.user) return accessDenied();
+        if (!req.library) return notFound();
+        
+        const librarySlug = req.library.slug;
 
         const [access, all] = await Promise.all([
             LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor),
@@ -29,10 +30,11 @@ export default function NoteAPIRoutes(db: Database)
     }));
 
     router.get('/api/notes/:note', wrap(async (req) => {
-        const librarySlug = 'default';
-        const noteSlug = req.params.note;
-
         if (!req.user) return accessDenied();
+        if (!req.library) return notFound();
+        
+        const librarySlug = req.library.slug;
+        const noteSlug = req.params.note;
 
         const [access, note] = await Promise.all([
             LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor),
@@ -49,10 +51,11 @@ export default function NoteAPIRoutes(db: Database)
     }));
 
     router.post('/api/notes/:note', wrap(async (req) => {
-        const librarySlug = 'default';
-        const noteSlug = req.params.note;
-
         if (!req.user) return accessDenied();
+        if (!req.library) return notFound();
+        
+        const librarySlug = req.library.slug;
+        const noteSlug = req.params.note;
 
         const [access, note] = await Promise.all([
             LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.GM),
@@ -80,10 +83,11 @@ export default function NoteAPIRoutes(db: Database)
     }));
 
     router.put('/api/notes/:note', wrap(async (req) => {
-        const librarySlug = 'default';
-        const noteSlug = req.params.note;
-
         if (!req.user) return accessDenied();
+        if (!req.library) return notFound();
+        
+        const librarySlug = req.library.slug;
+        const noteSlug = req.params.note;
 
         const access = await LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Player);
 
@@ -106,10 +110,11 @@ export default function NoteAPIRoutes(db: Database)
     }));
 
     router.delete('/api/notes/:note', wrap(async (req) => {
-        const librarySlug = 'default';
-        const noteSlug = req.params.note;
-
         if (!req.user) return accessDenied();
+        if (!req.library) return notFound();
+        
+        const librarySlug = req.library.slug;
+        const noteSlug = req.params.note;
 
         const access = await LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.GM);
 

@@ -3,7 +3,7 @@ import {S3} from 'aws-sdk';
 import {Request, Response, Router} from "express";
 import * as express from 'express';
 import {Database} from 'squell';
-import {wrap, success, accessDenied} from '../helpers';
+import {wrap, success, accessDenied, notFound} from '../helpers';
 import {LibraryModel} from '../../models';
 import {Access} from '../../auth';
 import * as path from 'path';
@@ -28,11 +28,14 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
     s3.config.secretAccessKey = config.awsAuthSecret;
 
     router.post('/api/media/presign', wrap(async (req) => {
-        const librarySlug = 'default';
         const filename = req.body['filename'];
         const filetype = req.body['filetype'];
-
+        
         if (!req.user) return accessDenied();
+        if (!req.library) return notFound();
+
+        const librarySlug = req.library.slug;
+
         const access = await LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor);
         if (!access) return accessDenied();
 
@@ -62,9 +65,11 @@ export default function MediaRoutes(db: Database, config: MediaRoutesConfig)
     }));
 
     router.get('/api/media/list/:pathspec?', wrap(async (req) => {
-        const librarySlug = 'default';
-
         if (!req.user) return accessDenied();
+        if (!req.library) return notFound();
+        
+        const librarySlug = req.library.slug;
+
         const access = await LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor);
         if (!access) return accessDenied();
         

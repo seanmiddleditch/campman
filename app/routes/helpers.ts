@@ -37,7 +37,7 @@ export function badInput(detail?: string) : ErrorSchema
 }
 
 interface KeyValueInput { [key: string]: string };
-type Wrapper<T> = (req: {query: KeyValueInput, params: KeyValueInput, body?: any, user?: User, session?: {id: string, destroy: (err: any)=>void}}) => Promise<ResultSchema<T>>;
+type Wrapper<T> = (req: {query: KeyValueInput, params: KeyValueInput, body?: any, library?: {slug: string}, user?: User, session?: {id: string, destroy: (err: any)=>void}}) => Promise<ResultSchema<T>>;
 
 export function wrap<T>(func: Wrapper<T>)
 {

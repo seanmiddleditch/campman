@@ -9,9 +9,10 @@ export default function LabelAPIRoutes(db: Database)
     const router = Router();
 
     router.get('/api/labels', helpers.wrap(async (req) => {
-        const librarySlug ='default';
-
         if (!req.user) return helpers.accessDenied();
+        if (!req.library) return helpers.notFound();
+
+        const librarySlug = req.library.slug;
 
         const [access, all] = await Promise.all([
             LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor),
@@ -27,10 +28,11 @@ export default function LabelAPIRoutes(db: Database)
     }));
 
     router.get('/api/labels/:label', helpers.wrap(async (req) => {
-        const librarySlug = 'default';
-        const labelSlug = req.params.label;
-
         if (!req.user) return helpers.accessDenied();
+        if (!req.library) return helpers.notFound();
+        
+        const labelSlug = req.params.label;
+        const librarySlug = req.library.slug;
 
         const [access, label, notes] = await Promise.all([
             LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor),
