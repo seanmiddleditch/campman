@@ -29,6 +29,7 @@
     "@types/express-session": "1.15.3",
     "@types/jquery": "3.2.12",
     "@types/markdown-it": "0.0.3",
+    "@types/node": "8.0.29",
     "@types/passport": "0.3.4",
     "@types/passport-google-oauth": "1.0.35",
     "@types/prop-types": "15.5.1",

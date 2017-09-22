@@ -10,6 +10,7 @@ import * as favicon from 'serve-favicon';
 import * as passport from 'passport';
 import * as session from 'express-session';
 import * as redis from 'connect-redis';
+import {URL} from 'url';
 
 import * as routes from './routes';
 import * as models from './models';
@@ -17,7 +18,7 @@ import {GoogleAuth, User} from './auth';
 
 class Config
 {
-    readonly publicURL: string;
+    readonly publicURL: URL;
     readonly googleClientID: string;
     readonly googleAuthSecret: string;
     readonly sessionSecret: string;
@@ -33,18 +34,18 @@ class Config
 
     constructor()
     {
-        this.publicURL = process.env.PUBLIC_URL || 'http://localhost';
-        this.port = parseInt(process.env.PORT || 8080, 10);
-        this.googleClientID = process.env.GOOGLE_CLIENT_ID;
-        this.googleAuthSecret = process.env.GOOGLE_AUTH_SECRET;
-        this.sessionSecret = process.env.CM_SESSION_SECRET;
+        this.publicURL = new URL(process.env.PUBLIC_URL || 'http://localhost:8080');
+        this.port = parseInt(process.env.PORT || '8080', 10);
+        this.googleClientID = process.env.GOOGLE_CLIENT_ID || '';
+        this.googleAuthSecret = process.env.GOOGLE_AUTH_SECRET || '';
+        this.sessionSecret = process.env.CM_SESSION_SECRET || '';
         this.webpackDev = process.env.CM_WEBPACK_DEV === 'true';
-        this.redisURL = process.env.REDIS_URL;
-        this.databaseURL = process.env.DATABASE_URL;
-        this.awsRegion = process.env.AWS_REGION;
-        this.awsAccessKey = process.env.AWS_ACCESS_KEY;
-        this.awsAuthSecret = process.env.AWS_SECRET;
-        this.s3Bucket = process.env.S3_BUCKET;
+        this.redisURL = process.env.REDIS_URL || '';
+        this.databaseURL = process.env.DATABASE_URL || '';
+        this.awsRegion = process.env.AWS_REGION || '';
+        this.awsAccessKey = process.env.AWS_ACCESS_KEY || '';
+        this.awsAuthSecret = process.env.AWS_SECRET || '';
+        this.s3Bucket = process.env.S3_BUCKET || '';
         this.production = process.env.NODE_ENV === 'production';
     }
 };
@@ -85,11 +86,36 @@ class Config
     app.set('view engine', 'handlebars');
     app.set('views', viewsRoot);
 
+    app.set('subdomain offset', (config.publicURL.hostname.match(/[.]/g) || []).length + 1);
+
+    // load the library if we're on a sub-domain
+    app.use(async (req, res, next) => {
+        const protocol = req.secure ? 'https' : 'http';
+        const sub = req.subdomains.length ? req.subdomains[req.subdomains.length - 1] : null;
+        const hostname = sub ? req.hostname.substr(sub.length + 1) : req.hostname;
+      
+        if (hostname != config.publicURL.hostname || `${req.protocol}:` != config.publicURL.protocol)
+        {
+            res.redirect(new URL(req.path, config.publicURL).toString());
+        }
+        else
+        {
+            if (sub)
+            {
+                req.library = await db.query(models.LibraryModel).where(m => m.slug.eq(sub)).findOne();
+                if (!req.library)
+                    return res.redirect(config.publicURL.toString());
+            }
+                
+            next();
+        }
+    });
+
     app.use(favicon(path.join(staticRoot, 'images', 'favicon.ico')));
     app.use(BodyParser.urlencoded({extended: false}));
     app.use(BodyParser.json());
     
-    passport.use(GoogleAuth(db, config.publicURL, config.googleClientID, config.googleAuthSecret));
+    passport.use(GoogleAuth(db, config.publicURL.toString(), config.googleClientID, config.googleAuthSecret));
     passport.serializeUser((user: models.UserModel, done) => done(null, user));
     passport.deserializeUser((user: User, done) => done(null, user));
 
@@ -98,7 +124,11 @@ class Config
         secret: config.sessionSecret,
         resave: false,
         saveUninitialized: false,
-        store: new RedisStore({url: config.redisURL})
+        store: new RedisStore({url: config.redisURL}),
+        cookie: {
+            domain: config.publicURL.hostname,
+            maxAge: 1000 * 60 * 24 // 24 hours
+        }
     }));
     app.use(passport.initialize());
     app.use(passport.session());
@@ -137,7 +167,7 @@ class Config
     app.use(async (req, res) => res.render('index', {
         session: JSON.stringify({
             user: req.user || {},
-            library: await db.query(models.LibraryModel).where(m => m.slug.eq('default')).findOne() || {}
+            library: req.library
         })
     }));
 

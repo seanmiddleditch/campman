@@ -10,7 +10,6 @@ import * as path from 'path';
 
 export interface MediaRoutesConfig
 {
-    publicURL: string,
     awsAccessKey: string,
     awsAuthSecret: string,
     s3Bucket: string,
