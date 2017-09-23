@@ -1,6 +1,54 @@
 import * as React from 'react';
 import * as ReactRouter from 'react-router';
 import * as PropTypes from 'prop-types';
+import * as ReactDOM from 'react-dom';
+import {Editor, EditorState, ContentState} from 'draft-js';
+
+interface NoteBodyEditorProps
+{
+    document: string;
+    onChange: (document: string) => void;
+}
+interface NoteBodyEditorState
+{
+    editorState: EditorState
+}
+class NoteBodyEditor extends React.Component<NoteBodyEditorProps, NoteBodyEditorState>
+{
+    refs: {
+        editor: HTMLElement
+    }
+
+    constructor(props: NoteBodyEditorProps)
+    {
+        super(props);
+
+        const content = ContentState.createFromText(props.document);
+
+        this.state = {
+            editorState: EditorState.createWithContent(content)
+        };
+    }
+
+    private _onChange(editorState: EditorState)
+    {
+        this.setState({editorState});
+        this.props.onChange(editorState.getCurrentContent().getPlainText());
+    }
+
+    componentDidMount()
+    {
+        this.refs.editor.focus();
+    }
+
+    render() {
+        return (
+            <div className='note-body-editor' onClick={() => this.refs.editor.focus()}>
+                <Editor ref='editor' editorState={this.state.editorState} onChange={editorState => this._onChange(editorState)} placeholder='Note body text goes here'/>
+            </div>
+        );
+    }
+}
 
 import LabelInput from './label-input';
 
@@ -159,7 +207,7 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
                 </div>
             </div>
             <div className='input-group mt-sm-2'>
-                <textarea onChange={ev => this._update({body: ev.target.value})} defaultValue={this.state.body} style={{width: '100%', minHeight: '20em'}}/>
+                <NoteBodyEditor document={this.state.body} onChange={document => this._update({body: document})}/>
             </div>
         </div>;
     }
