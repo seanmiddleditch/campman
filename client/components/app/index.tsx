@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom';
 import * as PropTypes from 'prop-types';
 
 import * as api from '../../api/index';
+import {Config} from '../../client';
 
 import NavigationBar from './navigation-bar';
 
@@ -10,6 +11,7 @@ require('../../styles/site.css');
 
 export interface AppProps
 {
+    config: Config;
     library?: api.LibraryData;
     user?: api.UserData;
     children: any;
@@ -47,7 +49,7 @@ export default class App extends React.Component<AppProps, AppState>
     {
         //(new URLSearchParams(window.location.search)).get('q')
         return <div className='content-wrapper'>
-            <NavigationBar library={this.props.library} user={this.state.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()} onSearch={text => this._onSearch(text)}/>
+            <NavigationBar config={this.props.config} library={this.props.library} user={this.state.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()} onSearch={text => this._onSearch(text)}/>
             <div className='content'>
                 {this.props.children}
             </div>

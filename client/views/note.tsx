@@ -96,10 +96,13 @@ export default class NoteView extends React.Component<NoteViewProps, NoteViewSta
             return <div className='note-page'>
                 <h1 className='note-title'>{this.state.note.title}</h1>
                 <div className='note-subtitle'>{this.state.note.subtitle}</div>
-                <div className='note-labels'>
-                    <i className='fa fa-tags'></i>&nbsp;
-                    {this.state.note.labels.map(l => <span key={l}><span className='label note-label badge badge-pill badge-light'>{l}</span> </span>)}
-                </div>
+                {this.state.note.labels && this.state.note.labels.length ?
+                    (<div className='note-labels'>
+                        <i className='fa fa-tags'></i>&nbsp;
+                        {this.state.note.labels.map(l => <span key={l}><span className='label note-label badge badge-pill badge-light'>{l}</span> </span>)}
+                    </div>) :
+                    <div/>
+                }
                 <div className='floating-editbar-container'>
                     <div className='floating-editbar'>
                         <div className='btn-group'>

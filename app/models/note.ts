@@ -35,17 +35,7 @@ export default class NoteModel extends modelsafe.Model
 
     @modelsafe.assoc(modelsafe.BELONGS_TO_MANY, () => LabelModel)
     @squell.assoc({through: 'note_label'})
-    public labels: LabelModel[];
-
-    public static createWithSlug(slug: string): NoteModel
-    {
-        const note = new NoteModel;
-        note.slug = slug;
-        note.title = '';
-        note.body = '';
-        note.labels = [];
-        return note;
-    }
+    public labels: LabelModel[] = [];
 }
 
 @modelsafe.model({name: 'note_label'})

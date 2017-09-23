@@ -75,14 +75,13 @@ export default function NoteAPIRoutes(db: Database)
 
         note.library = access;
 
-        if (req.body['title'])
-            note.title = req.body['title'];
-        if (req.body['subtitle'])
-        note.subtitle = req.body['subtitle'];
-        if (req.body['body'])
-            note.body = req.body['body'];
+        note.title = req.body['title'] || note.title || 'New Note';
+        note.subtitle = req.body['subtitle'] || note.subtitle || '';
+        note.body = req.body['body'] || note.body || '';
         if (req.body['labels'])
             note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body['labels']));
+        if (!note.labels)
+            note.labels = [];
 
         await db.query(NoteModel)
             .include(LibraryModel, m => m.library)

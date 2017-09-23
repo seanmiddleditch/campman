@@ -66,9 +66,7 @@ export default function LabelAPIRoutes(db: squell.Database)
             return library;
         });
 
-        return success({
-            library
-        });
+        return success(library);
     }));
 
     return router;

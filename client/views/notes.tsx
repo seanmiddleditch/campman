@@ -1,4 +1,7 @@
 import * as React from 'react';
+import * as PropTypes from 'prop-types';
+import * as ReactRouter from 'react-router';
+import * as JQuery from 'jquery';
 import {Link} from 'react-router-dom';
 import * as api from '../api/index';
 
@@ -8,6 +11,15 @@ interface NotesViewState
 }
 export default class NotesView extends React.Component<{}, NotesViewState>
 {
+    refs: {
+        slug: HTMLInputElement,
+        title: HTMLInputElement
+    }
+
+    static contextTypes = { router: PropTypes.object.isRequired };
+    
+    context: ReactRouter.RouterChildContext<{}>;
+
     constructor()
     {
         super();
@@ -17,6 +29,21 @@ export default class NotesView extends React.Component<{}, NotesViewState>
     componentDidMount()
     {  
         api.notes.fetchAll().then(notes => this.setState({notes}));
+    }
+    
+    private _handleClick(ev: React.MouseEvent<HTMLButtonElement>)
+    {
+        const slug = this.refs.slug.value || this.refs.slug.placeholder;
+        api.notes.update(slug, {title: this.refs.title.value})
+            .then(() => (JQuery('#new-notes-dialog') as any).modal('hide'))
+            .then(note => this.context.router.history.push(`/n/${slug}`));
+        ev.preventDefault();
+    }
+
+    private _updateSlug(ev: React.ChangeEvent<HTMLInputElement>)
+    {
+        const title = ev.target.value.length ? ev.target.value : ev.target.placeholder;
+        this.refs.slug.placeholder = title.toLowerCase().replace(/[^a-z0-9]+/g, ' ').slice(0, 32).trim().replace(/ /g, '-');
     }
 
     private renderNote(n: api.NoteData)
@@ -36,7 +63,11 @@ export default class NotesView extends React.Component<{}, NotesViewState>
                 const links = this.state.notes.map(n => this.renderNote(n));
                 return <div className='list-group'>
                     {links}
-                    <Link to='/create/note' className='list-group-item'><i className='fa fa-plus'></i> New Note</Link>
+                    <div className='list-group-item'>
+                        <button className='btn btn-default' data-toggle='modal' data-target='#new-note-dialog'>
+                            <i className='fa fa-plus'></i> New Note
+                        </button>
+                    </div>
                 </div>;
             }
             else
@@ -48,6 +79,31 @@ export default class NotesView extends React.Component<{}, NotesViewState>
         return <div>
             <div className='page-header'>
                 <h1><i className='fa fa-book'></i> Notes</h1>
+            </div>
+            <div>
+                <div className='modal' id='new-note-dialog' data-backdrop='static' role='dialog'>
+                    <div className='modal-dialog' role='document'>
+                        <div className='modal-content'>
+                            <div className='modal-header'>
+                                New Note
+                            </div>
+                            <div className='modal-body'>
+                                <div className='form-group'>
+                                    <label htmlFor='title'>Title</label>
+                                    <input className='form-control' ref='title' type='text' placeholder='An Interesting Note' onChange={ev => this._updateSlug(ev)}/>
+                                </div>
+                                <div className='form-group'>
+                                    <label htmlFor='slug'>Slug</label>
+                                    <input className='form-control' ref='slug' type='text' placeholder='an-interesting-note'/>
+                                </div>
+                            </div>
+                            <div className='modal-footer'>
+                                <button className='btn btn-secondary' data-dismiss='modal'>Cancel</button>
+                                <button className='btn btn-primary' onClick={ev => this._handleClick(ev)}>Create Note</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             {links}
         </div>;

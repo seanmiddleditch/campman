@@ -1,5 +1,6 @@
 import * as React from 'react';
 import {Link} from 'react-router-dom';
+import * as JQuery from 'jquery';
 
 import * as api from '../api/index';
 
@@ -14,6 +15,7 @@ interface LibrariesViewState
 export default class LibrariesView extends React.Component<LibrariesViewProps, LibrariesViewState>
 {
     refs: {
+        modal: HTMLDivElement,
         slug: HTMLInputElement,
         title: HTMLInputElement
     }
@@ -43,7 +45,9 @@ export default class LibrariesView extends React.Component<LibrariesViewProps, L
 
     private _handleClick(ev: React.MouseEvent<HTMLButtonElement>)
     {
-        api.libraries.create({slug: this.refs.slug.value || this.refs.slug.placeholder, title: this.refs.title.value});
+        api.libraries.create({slug: this.refs.slug.value || this.refs.slug.placeholder, title: this.refs.title.value})
+            .then(library => this.setState({libraries: this.state.libraries.concat([library])}))
+            .then(() => (JQuery('#new-library-dialog') as any).modal('hide'));
         ev.preventDefault();
     }
 
@@ -62,7 +66,7 @@ export default class LibrariesView extends React.Component<LibrariesViewProps, L
                 return <div className='list-group'>
                     {links}
                     <div className='list-group-item'>
-                        <button className='list-item-name' data-toggle='modal' data-target='#new-library-dialog'>
+                        <button className='btn btn-default' data-toggle='modal' data-target='#new-library-dialog'>
                             <i className='fa fa-plus'></i> New Library
                         </button>
                     </div>
@@ -80,7 +84,7 @@ export default class LibrariesView extends React.Component<LibrariesViewProps, L
                     <h1><i className='fa fa-book'></i> Libraries</h1>
                 </div>
                 <div>
-                    <div className='modal' id='new-library-dialog' role='dialog'>
+                    <div ref='modal' className='modal' id='new-library-dialog' data-backdrop='static' role='dialog'>
                         <div className='modal-dialog' role='document'>
                             <div className='modal-content'>
                                 <div className='modal-header'>
