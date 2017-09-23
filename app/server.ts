@@ -157,11 +157,7 @@ class Config
     app.use(routes.LibraryRouter(db));
     app.use(routes.MediaRoutes(db, config));
 
-    if (config.production)
-    {
-        console.log('Serving /js');
-        app.use('/js', express.static(path.join(clientRoot, 'dist')));
-    }
+    app.use('/dist', express.static(path.join(clientRoot, 'dist')));
 
     app.use(express.static(staticRoot));
     app.use(async (req, res) => res.render('index', {

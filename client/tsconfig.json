@@ -10,5 +10,11 @@
         "sourceMap": true,
         "outFile": "./dist/client.js",
         "jsx": "react"
-    }
+    },
+    "files": [
+        "../node_modules/immutable/dist/immutable.d.ts"
+    ],
+    "exclude": [
+        "../node_modules"
+    ]
 }

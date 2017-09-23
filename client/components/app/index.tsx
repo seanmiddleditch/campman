@@ -6,6 +6,8 @@ import * as api from '../../api/index';
 
 import NavigationBar from './navigation-bar';
 
+require('../../styles/site.css');
+
 export interface AppProps
 {
     library?: api.LibraryData;

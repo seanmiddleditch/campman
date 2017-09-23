@@ -4,6 +4,8 @@ import * as PropTypes from 'prop-types';
 import * as ReactDOM from 'react-dom';
 import {Editor, EditorState, ContentState} from 'draft-js';
 
+require('../styles/notes.css');
+
 interface NoteBodyEditorProps
 {
     document: string;
