@@ -16,10 +16,10 @@ import LibrariesView from './views/libraries';
 
 import * as api from './api/index';
 
-const Routes = (props: {library: api.LibraryData, user: api.UserData}) => <BrowserRouter>
+const Routes = (props: {config: any, library: api.LibraryData, user: api.UserData}) => <BrowserRouter>
     <App user={props.user}>
         <Switch>
-            <Route path='/libraries' exact render={p => <LibrariesView {...p}/>}/>
+            <Route path='/libraries' exact render={p => <LibrariesView config={props.config} {...p}/>}/>
             <Route path='/notes' exact render={p => <NotesView {...p}/>}/>
             <Route path='/search' exact render={p => <SearchPage {...p} query={(new URLSearchParams(p.location.search)).get('q')}/>}/>
             <Route path='/labels' exact render={p => <LabelsView {...p}/>}/>
@@ -37,5 +37,5 @@ const Routes = (props: {library: api.LibraryData, user: api.UserData}) => <Brows
     const config = session.config;
     const user = session.user;
     const library = session.library;
-    ReactDOM.render(<Routes user={user} library={library}/>, document.getElementById('content'));
+    ReactDOM.render(<Routes config={config} user={user} library={library}/>, document.getElementById('content'));
 })();

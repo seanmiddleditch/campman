@@ -13,7 +13,7 @@ export default function LabelAPIRoutes(db: squell.Database)
         const userID = req.user ? req.user.id : null;
 
         const all = await db.query(LibraryModel)
-            .attributes(m => [m.slug])
+            .attributes(m => [m.slug, m.title])
             .include(LibraryAccessModel, m => [m.acl, {required: false}], q => q.attributes(m => []).where(m => squell.attribute('userId').eq(userID)))
             .order(m => [[m.slug, squell.ASC]])
             .find();
