@@ -28,7 +28,12 @@ export default class NotesView extends React.Component<{}, NotesViewState>
 
     componentDidMount()
     {  
-        api.notes.fetchAll().then(notes => this.setState({notes}));
+        api.notes.fetchAll()
+            .then(notes => this.setState({notes}))
+            .catch(err => {
+                console.log(err, err.stack);
+                this.setState({notes: []});
+            });
     }
     
     private _handleClick(ev: React.MouseEvent<HTMLButtonElement>)

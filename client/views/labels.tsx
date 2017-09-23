@@ -16,7 +16,12 @@ export default class LabelsView extends React.Component<{}, LabelsViewState>
 
     componentDidMount()
     {
-        api.labels.fetchAll().then(labels => this.setState({labels}));
+        api.labels.fetchAll()
+            .then(labels => this.setState({labels}))
+            .catch(err => {
+                console.error(err, err.stack);
+                this.setState({labels: []});
+            });
     }
 
     private renderLabel(l: api.LabelData)
