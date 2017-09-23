@@ -15,6 +15,12 @@ export class SessionData
 export class AuthAPI
 {
     private _rpc = new RPCHelper();
+    private _publicURL: string = '/';
+
+    configure(publicURL: string)
+    {
+        this._publicURL = publicURL;
+    }
 
     session() : Promise<SessionData>
     {
@@ -31,13 +37,15 @@ export class AuthAPI
                     .catch(err => reject(err));
             };
             window.addEventListener('message', handler, false);
-            const popup = window.open('/auth/google/login', 'google_login', 'menubar=false,scrollbars=false,location=false,width=400,height=300');
+            const loginURL = new URL('/auth/google/login', this._publicURL);
+            const popup = window.open(loginURL.toString(), 'google_login', 'menubar=false,scrollbars=false,location=false,width=400,height=300');
         });
     }
 
     logout() : Promise<void>
     {
-        return this._rpc.post('/auth/logout');
+        const logoutURL = new URL('/auth/logout', this._publicURL);
+        return this._rpc.post(logoutURL.toString());
     }
 };
 

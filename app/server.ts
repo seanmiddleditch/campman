@@ -93,7 +93,7 @@ class Config
         const protocol = req.secure ? 'https' : 'http';
         const sub = req.subdomains.length ? req.subdomains[req.subdomains.length - 1] : null;
         const hostname = sub ? req.hostname.substr(sub.length + 1) : req.hostname;
-      
+     
         if (hostname != config.publicURL.hostname || `${req.protocol}:` != config.publicURL.protocol)
         {
             res.redirect(new URL(req.path, config.publicURL).toString());
@@ -109,6 +109,13 @@ class Config
                 
             next();
         }
+    });
+
+    // enable CORS, knowing that the prior entry ensures we're on our domain or a sub
+    app.use((req, res, next) => {
+        res.header('Access-Control-Allow-Origin', req.headers.origin as string);
+        res.header('Access-Control-Allow-Credentials', 'true');
+        next();
     });
 
     app.use(favicon(path.join(staticRoot, 'images', 'favicon.ico')));

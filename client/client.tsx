@@ -37,5 +37,8 @@ const Routes = (props: {config: any, library: api.LibraryData, user: api.UserDat
     const config = session.config;
     const user = session.user;
     const library = session.library;
+
+    api.auth.configure(config.publicURL);
+
     ReactDOM.render(<Routes config={config} user={user} library={library}/>, document.getElementById('content'));
 })();

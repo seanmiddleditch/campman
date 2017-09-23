@@ -19,18 +19,15 @@ export default function AuthRoutes(db: Database, config: AuthRoutesConfig)
 {
     const router = Router();
 
-    const authRouter = Router();
-    router.use('/auth', authRouter);
-
     // all auth calls only work on the public URL
-    authRouter.use((req, res, next) => {
+    router.use('/auth', (req, res, next) => {
         if (req.hostname != config.publicURL.hostname)
             res.redirect(301, new URL('/auth' + req.path, config.publicURL).toString());
         else
             next();
     });
 
-    authRouter.post('/logout', wrap(async (req) =>
+    router.post('/auth/logout', wrap(async (req) =>
     {
         if (!req.user) return accessDenied();
         else if (!req.session) return accessDenied();
@@ -38,7 +35,7 @@ export default function AuthRoutes(db: Database, config: AuthRoutesConfig)
         return (new Promise(res => session.destroy(res))).then(() => success({}));
     }));
 
-    authRouter.get('/session', wrap(async (req) => {
+    router.get('/auth/session', wrap(async (req) => {
         if (!req.session) return accessDenied();
 
         const user = req.user ? req.user as User : null;
@@ -53,13 +50,22 @@ export default function AuthRoutes(db: Database, config: AuthRoutesConfig)
         });
     }));
 
-    authRouter.get('/google/callback',
+    router.get('/auth/google/callback',
         passport.authenticate('google'),
-        (req, res) => res.render('auth-callback', {layout: null, publicURL: config.publicURL.toString(), sessionKey: req.sessionID, user: req.user}));
+        (req, res) => {
+            const returnURL = req.session && req.session.returnURL ? req.session.returnURL : config.publicURL;
+            if (req.session)
+                delete req.session.returnURL;
+            res.render('auth-callback', {layout: null, returnURL, sessionKey: req.sessionID, user: req.user});
+        });
 
-    authRouter.get('/google/login',
-        passport.authenticate('google', {scope: ['email', 'profile']}),
-        (req, res) => res.render('auth-callback', {layout: null, publicURL: config.publicURL.toString(), sessionKey: req.sessionID, user: req.user}));
+    router.get('/auth/google/login',
+        (req, res, next) => {
+            if (req.session)
+                 req.session.returnURL = req.headers.referer;
+            next();
+        },
+        passport.authenticate('google', {scope: ['email', 'profile']}));
 
     return router;
 }
