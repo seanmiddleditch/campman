@@ -5,37 +5,20 @@ import * as JQuery from 'jquery';
 import {Link} from 'react-router-dom';
 import * as api from '../api/index';
 
-interface NotesViewState
-{
-    notes?: api.NoteData[];
-}
-export default class NotesView extends React.Component<{}, NotesViewState>
+const NewNoteButton = () => (
+    <button className='btn btn-default' data-toggle='modal' data-target='#new-note-dialog'>
+        <i className='fa fa-plus'></i> New Note
+    </button>
+);
+
+class NewNoteDialog extends React.Component<{}>
 {
     refs: {
+        modal: HTMLDivElement,
         slug: HTMLInputElement,
         title: HTMLInputElement
     }
 
-    static contextTypes = { router: PropTypes.object.isRequired };
-    
-    context: ReactRouter.RouterChildContext<{}>;
-
-    constructor()
-    {
-        super();
-        this.state = {};
-    }
-
-    componentDidMount()
-    {  
-        api.notes.fetchAll()
-            .then(notes => this.setState({notes}))
-            .catch(err => {
-                console.log(err, err.stack);
-                this.setState({notes: []});
-            });
-    }
-    
     private _handleClick(ev: React.MouseEvent<HTMLButtonElement>)
     {
         const slug = this.refs.slug.value || this.refs.slug.placeholder;
@@ -51,42 +34,11 @@ export default class NotesView extends React.Component<{}, NotesViewState>
         this.refs.slug.placeholder = title.toLowerCase().replace(/[^a-z0-9]+/g, ' ').slice(0, 32).trim().replace(/ /g, '-');
     }
 
-    private renderNote(n: api.NoteData)
-    {
-        return <Link key={n.slug} to={'/n/' + n.slug} className='list-group-item'>
-            <div className='list-item-name'><i className='fa fa-file'></i> {n.title}</div>
-            <div className='list-item-subtitle'>{n.subtitle}</div>
-            <div className='list-item-details comma-separated'>{n.labels.map(l => <span key={l}>{l}</span>)}</div>
-        </Link>;
-    }
-
     render()
     {
-        const links = (() => {
-            if (this.state.notes !== undefined)
-            {
-                const links = this.state.notes.map(n => this.renderNote(n));
-                return <div className='list-group'>
-                    {links}
-                    <div className='list-group-item'>
-                        <button className='btn btn-default' data-toggle='modal' data-target='#new-note-dialog'>
-                            <i className='fa fa-plus'></i> New Note
-                        </button>
-                    </div>
-                </div>;
-            }
-            else
-            {
-                return <div>loading...</div>;
-            }
-        })();
-
-        return <div>
-            <div className='page-header'>
-                <h1><i className='fa fa-book'></i> Notes</h1>
-            </div>
+        return (
             <div>
-                <div className='modal' id='new-note-dialog' data-backdrop='static' role='dialog'>
+                <div ref='modal' className='modal' id='new-note-dialog' data-backdrop='static' role='dialog'>
                     <div className='modal-dialog' role='document'>
                         <div className='modal-content'>
                             <div className='modal-header'>
@@ -110,7 +62,74 @@ export default class NotesView extends React.Component<{}, NotesViewState>
                     </div>
                 </div>
             </div>
-            {links}
+        );
+    }
+}
+
+interface NotesViewState
+{
+    notes?: api.NoteData[];
+}
+export default class NotesView extends React.Component<{}, NotesViewState>
+{
+    static contextTypes = { router: PropTypes.object.isRequired };
+    
+    context: ReactRouter.RouterChildContext<{}>;
+
+    constructor()
+    {
+        super();
+        this.state = {};
+    }
+
+    componentDidMount()
+    {  
+        api.notes.fetchAll()
+            .then(notes => this.setState({notes}))
+            .catch(err => {
+                console.log(err, err.stack);
+                this.setState({notes: []});
+            });
+    }
+
+    private renderNote(n: api.NoteData)
+    {
+        return <Link key={n.slug} to={'/n/' + n.slug} className='list-group-item'>
+            <div className='list-item-name'><i className='fa fa-file'></i> {n.title}</div>
+            <div className='list-item-subtitle'>{n.subtitle}</div>
+            <div className='list-item-details comma-separated'>{n.labels.map(l => <span key={l}>{l}</span>)}</div>
+        </Link>;
+    }
+
+    render()
+    {
+        const notes = (() => {
+            if (this.state.notes === undefined)
+            {
+                return <div>loading...</div>;
+            }
+            else if (this.state.notes.length == 0)
+            {
+                return <div>No notes are available</div>;
+            }
+            else
+            {
+                const links = this.state.notes.map(n => this.renderNote(n));
+                return <div className='list-group'>
+                    {links}
+                    <div className='list-group-item'>
+                        <NewNoteButton/>
+                    </div>
+                </div>;
+            }
+        })();
+
+        return <div>
+            <div className='page-header'>
+                <h1><i className='fa fa-book'></i> Notes</h1>
+            </div>
+            <NewNoteDialog/>
+            {notes}
         </div>;
     }
 }
