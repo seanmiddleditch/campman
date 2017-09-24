@@ -13,6 +13,10 @@ const NewNoteButton = () => (
 
 class NewNoteDialog extends React.Component<{}>
 {
+    static contextTypes = { router: PropTypes.object.isRequired };
+    
+    context: ReactRouter.RouterChildContext<{}>;
+
     refs: {
         modal: HTMLDivElement,
         slug: HTMLInputElement,
@@ -23,8 +27,13 @@ class NewNoteDialog extends React.Component<{}>
     {
         const slug = this.refs.slug.value || this.refs.slug.placeholder;
         api.notes.update(slug, {title: this.refs.title.value})
-            .then(() => (JQuery('#new-notes-dialog') as any).modal('hide'))
-            .then(note => this.context.router.history.push(`/n/${slug}`));
+            .then(note => {
+                const modal = (JQuery(this.refs.modal) as any);
+                modal.on('hidden.bs.modal', () => {
+                    this.context.router.history.push(`/n/${slug}`);
+                });
+                modal.modal('hide');
+            });
         ev.preventDefault();
     }
 
@@ -72,10 +81,6 @@ interface NotesViewState
 }
 export default class NotesView extends React.Component<{}, NotesViewState>
 {
-    static contextTypes = { router: PropTypes.object.isRequired };
-    
-    context: ReactRouter.RouterChildContext<{}>;
-
     constructor()
     {
         super();
