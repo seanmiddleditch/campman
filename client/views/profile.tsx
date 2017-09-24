@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import * as api from '../api';
+import * as api from '../api/index';
 
 export interface ProfileViewProps
 {
