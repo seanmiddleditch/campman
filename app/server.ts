@@ -90,12 +90,25 @@ class Config
 
     // static assets first, before library checks or other work
     app.use(favicon(path.join(staticRoot, 'images', 'favicon.ico')));
-    app.use('/dist', express.static(path.join(clientRoot, 'dist')));
     app.use(express.static(staticRoot));
+
+    // development support for webpack
+    if (!config.production)
+    {
+        console.log('Enabling WebPack development middlware');
+
+        const webpackConfig = require(path.join(clientRoot, 'webpack.config.js'));
+        const webpackDevMiddleware = require('webpack-dev-middleware');
+        const webpack = require('webpack');
+        app.use(webpackDevMiddleware(webpack(webpackConfig), {
+            publicPath: webpackConfig.output.publicPath
+        }));
+    }
+
+    app.use('/dist', express.static(path.join(clientRoot, 'dist')));
 
     // load the library if we're on a sub-domain
     const subdomainCache = new Map();
-
     app.use(async (req, res, next) => {
         const protocol = req.secure ? 'https' : 'http';
         const sub = req.subdomains.length ? req.subdomains[req.subdomains.length - 1] : null;
@@ -119,7 +132,7 @@ class Config
                     req.library = await db.query(models.LibraryModel).where(m => m.slug.eq(sub)).findOne();
                     subdomainCache.set(sub, req.library);
                 }
-                
+
                 if (!req.library)
                 {
                     return res.redirect(config.publicURL.toString());
@@ -157,18 +170,6 @@ class Config
     }));
     app.use(passport.initialize());
     app.use(passport.session());
-
-    if (!config.production)
-    {
-        console.log('Enabling WebPack development middlware');
-
-        const webpackConfig = require(path.join(clientRoot, 'webpack.config.js'));
-        const webpackDevMiddleware = require('webpack-dev-middleware');
-        const webpack = require('webpack');
-        app.use(webpackDevMiddleware(webpack(webpackConfig), {
-            publicPath: webpackConfig.output.publicPath
-        }));
-    }
 
     app.get('/config.js', (req, res) => {
         res.json({
