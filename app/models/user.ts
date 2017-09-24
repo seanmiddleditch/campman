@@ -24,6 +24,9 @@ export default class UserModel extends modelsafe.Model implements User
     @modelsafe.minLength(1)
     public email: string;
 
+    @modelsafe.attr(modelsafe.STRING)
+    public photoURL: string;
+
     @modelsafe.assoc(modelsafe.HAS_MANY, () => LibraryAccessModel)
     public access: LibraryAccessModel[];
     

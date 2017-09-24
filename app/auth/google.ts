@@ -22,7 +22,8 @@ export default function GoogleAuth(db: Database, publicURL: string, googleClient
             .findOrCreate({
                 fullName: profile.displayName,
                 email: profile.emails[0].value,
-                googleId: profile.id
+                googleId: profile.id,
+                photoURL: (profile.photos && profile.photos.length && profile.photos[0].value) || ''
             })
             .then(([user, created]) => callback(null, user))
             .catch(err => callback(err, null));
