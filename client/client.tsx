@@ -13,6 +13,7 @@ import SearchPage from './views/search';
 import LabelView from './views/label';
 import LabelsView from './views/labels';
 import LibrariesView from './views/libraries';
+import ProfileView from './views/profile';
 
 import * as api from './api/index';
 
@@ -21,19 +22,35 @@ export interface Config
     publicURL: string
 }
 
+const LibraryRoutes = () => (
+    <Switch>
+        <Route path='/notes' exact render={p => <NotesView {...p}/>}/>
+        <Route path='/search' exact render={p => <SearchPage {...p} query={(new URLSearchParams(p.location.search)).get('q')}/>}/>
+        <Route path='/labels' exact render={p => <LabelsView {...p}/>}/>
+        <Route path='/media/:path*' render={p => <MediaView path={p.match.params.path} {...p}/>}/>
+        <Route path='/n/:slug' exact render={p => <NoteView slug={p.match.params.slug} {...p}/>}/>
+        <Route path='/l/:slug' exact render={p => <LabelView slug={p.match.params.slug} {...p}/>}/>);
+        <Route path='/' exact>
+            <NoteView slug='home'/>
+        </Route>
+        <Route component={NotFoundPage}/>
+    </Switch>);
+const AppRoutes = ({config, user}: {config: Config, user: api.UserData}) => (
+    <Switch>
+        <Route path='/libraries' exact render={p => <LibrariesView config={config} {...p}/>}/>
+        <Route path='/profile' exact>
+            <ProfileView user={user}/>
+        </Route>
+        <Route path='/' exact>
+            <Redirect to='/libraries'/>
+        </Route>
+        <Route component={NotFoundPage}/>
+    </Switch>
+);
+
 const Routes = ({config, library, user}: {config: Config, library: api.LibraryData, user: api.UserData}) => <BrowserRouter>
     <App user={user} config={config} library={library}>
-        <Switch>
-            <Route path='/libraries' exact render={p => <LibrariesView config={config} {...p}/>}/>
-            <Route path='/notes' exact render={p => <NotesView {...p}/>}/>
-            <Route path='/search' exact render={p => <SearchPage {...p} query={(new URLSearchParams(p.location.search)).get('q')}/>}/>
-            <Route path='/labels' exact render={p => <LabelsView {...p}/>}/>
-            <Route path='/media/:path*' render={p => <MediaView path={p.match.params.path} {...p}/>}/>
-            <Route path='/n/:slug' exact render={p => <NoteView slug={p.match.params.slug} {...p}/>}/>
-            <Route path='/l/:slug' exact render={p => <LabelView slug={p.match.params.slug} {...p}/>}/>
-            {library ? <Redirect to='/n/home'/> : <Redirect to='/libraries'/>}
-            <Route component={NotFoundPage}/>
-        </Switch>
+        {library ? <LibraryRoutes/> : <AppRoutes config={config} user={user}/>}
     </App>
 </BrowserRouter>;
 

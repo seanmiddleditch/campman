@@ -66,8 +66,8 @@ export default class NavigationBar extends React.Component<NavigationBarProps, N
             <NavLink className='navbar-brand' to='/' exact>{(this.props.library && this.props.library.title) || 'Campaign Manager'}</NavLink>
 
             <div className='collapse navbar-collapse' id='navbarTogglerDemo03'>
-                {this.props.library ?
-                    (<ul className='navbar-nav mr-auto mt-2 mt-lg-0'>
+                {this.props.library && (
+                    <ul className='navbar-nav mr-auto mt-2 mt-lg-0'>
                         <div className='nav-link disabled'>Adventures</div>
                         <NavLink className='nav-link' activeClassName='nav-link-active' to={'/notes'} isActive={(m, l) => !!m || l.pathname.startsWith('/n/')}>Notes</NavLink>
                         <NavLink className='nav-link' activeClassName='nav-link-active' to={'/labels'} isActive={(m, l) => !!m || l.pathname.startsWith('/l/')}>Labels</NavLink>
@@ -75,9 +75,8 @@ export default class NavigationBar extends React.Component<NavigationBarProps, N
                         <div className='nav-link disabled'>Characters</div>
                         <div className='nav-link disabled'>Timeline</div>
                         <NavLink className='nav-link' activeClassName='nav-link-active' to={'/media'}>Media</NavLink>
-                    </ul>) :
-                    <div/>
-                }
+                    </ul>
+                )}
                 <form className='input-group my-2 my-lg-0' onSubmitCapture={ev => this._search(ev)}>
                     <input className='form-control' type='search' placeholder='Search' aria-label='Search' value={this.state.searchText} onChange={ev => this.setState({searchText: ev.target.value})}/>
                     <span className='input-group-btn'>
