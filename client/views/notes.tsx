@@ -92,7 +92,7 @@ export default class NotesView extends React.Component<{}, NotesViewState>
             });
     }
 
-    private renderNote(n: api.NoteData)
+    private _renderNote(n: api.NoteData)
     {
         return <Link key={n.slug} to={'/n/' + n.slug} className='list-group-item'>
             <div className='list-item-name'><i className='fa fa-file'></i> {n.title}</div>
@@ -103,33 +103,34 @@ export default class NotesView extends React.Component<{}, NotesViewState>
 
     render()
     {
-        const notes = (() => {
+        const notes = () => {
             if (this.state.notes === undefined)
             {
                 return <div>loading...</div>;
             }
-            else if (this.state.notes.length == 0)
-            {
-                return <div>No notes are available</div>;
-            }
             else
             {
-                const links = this.state.notes.map(n => this.renderNote(n));
-                return <div className='list-group'>
-                    {links}
-                    <div className='list-group-item'>
-                        <NewNoteButton/>
-                    </div>
-                </div>;
-            }
-        })();
+                const notes = this.state.notes.map(n => this._renderNote(n));
 
-        return <div>
-            <div className='page-header'>
-                <h1><i className='fa fa-book'></i> Notes</h1>
+                return (
+                    <div className='list-group'>
+                        {notes}
+                        <div className='list-group-item'>
+                            <NewNoteButton/>
+                        </div>
+                    </div>
+                );
+            }
+        };
+
+        return (
+            <div>
+                <div className='page-header'>
+                    <h1><i className='fa fa-book'></i> Notes</h1>
+                </div>
+                <NewNoteDialog/>
+                {notes()}
             </div>
-            <NewNoteDialog/>
-            {notes}
-        </div>;
+        );
     }
 }

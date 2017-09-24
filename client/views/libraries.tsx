@@ -62,15 +62,18 @@ export default class LibrariesView extends React.Component<LibrariesViewProps, L
         const links = (() => {
             if (this.state.libraries !== undefined)
             {
-                const links = this.state.libraries.map(n => this._renderLibrary(n));
-                return <div className='list-group'>
-                    {links}
-                    <div className='list-group-item'>
-                        <button className='btn btn-default' data-toggle='modal' data-target='#new-library-dialog'>
-                            <i className='fa fa-plus'></i> New Library
-                        </button>
+                const libraries = this.state.libraries.map(n => this._renderLibrary(n));
+
+                return (
+                    <div className='list-group'>
+                        {libraries}
+                        <div className='list-group-item'>
+                            <button className='btn btn-default' data-toggle='modal' data-target='#new-library-dialog'>
+                                <i className='fa fa-plus'></i> New Library
+                            </button>
+                        </div>
                     </div>
-                </div>;
+                );
             }
             else
             {

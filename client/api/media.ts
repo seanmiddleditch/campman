@@ -12,7 +12,7 @@ export class MediaAPI
 
     presign(params: {filename: string, filetype: string, filesize: number})
     {
-        return this._rpc.post<{signedRequest: string, putURL: string}>('/api/media/presign', params);
+        return this._rpc.post<{signedRequest: string, url: string}>('/api/media/presign', params);
     }
 
     async upload(file: File) : Promise<URL>
@@ -24,7 +24,7 @@ export class MediaAPI
         const signed = await this.presign({filename, filetype, filesize});
         const put = await fetch(signed.signedRequest, {method: 'put', mode: 'cors', body: file});
 
-        return new URL(signed.putURL);
+        return new URL(signed.url);
     }
 
     async list(path: string = '') : Promise<ListResults>
