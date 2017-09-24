@@ -30,7 +30,7 @@ export default class ProfileView extends React.Component<ProfileViewProps>
                 </div>
                 <div className='input-group mt-sm-2'>
                     <span className='input-group-addon'>@</span>
-                    <input type='text' disabled className='form-control' name='email' value={'email'}/>
+                    <input type='text' disabled className='form-control' name='email' value={this.props.user.email}/>
                 </div>
             </div>
         );

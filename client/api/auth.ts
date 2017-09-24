@@ -5,6 +5,7 @@ export class UserData
     id?: number;
     fullName?: string;
     nickname?: string;
+    email?: string;
 };
 export class SessionData
 {
