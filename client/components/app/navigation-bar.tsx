@@ -38,7 +38,15 @@ export default class NavigationBar extends React.Component<NavigationBarProps, N
     private _userBar()
     {
         return <div className='btn-group' role='group'>
-            <button className='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>{this.props.user.nickname || this.props.user.fullName}<span className='caret'/></button>
+            <button className='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+                <span className='navigation-bar-profile'>
+                    <span className='navigation-bar-profile-name'>{this.props.user.nickname || this.props.user.fullName}</span>
+                    {this.props.user.photoURL ?
+                        <img className='navigation-bar-profile-photo profile-photo' src={this.props.user.photoURL}/> :
+                        <i className='navigation-bar-profile-photo fa fa-user-circle-o'></i>
+                    }
+                </span>
+            </button>
             <div className='dropdown-menu'>
                 <a className='dropdown-item' href={(new URL('/libraries', this.props.config.publicURL)).toString()}>Libraries</a>
                 <a className='dropdown-item' href={(new URL('/profile', this.props.config.publicURL)).toString()}>Profile</a>
