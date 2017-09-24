@@ -88,7 +88,14 @@ class Config
 
     app.set('subdomain offset', (config.publicURL.hostname.match(/[.]/g) || []).length + 1);
 
+    // static assets first, before library checks or other work
+    app.use(favicon(path.join(staticRoot, 'images', 'favicon.ico')));
+    app.use('/dist', express.static(path.join(clientRoot, 'dist')));
+    app.use(express.static(staticRoot));
+
     // load the library if we're on a sub-domain
+    const subdomainCache = new Map();
+
     app.use(async (req, res, next) => {
         const protocol = req.secure ? 'https' : 'http';
         const sub = req.subdomains.length ? req.subdomains[req.subdomains.length - 1] : null;
@@ -102,9 +109,21 @@ class Config
         {
             if (sub)
             {
-                req.library = await db.query(models.LibraryModel).where(m => m.slug.eq(sub)).findOne();
+                // only do the DB query if necessary
+                // FIXME: move cache so it can be updated when libraries change, and/or auto-update
+                // when expired
+                req.library = subdomainCache.get(sub);
+
+                if (req.library === undefined)
+                {
+                    req.library = await db.query(models.LibraryModel).where(m => m.slug.eq(sub)).findOne();
+                    subdomainCache.set(sub, req.library);
+                }
+                
                 if (!req.library)
+                {
                     return res.redirect(config.publicURL.toString());
+                }
             }
                 
             next();
@@ -118,7 +137,6 @@ class Config
         next();
     });
 
-    app.use(favicon(path.join(staticRoot, 'images', 'favicon.ico')));
     app.use(BodyParser.urlencoded({extended: false}));
     app.use(BodyParser.json());
     
@@ -164,9 +182,6 @@ class Config
     app.use(routes.LibraryRouter(db));
     app.use(routes.MediaRoutes(db, config));
 
-    app.use('/dist', express.static(path.join(clientRoot, 'dist')));
-
-    app.use(express.static(staticRoot));
     app.use(async (req, res) => res.render('index', {
         session: JSON.stringify({
             config: {
