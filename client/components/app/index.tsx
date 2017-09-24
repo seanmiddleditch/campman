@@ -16,18 +16,11 @@ export interface AppProps
     user?: api.UserData;
     children: any;
 }
-interface AppState
-{
-    user?: api.UserData;
-}
-export default class App extends React.Component<AppProps, AppState>
+export default class App extends React.Component<AppProps>
 {
     constructor(props: AppProps)
     {
         super(props);
-        this.state = {
-            user: props.user
-        };
     }
 
     private _onLogin()
@@ -48,14 +41,16 @@ export default class App extends React.Component<AppProps, AppState>
     render()
     {
         //(new URLSearchParams(window.location.search)).get('q')
-        return <div className='content-wrapper'>
-            <NavigationBar config={this.props.config} library={this.props.library} user={this.state.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()} onSearch={text => this._onSearch(text)}/>
-            <div className='content'>
-                {this.props.children}
+        return (
+            <div className='content-wrapper'>
+                <NavigationBar config={this.props.config} library={this.props.library} user={this.props.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()} onSearch={text => this._onSearch(text)}/>
+                <div className='content'>
+                    {this.props.children}
+                </div>
+                <footer>
+                    <div className='footer-copyright'><a href="https://github.com/seanmiddleditch/campman">Campaign Manager</a> by <a href="http://seanmiddleditch.com">Sean Middleditch</a></div>
+                </footer>
             </div>
-            <footer>
-                <div className='footer-copyright'><a href="https://github.com/seanmiddleditch/campman">Campaign Manager</a> by <a href="http://seanmiddleditch.com">Sean Middleditch</a></div>
-            </footer>
-        </div>;
+        )
     }
 }

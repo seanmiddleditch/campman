@@ -7,13 +7,14 @@ import App from './components/app/index';
 import NotFoundPage from './components/not-found';
 
 import NoteView from './views/note';
-import NotesView from './views/notes';
 import MediaView from './views/media';
 import SearchPage from './views/search';
 import LabelView from './views/label';
 import LabelsView from './views/labels';
 import LibrariesView from './views/libraries';
 import ProfileView from './views/profile';
+
+import ListNotesPage from './pages/list-notes/index';
 
 import * as api from './api/index';
 
@@ -24,7 +25,7 @@ export interface Config
 
 const LibraryRoutes = () => (
     <Switch>
-        <Route path='/notes' exact render={p => <NotesView {...p}/>}/>
+        <Route path='/notes' exact render={p => <ListNotesPage {...p}/>}/>
         <Route path='/search' exact render={p => <SearchPage {...p} query={(new URLSearchParams(p.location.search)).get('q')}/>}/>
         <Route path='/labels' exact render={p => <LabelsView {...p}/>}/>
         <Route path='/media/:path*' render={p => <MediaView path={p.match.params.path} {...p}/>}/>
