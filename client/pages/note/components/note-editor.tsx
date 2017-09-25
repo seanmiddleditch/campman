@@ -1,77 +1,31 @@
-import * as React from 'react';
-import * as ReactRouter from 'react-router';
-import * as PropTypes from 'prop-types';
-import * as ReactDOM from 'react-dom';
-import {Editor, EditorState, ContentState} from 'draft-js';
+import * as React from 'react'
+import * as ReactRouter from 'react-router'
+import * as PropTypes from 'prop-types'
+import * as ReactDOM from 'react-dom'
 
-require('../styles/notes.css');
+import LabelInput from './label-input'
+import BodyEditor from './body-editor'
 
-interface NoteBodyEditorProps
-{
-    document: string;
-    onChange: (document: string) => void;
-}
-interface NoteBodyEditorState
-{
-    editorState: EditorState
-}
-class NoteBodyEditor extends React.Component<NoteBodyEditorProps, NoteBodyEditorState>
-{
-    refs: {
-        editor: HTMLElement
-    }
+import Markdown from '../../../components/markdown'
 
-    constructor(props: NoteBodyEditorProps)
-    {
-        super(props);
-
-        const content = ContentState.createFromText(props.document);
-
-        this.state = {
-            editorState: EditorState.createWithContent(content)
-        };
-    }
-
-    private _onChange(editorState: EditorState)
-    {
-        this.setState({editorState});
-        this.props.onChange(editorState.getCurrentContent().getPlainText());
-    }
-
-    componentDidMount()
-    {
-        this.refs.editor.focus();
-    }
-
-    render() {
-        return (
-            <div className='note-body-editor' onClick={() => this.refs.editor.focus()}>
-                <Editor ref='editor' editorState={this.state.editorState} onChange={editorState => this._onChange(editorState)} placeholder='Note body text goes here'/>
-            </div>
-        );
-    }
-}
-
-import LabelInput from './label-input';
-
-import * as api from '../api';
+import * as api from '../../../api'
 
 export interface NoteEditorProps
 {
-    note: api.NoteData,
-    slug: string,
-    exists: boolean,
-    onSave: (note: api.NoteData) => void,
+    note: api.NoteData
+    slug: string
+    disabled?: boolean
+    onSave: (note: api.NoteData) => void
     onCancel: () => void
 }
 interface NoteEditorState
 {
     saving: boolean,
-    label: string,
     title: string,
     subtitle: string,
-    labels: string[],
+    labels: string[]
     body: string
+    preview: boolean
 }
 export default class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState>
 {
@@ -86,7 +40,7 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
         super(props);
         this.state = {
             saving: false,
-            label: '',
+            preview: false,
 
             title: props.note && props.note.title ? props.note.title : '',
             subtitle: props.note && props.note.subtitle ? props.note.subtitle : '',
@@ -103,25 +57,17 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
             this.props.note.labels.join(',') !== this.state.labels.join(','));
     }
 
-    private _save()
+    private _handleSaveClicked()
     {
-        if (!this.state.saving)
-        {
-            this.setState({saving: true});
-            const note = {
-                title: this.state.title,
-                subtitle: this.state.subtitle,
-                labels: this.state.labels,
-                body: this.state.body,
-            };
-
-            api.notes.update(this.props.slug, note)
-                .then(() => {this.setState({saving: false}); this.props.onSave(note);})
-                .catch((err: Error) => this.setState({saving: false}));
-        }
+        this.props.onSave({
+            title: this.state.title,
+            subtitle: this.state.subtitle,
+            labels: this.state.labels.slice(),
+            body: this.state.body
+        })
     }
 
-    private _cancel()
+    private _handleCancelClicked()
     {
         if (!this._hasChanges() || confirm('Canceling now will lose your changes. Click Cancel to continue editing.'))
         {
@@ -146,7 +92,7 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
         if (index === -1)
         {
             this.state.labels.push(label);
-            this.setState({labels: this.state.labels, label: ''});
+            this.setState({labels: this.state.labels});
         }
     }
 
@@ -181,35 +127,47 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
 
     render()
     {
-        //<input type='text' className='form-control' placeholder='tag1, tag2, ...' onChange={ev => this._update({labels: ev.target.value})} defaultValue={this.state.note.labels.join(', ')}/>
         return <div className='note-editor'>
             <div className='input-group'>
                 <span className='input-group-addon'>Title</span>
-                <input type='text' className='form-control' onChange={ev => this._update({title: ev.target.value})} defaultValue={this.state.title} placeholder='Note Title'/>
+                <input type='text' className='form-control' disabled={this.props.disabled} onChange={ev => this._update({title: ev.target.value})} defaultValue={this.state.title} placeholder='Note Title'/>
             </div>
             <div className='input-group mt-sm-2'>
                 <span className='input-group-addon'>Subtitle</span>
-                <input type='text' className='form-control' onChange={ev => this._update({subtitle: ev.target.value})} defaultValue={this.state.subtitle} placeholder='Subtitle'/>
+                <input type='text' className='form-control' disabled={this.props.disabled} onChange={ev => this._update({subtitle: ev.target.value})} defaultValue={this.state.subtitle} placeholder='Subtitle'/>
             </div>
             <div className='input-group mt-sm-2'>
                 <span className='input-group-addon'><i className='col fa fa-tags'></i></span>
-                <LabelInput labels={this.state.labels} onAdd={label => this._addLabel(label)} onRemove={label => this._removeLabel(label)}/>
+                <LabelInput labels={this.state.labels} disabled={this.props.disabled} onAdd={label => this._addLabel(label)} onRemove={label => this._removeLabel(label)}/>
             </div>
             <div className='floating-editbar-container'>
                 <div className='floating-editbar'>
                     <div className='btn-group mt-sm-2' role='group'>
-                        <button id='note-btn-save' className='btn btn-primary' about='Save' onClick={() => this._save()}><i className='fa fa-floppy-o'></i> Save</button>
+                        <button id='note-btn-save' className='btn btn-primary' about='Save' disabled={this.props.disabled}  onClick={() => this._handleSaveClicked()}><i className='fa fa-floppy-o'></i> Save</button>
                         <div className='btn-group'>
                             <button className='btn btn-primary dropdown-toggle dropdown-toggle-split' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'><span className='caret'/></button>
                             <div className='dropdown-menu'>
-                                <button id='note-btn-cancel' className='dropdown-item' about='Cancel' onClick={() => this._cancel()}><i className='fa fa-ban'></i> Cancel</button>
+                                <button id='note-btn-cancel' className='dropdown-item' about='Cancel' disabled={this.props.disabled} onClick={() => this._handleCancelClicked()}><i className='fa fa-ban'></i> Cancel</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div className='input-group mt-sm-2'>
-                <NoteBodyEditor document={this.state.body} onChange={document => this._update({body: document})}/>
+            <div className='mt-sm-2'>
+                <ul className='nav nav-tabs'>
+                    <li className="nav-item">
+                        <a className={'nav-link ' + (!this.state.preview && 'active')} href='#' onClick={ev => {this.setState({preview: false}); ev.preventDefault()}}>Edit</a>
+                    </li>
+                    <li className="nav-item">
+                        <a className={'nav-link ' + (this.state.preview && 'active')} href='#' onClick={ev => {this.setState({preview: true}); ev.preventDefault()}}>Preview</a>
+                    </li>
+                </ul>
+            </div>
+            <div className='input-group' hidden={this.state.preview}>
+                <BodyEditor document={this.state.body} disabled={this.props.disabled || this.state.preview} onChange={document => this._update({body: document})}/>
+            </div>
+            <div>
+                {this.state.preview && <Markdown markup={this.state.body} history={this.context.router.history}/>}
             </div>
         </div>;
     }

@@ -6,10 +6,10 @@ import {BrowserRouter, NavLink} from 'react-router-dom';
 import App from './components/app';
 import NotFoundPage from './components/not-found';
 
-import NoteView from './views/note';
 import SearchPage from './views/search';
 import LabelView from './views/label';
 
+import NotePage from './pages/note';
 import MediaBrowserPage from './pages/media-browser';
 import MyProfilePage from './pages/my-profile';
 import ListLabelsPage from './pages/list-labels';
@@ -33,10 +33,10 @@ const LibraryRoutes = () => (
         </Route>
         <Route path='/search' exact render={p => <SearchPage {...p} query={(new URLSearchParams(p.location.search)).get('q')}/>}/>
         <Route path='/media/:path*' render={p => <MediaBrowserPage path={p.match.params.path} {...p}/>}/>
-        <Route path='/n/:slug' exact render={p => <NoteView slug={p.match.params.slug} {...p}/>}/>
+        <Route path='/n/:slug' exact render={p => <NotePage slug={p.match.params.slug} {...p}/>}/>
         <Route path='/l/:slug' exact render={p => <LabelView slug={p.match.params.slug} {...p}/>}/>);
         <Route path='/' exact>
-            <NoteView slug='home'/>
+            <NotePage slug='home'/>
         </Route>
         <Route>
             <NotFoundPage/>

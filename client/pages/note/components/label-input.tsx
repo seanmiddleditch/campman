@@ -1,20 +1,23 @@
-import * as React from 'react';
+import * as React from 'react'
 
 export interface LabelInputProps
 {
-    labels: string[],
-    onAdd: (label: string) => void,
-    onRemove: (label: string) => void,
+    labels: string[]
+    disabled?: boolean
+    onAdd: (label: string) => void
+    onRemove: (label: string) => void
     onComplete?: (prefix: string) => string[]
 }
 interface LabalInputState
 {
-    input: string,
+    input: string
     focused: boolean
 }
 export default class LabelInput extends React.Component<LabelInputProps, LabalInputState>
 {
-    refs: {input: HTMLInputElement};
+    refs: {
+        input: HTMLInputElement
+    }
 
     constructor(props: LabelInputProps)
     {
@@ -86,6 +89,7 @@ export default class LabelInput extends React.Component<LabelInputProps, LabalIn
                     </span>
                 )}
                 <input ref='input' type='text'
+                    disabled={this.props.disabled}
                     value={this.state.input}
                     onChange={ev => this._handleChange(ev.target.value)}
                     onBlur={ev => this._handleBlur(ev)}
