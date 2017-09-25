@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import * as ReactRouter from 'react-router';
 import {NavLink} from 'react-router-dom';
 
-import * as api from '../../api/index';
+import * as api from '../../api';
 import {Config} from '../../client';
 
 require('../../styles/navigation.css');

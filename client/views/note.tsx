@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactRouter from 'react-router';
 import * as PropTypes from 'prop-types';
 
-import * as api from '../api/index';
+import * as api from '../api';
 
 import ContentEditable from '../components/content-editable';
 import Labels from '../components/labels';

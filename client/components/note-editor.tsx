@@ -54,7 +54,7 @@ class NoteBodyEditor extends React.Component<NoteBodyEditorProps, NoteBodyEditor
 
 import LabelInput from './label-input';
 
-import * as api from '../api/index';
+import * as api from '../api';
 
 export interface NoteEditorProps
 {

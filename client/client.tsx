@@ -3,20 +3,20 @@ import * as ReactDOM from 'react-dom';
 import {Route, MemoryRouter, Switch, Redirect} from 'react-router';
 import {BrowserRouter, NavLink} from 'react-router-dom';
 
-import App from './components/app/index';
+import App from './components/app';
 import NotFoundPage from './components/not-found';
 
 import NoteView from './views/note';
 import MediaView from './views/media';
 import SearchPage from './views/search';
 import LabelView from './views/label';
-import ProfileView from './views/profile';
 
-import ListLabelsPage from './pages/list-labels/index';
-import ListLibrariesPage from './pages/list-libraries/index';
-import ListNotesPage from './pages/list-notes/index';
+import MyProfilePage from './pages/my-profile';
+import ListLabelsPage from './pages/list-labels';
+import ListLibrariesPage from './pages/list-libraries';
+import ListNotesPage from './pages/list-notes';
 
-import * as api from './api/index';
+import * as api from './api';
 
 export interface Config
 {
@@ -50,7 +50,7 @@ const AppRoutes = (props: {config: Config, user: api.UserData}) =>
             <ListLibrariesPage config={props.config}/>
         </Route>
         <Route path='/profile' exact>
-            <ProfileView user={props.user}/>
+            <MyProfilePage user={props.user}/>
         </Route>
         <Route path='/' exact>
             <Redirect to='/libraries'/>

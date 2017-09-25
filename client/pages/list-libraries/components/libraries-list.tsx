@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import LibraryItem from './library-item';
 
-import * as api from '../../../api/index'
+import * as api from '../../../api'
 
 interface LibrariesListProps
 {
@@ -30,7 +30,7 @@ export default class LibrariesList extends React.Component<LibrariesListProps, L
                 this.setState({libraries: []});
             });
     }
-    
+
     render()
     {
         return (

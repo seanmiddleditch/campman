@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {Link} from 'react-router-dom';
 
-import * as api from '../../api/index'
+import * as api from '../../api'
 import Page, {PageHeader, PageBody} from '../../components/page'
 import Modal, {ModalHeader, ModalBody, ModalFooter} from '../../components/modal'
 

@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as PropTypes from 'prop-types';
 import * as ReactRouter from 'react-router';
 import {Link} from 'react-router-dom';
-import * as api from '../../api/index';
+import * as api from '../../api';
 
 import Page, {PageHeader, PageBody} from '../../components/page';
 import NewNoteDialog from './components/new-note-dialog';

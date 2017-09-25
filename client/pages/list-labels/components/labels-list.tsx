@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import LabelItem from './label-item';
 
-import * as api from '../../../api/index'
+import * as api from '../../../api'
 
 interface LabelsListProps
 {

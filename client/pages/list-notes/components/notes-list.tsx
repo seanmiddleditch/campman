@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import NoteItem from './note-item';
 
-import * as api from '../../../api/index'
+import * as api from '../../../api'
 
 interface NotesListProps
 {

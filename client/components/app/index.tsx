@@ -2,7 +2,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import * as PropTypes from 'prop-types';
 
-import * as api from '../../api/index';
+import * as api from '../../api';
 import {Config} from '../../client';
 
 import NavigationBar from './navigation-bar';

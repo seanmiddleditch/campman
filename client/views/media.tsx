@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as JQuery from 'jquery';
 import {Link} from 'react-router-dom';
-import * as api from '../api/index';
+import * as api from '../api';
 import * as path from 'path';
 
 export interface MediaViewProps

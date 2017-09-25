@@ -1,12 +1,12 @@
 import * as React from 'react';
 
-import * as api from '../api/index';
+import * as api from '../../api';
 
 export interface ProfileViewProps
 {
     user: api.UserData
 }
-export default class ProfileView extends React.Component<ProfileViewProps>
+export default class MyProfilePage extends React.Component<ProfileViewProps>
 {
     constructor(props: ProfileViewProps)
     {
