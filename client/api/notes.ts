@@ -14,9 +14,9 @@ export class NotesAPI
 {
     private _rpc = new RPCHelper();
 
-    fetchAll() : Promise<NoteData[]>
+    fetchAll(options: {labels?: string|string[]}) : Promise<NoteData[]>
     {
-        return this._rpc.get<NoteData[]>('/api/notes');
+        return this._rpc.get<NoteData[]>('/api/notes', {label: options.labels});
     }
 
     fetch(slug: string) : Promise<NoteData>

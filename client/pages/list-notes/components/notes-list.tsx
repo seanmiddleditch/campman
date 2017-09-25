@@ -7,6 +7,7 @@ import * as api from '../../../api'
 interface NotesListProps
 {
     children?: any
+    labels?: string|string[]
 }
 interface NotesListState
 {
@@ -22,7 +23,7 @@ export default class NotesList extends React.Component<NotesListProps, NotesList
 
     componentDidMount()
     {  
-        api.notes.fetchAll()
+        api.notes.fetchAll({labels: this.props.labels})
             .then(notes => this.setState({notes}))
             .catch(err => {
                 console.log(err, err.stack);

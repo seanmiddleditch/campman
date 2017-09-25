@@ -14,11 +14,20 @@ export default function NoteAPIRoutes(db: Database)
         
         const userID = req.user ? req.user.id : null
         const librarySlug = req.library.slug;
-
-        const all = await db.query(NoteModel)
+        const labelSlug = req.query.label;
+        
+        // has to be a cleaner way to write this
+        const all = typeof labelSlug === 'string' ?
+            await db.query(NoteModel)
                 .attributes(m => [m.slug, m.title, m.subtitle])
                 .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug)))
-                .include(LabelModel, m => [m.labels, {required: false, }], q => q.attributes(m => [m.slug]))
+                .include(LabelModel, m => [m.labels, {required: true}], q => q.attributes(m => [m.slug]).where(m => m.slug.eq(labelSlug)))
+                .order(m => [[m.title, ASC]])
+                .find() :
+            await db.query(NoteModel)
+                .attributes(m => [m.slug, m.title, m.subtitle])
+                .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug)))
+                .include(LabelModel, m => [m.labels, {required: false}], q => q.attributes(m => [m.slug]))
                 .order(m => [[m.title, ASC]])
                 .find()
 
@@ -33,10 +42,10 @@ export default function NoteAPIRoutes(db: Database)
         const noteSlug = req.params.note;
 
         const note = await db.query(NoteModel)
-                .attributes(m => [m.slug, m.title, m.subtitle, m.body])
-                .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug)))
-                .include(LabelModel, m => [m.labels, {required: false}], q => q.attributes(m => [m.slug]))
-                .where(m => m.slug.eq(noteSlug)).findOne()
+            .attributes(m => [m.slug, m.title, m.subtitle, m.body])
+            .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug)))
+            .include(LabelModel, m => [m.labels, {required: false}], q => q.attributes(m => [m.slug]))
+            .where(m => m.slug.eq(noteSlug)).findOne()
 
         if (!note) return notFound();
         else return success({...note, labels: note.labels.map(l => l.slug)});

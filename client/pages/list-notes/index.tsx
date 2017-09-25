@@ -8,12 +8,16 @@ import Page, {PageHeader, PageBody} from '../../components/page';
 import NewNoteDialog from './components/new-note-dialog';
 import NotesList from './components/notes-list';
 
+interface ListNotesPageProps
+{
+    labels?: string|string[]
+}
 interface ListNotesPageState
 {
     dialogOpen: boolean
     saving: boolean
 }
-export default class ListNotesPage extends React.Component<{}, ListNotesPageState>
+export default class ListNotesPage extends React.Component<ListNotesPageProps, ListNotesPageState>
 {
     static contextTypes = { router: PropTypes.object.isRequired }
     
@@ -45,7 +49,7 @@ export default class ListNotesPage extends React.Component<{}, ListNotesPageStat
                 <PageHeader icon='book' title='Notes'/>
                 <PageBody>
                     <NewNoteDialog visible={this.state.dialogOpen} onClose={() => this.setState({dialogOpen: false})} onCreate={note => this._createNote(note)}/>
-                    <NotesList>
+                    <NotesList labels={this.props.labels}>
                         <div className='list-group-item'>
                             <button className='btn btn-default'  onClick={() => this.setState({dialogOpen: true})}>
                                 <i className='fa fa-plus'></i> New Note

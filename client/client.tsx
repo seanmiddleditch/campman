@@ -6,8 +6,6 @@ import {BrowserRouter, NavLink} from 'react-router-dom';
 import App from './components/app';
 import NotFoundPage from './components/not-found';
 
-import LabelView from './views/label';
-
 import SearchPage from './pages/search';
 import NotePage from './pages/note';
 import MediaBrowserPage from './pages/media-browser';
@@ -25,16 +23,13 @@ export interface Config
 
 const LibraryRoutes = () => (
     <Switch>
-        <Route path='/notes' exact>
-            <ListNotesPage/>
-        </Route>
+        <Route path='/notes' exact render={p => <ListNotesPage labels={(new URLSearchParams(p.location.search)).get('label')} {...p}/>}/>
         <Route path='/labels' exact>
             <ListLabelsPage/>
         </Route>
         <Route path='/search' exact render={p => <SearchPage {...p} query={(new URLSearchParams(p.location.search)).get('q')}/>}/>
         <Route path='/media/:path*' render={p => <MediaBrowserPage path={p.match.params.path} {...p}/>}/>
         <Route path='/n/:slug' exact render={p => <NotePage slug={p.match.params.slug} {...p}/>}/>
-        <Route path='/l/:slug' exact render={p => <LabelView slug={p.match.params.slug} {...p}/>}/>);
         <Route path='/' exact>
             <NotePage slug='home'/>
         </Route>
