@@ -11,9 +11,9 @@ import MediaView from './views/media';
 import SearchPage from './views/search';
 import LabelView from './views/label';
 import LabelsView from './views/labels';
-import LibrariesView from './views/libraries';
 import ProfileView from './views/profile';
 
+import ListLibrariesPage from './pages/list-libraries/index';
 import ListNotesPage from './pages/list-notes/index';
 
 import * as api from './api/index';
@@ -38,7 +38,9 @@ const LibraryRoutes = () => (
     </Switch>);
 const AppRoutes = ({config, user}: {config: Config, user: api.UserData}) => (
     <Switch>
-        <Route path='/libraries' exact render={p => <LibrariesView config={config} {...p}/>}/>
+        <Route path='/libraries' exact>
+            <ListLibrariesPage config={config}/>
+        </Route>
         <Route path='/profile' exact>
             <ProfileView user={user}/>
         </Route>

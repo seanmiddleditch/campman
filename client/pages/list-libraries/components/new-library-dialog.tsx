@@ -34,21 +34,21 @@ export default class NewNoteDialog extends React.Component<NewNoteDialogProps>
         return (
             <Modal visible={this.props.visible}>
                 <ModalHeader>
-                    New Note
+                    New Library
                 </ModalHeader>
                 <ModalBody>
                     <div className='form-group'>
                         <label htmlFor='title'>Title</label>
-                        <input className='form-control' ref='title' type='text' disabled={this.props.disabled} placeholder='An Interesting Note' onChange={ev => this._handleTitleChanged(ev)}/>
+                        <input className='form-control' ref='title' type='text' disabled={this.props.disabled} placeholder='My Library' onChange={ev => this._handleTitleChanged(ev)}/>
                     </div>
                     <div className='form-group'>
                         <label htmlFor='slug'>Slug</label>
-                        <input className='form-control' ref='slug' type='text' disabled={this.props.disabled} placeholder='an-interesting-note'/>
+                        <input className='form-control' ref='slug' type='text' disabled={this.props.disabled} placeholder='my-library'/>
                     </div>
                 </ModalBody>
                 <ModalFooter>
                     <button className='btn btn-secondary' disabled={this.props.disabled} onClick={() => this.props.onClose()}>Cancel</button>
-                    <button className='btn btn-primary' disabled={this.props.disabled} onClick={ev => this._handleCreateClicked(ev)}>Create Note</button>
+                    <button className='btn btn-primary' disabled={this.props.disabled} onClick={ev => this._handleCreateClicked(ev)}>Create Library</button>
                 </ModalFooter>
             </Modal>
         )

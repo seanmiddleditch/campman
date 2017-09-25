@@ -6,11 +6,10 @@ import * as api from '../../api/index';
 
 import Page, {PageHeader, PageBody} from '../../components/page';
 import NewNoteDialog from './components/new-note-dialog';
-import NoteItem from './components/note-item';
+import NotesList from './components/notes-list';
 
 interface ListNotesPageState
 {
-    notes?: api.NoteData[]
     dialogOpen: boolean
     saving: boolean
 }
@@ -29,16 +28,6 @@ export default class ListNotesPage extends React.Component<{}, ListNotesPageStat
         };
     }
 
-    componentDidMount()
-    {  
-        api.notes.fetchAll()
-            .then(notes => this.setState({notes}))
-            .catch(err => {
-                console.log(err, err.stack);
-                this.setState({notes: []});
-            });
-    }
-
     private _createNote(note: {slug: string, title: string})
     {
         this.setState({saving: true})
@@ -51,23 +40,18 @@ export default class ListNotesPage extends React.Component<{}, ListNotesPageStat
 
     render()
     {
-        const notes = () => (this.state.notes === undefined ?
-            <div className='list-group-item'>loading...</div> :
-            this.state.notes.map(n => <NoteItem note={n}/>))
-
         return (
             <Page>
                 <PageHeader icon='book' title='Notes'/>
                 <PageBody>
                     <NewNoteDialog visible={this.state.dialogOpen} onClose={() => this.setState({dialogOpen: false})} onCreate={note => this._createNote(note)}/>
-                    <div className='list-group'>
-                        {notes()}
+                    <NotesList>
                         <div className='list-group-item'>
                             <button className='btn btn-default'  onClick={() => this.setState({dialogOpen: true})}>
                                 <i className='fa fa-plus'></i> New Note
                             </button>
                         </div>
-                    </div>
+                    </NotesList>
                 </PageBody>
             </Page>
         )

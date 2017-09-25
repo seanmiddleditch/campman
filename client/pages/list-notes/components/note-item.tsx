@@ -7,5 +7,5 @@ const NoteItem = ({note}: {note: {slug?: string, title?: string, subtitle?: stri
         <div className='list-item-subtitle'>{note.subtitle}</div>
         <div className='list-item-details comma-separated'>{note.labels.map(l => <span key={l}>{l}</span>)}</div>
     </Link>
-);
+)
 export default NoteItem;
