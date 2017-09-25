@@ -6,7 +6,7 @@
         "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
         "target": "es2017",
-        "module": "amd",
+        "module": "commonjs",
         "sourceMap": true,
         "outFile": "./dist/client.js",
         "jsx": "react"

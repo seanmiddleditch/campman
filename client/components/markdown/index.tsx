@@ -1,8 +1,8 @@
-import * as React from 'react';
-import * as MarkdownIt from 'markdown-it';
-import { History } from 'history';
+import * as React from 'react'
+import * as MarkdownIt from 'markdown-it'
+import {History} from 'history'
 
-require('../styles/markdown.css');
+require('./styles/markdown.css')
 
 export interface MarkupProps
 {

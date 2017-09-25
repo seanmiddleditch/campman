@@ -6,9 +6,9 @@ import {BrowserRouter, NavLink} from 'react-router-dom';
 import App from './components/app';
 import NotFoundPage from './components/not-found';
 
-import SearchPage from './views/search';
 import LabelView from './views/label';
 
+import SearchPage from './pages/search';
 import NotePage from './pages/note';
 import MediaBrowserPage from './pages/media-browser';
 import MyProfilePage from './pages/my-profile';
