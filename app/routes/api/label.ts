@@ -8,34 +8,27 @@ export default function LabelAPIRoutes(db: Database)
 {
     const router = Router();
 
-    router.get('/api/labels', helpers.wrap(async (req) => {
-        if (!req.user) return helpers.accessDenied();
+    router.get('/api/labels', helpers.authorized(db), helpers.wrap(async (req) => {
         if (!req.library) return helpers.notFound();
 
         const librarySlug = req.library.slug;
 
-        const [access, all] = await Promise.all([
-            LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor),
-            db.query(LabelModel)
+        const all = await db.query(LabelModel)
                 .attributes(m => [m.slug])
                 .include(NoteModel, m => m.notes, q => q.attributes(m => [m.id]).include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug))))
                 .order(m => [[m.slug, ASC]])
                 .find()
-        ]);
 
-        if (!access) return helpers.accessDenied();
-        else return helpers.success(all.map(l => ({slug: l.slug, numNotes: l.notes.length})));
+        return helpers.success(all.map(l => ({slug: l.slug, numNotes: l.notes.length})));
     }));
 
-    router.get('/api/labels/:label', helpers.wrap(async (req) => {
-        if (!req.user) return helpers.accessDenied();
+    router.get('/api/labels/:label', helpers.authorized(db), helpers.wrap(async (req) => {
         if (!req.library) return helpers.notFound();
         
         const labelSlug = req.params.label;
         const librarySlug = req.library.slug;
 
-        const [access, label, notes] = await Promise.all([
-            LibraryModel.findBySlugACL(db, librarySlug, req.user.id, Access.Visitor),
+        const [label, notes] = await Promise.all([
             db.query(LabelModel)
                 .attributes(m => [m.slug])
                 .where(m => m.slug.eq(labelSlug))
@@ -47,8 +40,7 @@ export default function LabelAPIRoutes(db: Database)
                 .find()
         ]);
 
-        if (!access) return helpers.accessDenied();
-        else if (!label) return helpers.notFound();
+        if (!label) return helpers.notFound();
         else return helpers.success({slug: label, notes});
     }));
 

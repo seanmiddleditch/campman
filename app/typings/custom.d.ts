@@ -1,4 +1,5 @@
-import LibraryModel from '../models/library';
+import LibraryModel from '../models/library'
+import Access from '../auth/access'
 
 declare global
 {
@@ -7,6 +8,7 @@ declare global
         export interface Request
         {
             library?: LibraryModel
+            accessLevel?: Access
         }
     }
 }

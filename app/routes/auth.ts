@@ -4,7 +4,7 @@ import {Database} from 'squell';
 import User from '../auth/user';
 import GoogleAuth from '../auth/google';
 import UserModel from '../models/user';
-import {wrap, success, accessDenied} from './helpers';
+import {wrap, success, accessDenied, authenticated} from './helpers';
 import {URL} from 'url';
 
 export interface AuthRoutesConfig
@@ -27,15 +27,14 @@ export default function AuthRoutes(db: Database, config: AuthRoutesConfig)
             next();
     });
 
-    router.post('/auth/logout', wrap(async (req) =>
+    router.post('/auth/logout', authenticated, wrap(async (req) =>
     {
-        if (!req.user) return accessDenied();
-        else if (!req.session) return accessDenied();
+        if (!req.session) return accessDenied();
         const session = req.session;
         return (new Promise(res => session.destroy(res))).then(() => success({}));
     }));
 
-    router.get('/auth/session', wrap(async (req) => {
+    router.get('/auth/session', authenticated, wrap(async (req) => {
         if (!req.session) return accessDenied();
 
         const user = req.user ? req.user as User : null;

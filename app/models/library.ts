@@ -42,7 +42,8 @@ export default class LibraryModel extends modelsafe.Model
          const rs = await db.query(LibraryAccessModel)
             .attributes(m => [m.access])
             .include(LibraryModel, m => m.library, q => q.where(m => m.slug.eq(librarySlug)))
-            .where(m => squell.attribute('userId').eq(userID))
+            .where(m => squell.attribute('userId').eq(userID).or(squell.attribute('userId').eq(null)))
+            .order(m => [[m.access, squell.DESC]])
             .findOne();
         return rs ? [rs.library, rs.access] : [null, 0];
     }

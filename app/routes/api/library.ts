@@ -2,7 +2,7 @@ import {Request, Response, Router} from 'express';
 import {LibraryModel, LibraryAccessModel, UserModel} from '../../models';
 import * as squell from 'squell';
 import Access from '../../auth/access';
-import {wrap, success, accessDenied, notFound, badInput} from '../helpers';
+import {wrap, success, accessDenied, notFound, badInput, authenticated} from '../helpers';
 import * as slug from '../../util/slug';
 
 export default function LabelAPIRoutes(db: squell.Database)
@@ -10,11 +10,11 @@ export default function LabelAPIRoutes(db: squell.Database)
     const router = Router();
 
     router.get('/api/libraries', wrap(async (req) => {
-        const userID = req.user ? req.user.id : null;
+        const userID = req.user ? req.user.id : null
 
         const all = await db.query(LibraryModel)
             .attributes(m => [m.slug, m.title])
-            .include(LibraryAccessModel, m => [m.acl, {required: false}], q => q.attributes(m => []).where(m => squell.attribute('userId').eq(userID)))
+            .include(LibraryAccessModel, m => [m.acl, {required: false}], q => q.attributes(m => []).where(m => squell.attribute('userId').eq(userID).or(squell.attribute('userId').eq(null))))
             .order(m => [[m.slug, squell.ASC]])
             .find();
 
@@ -22,7 +22,7 @@ export default function LabelAPIRoutes(db: squell.Database)
     }));
 
     router.get('/api/libraries/:library', wrap(async (req) => {
-        const userID = req.user ? req.user.id : null;
+        const userID = req.user ? req.user.id : null
 
         const librarySlug = req.params.library;
         const library = await db.query(LibraryModel)
@@ -35,10 +35,9 @@ export default function LabelAPIRoutes(db: squell.Database)
         else return success(library);
     }));
 
-    router.put('/api/libraries/:library', wrap(async (req) => {
-        if (!req.user) return accessDenied();
-
-        const user = await db.query(UserModel).findById(req.user.id);
+    router.put('/api/libraries/:library', authenticated, wrap(async (req) => {
+        const userID = req.user ? req.user.id : null
+        const user = await db.query(UserModel).findById(userID);
         if (!user) return accessDenied();
 
         const librarySlug = req.params.library;

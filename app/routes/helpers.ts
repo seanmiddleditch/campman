@@ -1,5 +1,8 @@
-import {Request, Response} from 'express';
-import User from '../auth/user';
+import {Request, Response, NextFunction} from 'express'
+import * as squell from 'squell'
+import LibraryModel from '../models/library'
+import User from '../auth/user'
+import Access from '../auth/access'
 
 export interface ErrorSchema
 {
@@ -36,9 +39,47 @@ export function badInput(detail?: string) : ErrorSchema
     return {status: 'error', httpStatusCode: 400, message: detail || 'Bad input'};
 }
 
-interface KeyValueInput { [key: string]: string };
-type Wrapper<T> = (req: {query: KeyValueInput, params: KeyValueInput, body?: any, library?: {slug: string}, user?: User, session?: {id: string, destroy: (err: any)=>void}}) => Promise<ResultSchema<T>>;
+export function authenticated()
+{
+    return (req: Request, res: Response, next: NextFunction) => {
+        if (req.user)
+            next()
+        else
+            res.status(401).json({status: 'error', message: 'Authorization required'})
+    }
+}
 
+export function authorized(db: squell.Database, access: Access = Access.Visitor)
+{
+    return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+        if (req.library)
+        {
+            const librarySlug = req.library.slug
+            const userId = req.user ? req.user.id : null
+            
+            const [library, allowed] = await LibraryModel.queryAccess(db, librarySlug, userId)
+            if (allowed >= access)
+            {
+                req.accessLevel = allowed
+                next()
+            }
+            else if (req.user)
+            {
+                res.status(403).json({status: 'error', message: 'Access forbidden'})
+            }
+            else
+            {
+                res.status(401).json({status: 'error', message: 'Authorization required'})
+            }
+        }
+        else
+        {
+            res.status(400).json({status: 'error', message: 'Invalid API endpoint'})
+        }
+    }
+}
+
+type Wrapper<T> = (req: {query: {[key: string]: string|string[]}, params: {[key: string]: string}, body?: any, library?: {slug: string}, user?: User, session?: {id: string, destroy: (err: any)=>void}}) => Promise<ResultSchema<T>>;
 export function wrap<T>(func: Wrapper<T>)
 {
     return async (req: Request, res: Response) => {
