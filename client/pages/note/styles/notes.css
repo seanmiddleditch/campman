@@ -6,7 +6,5 @@
 .note-body { margin: 1em 0 1em 0; padding: 2px }
 .note-body *[contenteditable="true"] { white-space: pre-wrap; font-family: monospace }
 
-.note-body-editor { min-height: 20em; border: 1px solid black; padding: 4px; cursor: text; width: 100% }
-
 .floating-editbar-container { position: absolute; left: 0; margin-top: 1em; z-index: 1000 }
 .floating-editbar { position: fixed; padding-right: 1em; transform: translateX(-100%); }

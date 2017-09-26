@@ -58,7 +58,6 @@ const Routes = (props: {config: Config, library: Library, user: User}) =>
         </AppContainer>
     </BrowserRouter>
 
-
 (() => {
     const session = (window as any).CM_SESSION;
     const config = session.config;

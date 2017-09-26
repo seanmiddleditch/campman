@@ -4,18 +4,18 @@ import * as PropTypes from 'prop-types'
 import * as ReactDOM from 'react-dom'
 
 import LabelInput from './label-input'
-import BodyEditor from './body-editor'
-
+import MarkEditor from '../../../components/mark-editor'
 import Markdown from '../../../components/markdown'
 
 import * as api from '../../../api'
+import {Note} from '../../../types'
 
 export interface NoteEditorProps
 {
-    note: api.NoteData
+    note: Note
     slug: string
     disabled?: boolean
-    onSave: (note: api.NoteData) => void
+    onSave: (note: Note) => void
     onCancel: () => void
 }
 interface NoteEditorState
@@ -153,22 +153,7 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
                     </div>
                 </div>
             </div>
-            <div className='mt-sm-2'>
-                <ul className='nav nav-tabs'>
-                    <li className="nav-item">
-                        <a className={'nav-link ' + (!this.state.preview && 'active')} href='#' onClick={ev => {this.setState({preview: false}); ev.preventDefault()}}>Edit</a>
-                    </li>
-                    <li className="nav-item">
-                        <a className={'nav-link ' + (this.state.preview && 'active')} href='#' onClick={ev => {this.setState({preview: true}); ev.preventDefault()}}>Preview</a>
-                    </li>
-                </ul>
-            </div>
-            <div className='input-group' hidden={this.state.preview}>
-                <BodyEditor document={this.state.body} disabled={this.props.disabled || this.state.preview} onChange={document => this._update({body: document})}/>
-            </div>
-            <div>
-                {this.state.preview && <Markdown markup={this.state.body} history={this.context.router.history}/>}
-            </div>
+            <MarkEditor document={this.state.body} disabled={this.props.disabled || this.state.preview} onChange={document => this._update({body: document})}/>
         </div>;
     }
 };
