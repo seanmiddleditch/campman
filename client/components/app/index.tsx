@@ -1,36 +1,45 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import * as PropTypes from 'prop-types';
+import * as React from 'react'
+import * as ReactDOM from 'react-dom'
+import * as PropTypes from 'prop-types'
 
-import * as api from '../../api';
-import {Config} from '../../client';
+import * as api from '../../api'
+import {Config} from '../../client'
 
-import NavigationBar from './navigation-bar';
+import NavigationBar from './navigation-bar'
 
-require('../../styles/site.css');
+require('../../styles/site.css')
 
 export interface AppProps
 {
-    config: Config;
-    library?: api.LibraryData;
-    user?: api.UserData;
-    children: any;
+    config: Config
+    library?: api.LibraryData
+    user?: api.UserData
+    children: any
 }
-export default class App extends React.Component<AppProps>
+interface AppState
+{
+    user?: api.UserData
+}
+export default class App extends React.Component<AppProps, AppState>
 {
     constructor(props: AppProps)
     {
         super(props);
+        this.state = {user: props.user}
     }
 
     private _onLogin()
     {
-        api.auth.login().then(() => window.location.reload(true));
+        api.auth.login()
+            .then(user => this.setState({user}))
+            .catch(err => console.error(err, err.stack))
     }
 
     private _onLogout()
     {
-        api.auth.logout().then(() => window.location.reload(true));
+        api.auth.logout()
+            .then(() => this.setState({user: undefined}))
+            .catch(err => console.error(err, err.stack))
     }
 
     private _onSearch(text: string)
@@ -40,10 +49,9 @@ export default class App extends React.Component<AppProps>
 
     render()
     {
-        //(new URLSearchParams(window.location.search)).get('q')
         return (
             <div className='content-wrapper'>
-                <NavigationBar config={this.props.config} library={this.props.library} user={this.props.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()} onSearch={text => this._onSearch(text)}/>
+                <NavigationBar config={this.props.config} library={this.props.library} user={this.state.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()} onSearch={text => this._onSearch(text)}/>
                 <div className='content'>
                     {this.props.children}
                 </div>

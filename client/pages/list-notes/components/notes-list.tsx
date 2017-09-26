@@ -21,14 +21,34 @@ export default class NotesList extends React.Component<NotesListProps, NotesList
         this.state = {}
     }
 
-    componentDidMount()
-    {  
-        api.notes.fetchAll({labels: this.props.labels})
+    private _fetch(labels: string|string[]|undefined)
+    {
+        api.notes.fetchAll({labels})
             .then(notes => this.setState({notes}))
             .catch(err => {
                 console.log(err, err.stack);
                 this.setState({notes: []});
             });
+    }
+
+    componentDidMount()
+    {  
+        this._fetch(this.props.labels)
+    }
+
+    componentWillReceiveProps(nextProps: NotesListProps)
+    {
+        const {labels} = this.props
+        const nextLabels = nextProps.labels
+
+        if (labels !== nextLabels)
+        {
+            if (JSON.stringify(labels) !== JSON.stringify(nextLabels))
+            {
+                this.setState({notes: undefined})
+                this._fetch(nextLabels)
+            }
+        }
     }
 
     render()

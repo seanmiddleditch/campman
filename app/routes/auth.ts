@@ -27,14 +27,14 @@ export default function AuthRoutes(db: Database, config: AuthRoutesConfig)
             next();
     });
 
-    router.post('/auth/logout', authenticated, wrap(async (req) =>
+    router.post('/auth/logout', authenticated(), wrap(async (req) =>
     {
         if (!req.session) return accessDenied();
         const session = req.session;
         return (new Promise(res => session.destroy(res))).then(() => success({}));
     }));
 
-    router.get('/auth/session', authenticated, wrap(async (req) => {
+    router.get('/auth/session', authenticated(), wrap(async (req) => {
         if (!req.session) return accessDenied();
 
         const user = req.user ? req.user as User : null;

@@ -35,7 +35,7 @@ export default function LabelAPIRoutes(db: squell.Database)
         else return success(library);
     }));
 
-    router.put('/api/libraries/:library', authenticated, wrap(async (req) => {
+    router.put('/api/libraries/:library', authenticated(), wrap(async (req) => {
         const userID = req.user ? req.user.id : null
         const user = await db.query(UserModel).findById(userID);
         if (!user) return accessDenied();
