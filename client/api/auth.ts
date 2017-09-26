@@ -1,17 +1,10 @@
-import {RPCHelper} from './helpers';
+import {RPCHelper} from './helpers'
+import {User} from '../types'
 
-export class UserData
-{
-    id?: number;
-    fullName?: string;
-    nickname?: string;
-    email?: string;
-    photoURL?: string;
-};
 export class SessionData
 {
     sessionKey?: string;
-    user?: UserData;
+    user?: User;
 };
 
 export class AuthAPI
@@ -31,7 +24,7 @@ export class AuthAPI
 
     login()
     {
-        return new Promise<UserData>((resolve, reject) => {
+        return new Promise<User>((resolve, reject) => {
             const handler = (ev: any) => {
                 window.removeEventListener('message', handler);
                 this.session()

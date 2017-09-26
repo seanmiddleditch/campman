@@ -3,13 +3,12 @@ import * as ReactRouter from 'react-router'
 import * as PropTypes from 'prop-types'
 
 import * as api from '../../api'
+import {Note} from '../../types'
 
 import Page, {PageHeader, PageBody} from '../../components/page'
 
-import NotFound from '../../components/not-found'
-
 import NoteEditor from './components/note-editor'
-import Note from './components/note'
+import ViewNote from './components/view-note'
 
 require('./styles/notes.css')
 
@@ -22,7 +21,7 @@ interface NotePageState
     editing: boolean
     failed: boolean
     saving: boolean
-    note?: api.NoteData
+    note?: Note
 };
 export default class NotePage extends React.Component<NotePageProps, NotePageState>
 {
@@ -40,7 +39,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         }
     }
     
-    private _save(note: api.NoteData)
+    private _save(note: Note)
     {
         if (!this.state.saving)
         {
@@ -100,7 +99,12 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
     render()
     {
         if (this.state.note === undefined)
-            return <div>loading...</div>
+            return (
+                <Page>
+                    <PageHeader icon='file' title='Note'/>
+                    <PageBody>loading...</PageBody>
+                </Page>
+            )
         else
             return (
                 <Page>
@@ -108,7 +112,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
                     <PageBody>
                         {this.state.editing ?
                             <NoteEditor slug={this.props.slug} disabled={this.state.saving} note={this.state.note} onSave={note => this._save(note)} onCancel={() => this.setState({editing: false})}/> :
-                            <Note note={this.state.note} onEdit={() => this.setState({editing: true})} onDelete={() => this._delete()}/>
+                            <ViewNote note={this.state.note} onEdit={() => this.setState({editing: true})} onDelete={() => this._delete()}/>
                         }
                     </PageBody>
                 </Page>

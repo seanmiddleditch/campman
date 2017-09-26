@@ -1,30 +1,24 @@
-import {RPCHelper} from './helpers';
-
-export class LibraryData
-{
-    id?: number;
-    slug?: string;
-    title?: string;
-};
+import {RPCHelper} from './helpers'
+import {Library} from '../types'
 
 export class LibrariesAPI
 {
     private _rpc = new RPCHelper();
 
-    fetchAll() : Promise<LibraryData[]>
+    fetchAll() : Promise<Library[]>
     {
-        return this._rpc.get<LibraryData[]>('/api/libraries');
+        return this._rpc.get<Library[]>('/api/libraries');
     }
 
-    fetch(slug: string) : Promise<LibraryData>
+    fetch(slug: string) : Promise<Library>
     {
-        return this._rpc.get<LibraryData>('/api/libraries/' + slug);
+        return this._rpc.get<Library>('/api/libraries/' + slug);
     }
 
-    create({slug, title}: {slug: string, title: string}) : Promise<LibraryData>
+    create({slug, title}: {slug: string, title: string}) : Promise<Library>
     {
-        return this._rpc.put<LibraryData>('/api/libraries/' + slug, {title});
+        return this._rpc.put<Library>('/api/libraries/' + slug, {title});
     }
-};
+}
 
-export const libraries = new LibrariesAPI();
+export const libraries = new LibrariesAPI()

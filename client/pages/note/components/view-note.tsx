@@ -6,7 +6,7 @@ import Markdown from '../../../components/markdown'
 
 import Labels from './labels'
 
-interface NoteProps
+interface ViewNoteProps
 {
     note: {
         slug?: string
@@ -18,11 +18,11 @@ interface NoteProps
     onDelete: () => void
     onEdit: () => void
 }
-export default class Note extends React.Component<NoteProps>
+export default class ViewNote extends React.Component<ViewNoteProps>
 {
     static contextTypes = { router: PropTypes.object.isRequired }
     
-    context: ReactRouter.RouterChildContext<NoteProps>
+    context: ReactRouter.RouterChildContext<ViewNoteProps>
 
     render()
     {

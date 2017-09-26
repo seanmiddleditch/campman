@@ -1,5 +1,7 @@
 import * as React from 'react'
 
+import Page, {PageHeader, PageBody} from '../../components/page'
+
 export interface SearchPageProps
 {
     query: string
@@ -20,7 +22,10 @@ export default class SearchPage extends React.Component<SearchPageProps, SearchP
     render()
     {
         return (
-            <div>{this.props.query}</div>   
+            <Page>
+                <PageHeader title='Search Results'/>
+                <PageBody>{this.props.query}</PageBody>
+            </Page>
         )
     }
 }

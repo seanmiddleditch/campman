@@ -3,26 +3,26 @@ import * as ReactDOM from 'react-dom'
 import * as PropTypes from 'prop-types'
 
 import * as api from '../../api'
-import {Config} from '../../client'
+import {Config, User, Library} from '../../types'
 
-import NavigationBar from './navigation-bar'
+import NavigationBar from './components/navigation-bar'
 
-require('../../styles/site.css')
+require('./styles/site.css')
 
-export interface AppProps
+export interface AppContainerProps
 {
     config: Config
-    library?: api.LibraryData
-    user?: api.UserData
+    library?: Library
+    user?: User
     children: any
 }
-interface AppState
+interface AppContainerState
 {
-    user?: api.UserData
+    user?: User
 }
-export default class App extends React.Component<AppProps, AppState>
+export default class AppContainer extends React.Component<AppContainerProps, AppContainerState>
 {
-    constructor(props: AppProps)
+    constructor(props: AppContainerProps)
     {
         super(props);
         this.state = {user: props.user}
@@ -42,16 +42,11 @@ export default class App extends React.Component<AppProps, AppState>
             .catch(err => console.error(err, err.stack))
     }
 
-    private _onSearch(text: string)
-    {
-        alert(text);
-    }
-
     render()
     {
         return (
             <div className='content-wrapper'>
-                <NavigationBar config={this.props.config} library={this.props.library} user={this.state.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()} onSearch={text => this._onSearch(text)}/>
+                <NavigationBar config={this.props.config} library={this.props.library} user={this.state.user} onLogout={() => this._onLogout()} onLogin={() => this._onLogin()}/>
                 <div className='content'>
                     {this.props.children}
                 </div>

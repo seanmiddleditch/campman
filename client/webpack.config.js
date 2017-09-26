@@ -30,7 +30,8 @@ module.exports = {
                 test: /\.tsx?$/,
                 loader: 'awesome-typescript-loader',
                 options: {
-                    configFileName: __dirname + '/tsconfig.json'
+                    configFileName: __dirname + '/tsconfig.json',
+                    transpileOnly: true
                 }
             },
 

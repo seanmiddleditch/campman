@@ -15,8 +15,8 @@ export class RPCHelper
     {
         const makeQueryVar = (k: string, v: any) => encodeURIComponent(k) + '=' + encodeURIComponent(v);
 
-        return Object.entries(params)
-            .map(([k, v]) => v ? makeQueryVar(k, v) : null)
+        return Object.getOwnPropertyNames(params)
+            .map(name => params[name] ? makeQueryVar(name, params[name]) : null)
             .filter(s => s)
             .join('&');
     }

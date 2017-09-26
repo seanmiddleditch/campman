@@ -1,25 +1,21 @@
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import {Route, MemoryRouter, Switch, Redirect} from 'react-router';
-import {BrowserRouter, NavLink} from 'react-router-dom';
+import * as React from 'react'
+import * as ReactDOM from 'react-dom'
+import {Route, MemoryRouter, Switch, Redirect} from 'react-router'
+import {BrowserRouter, NavLink} from 'react-router-dom'
 
-import App from './components/app';
-import NotFoundPage from './components/not-found';
+import * as api from './api'
+import AppContainer from './components/app-container'
 
-import SearchPage from './pages/search';
-import NotePage from './pages/note';
-import MediaBrowserPage from './pages/media-browser';
-import MyProfilePage from './pages/my-profile';
-import ListLabelsPage from './pages/list-labels';
-import ListLibrariesPage from './pages/list-libraries';
-import ListNotesPage from './pages/list-notes';
+import NotFoundPage from './pages/not-found'
+import SearchPage from './pages/search'
+import NotePage from './pages/note'
+import MediaBrowserPage from './pages/media-browser'
+import MyProfilePage from './pages/my-profile'
+import ListLabelsPage from './pages/list-labels'
+import ListLibrariesPage from './pages/list-libraries'
+import ListNotesPage from './pages/list-notes'
 
-import * as api from './api';
-
-export interface Config
-{
-    publicURL: string
-}
+import {Config, User, Library} from './types'
 
 const LibraryRoutes = () => (
     <Switch>
@@ -39,7 +35,7 @@ const LibraryRoutes = () => (
     </Switch>
 )
 
-const AppRoutes = (props: {config: Config, user: api.UserData}) =>
+const AppRoutes = (props: {config: Config, user: User}) =>
     <Switch>
         <Route path='/libraries' exact>
             <ListLibrariesPage config={props.config}/>
@@ -55,11 +51,11 @@ const AppRoutes = (props: {config: Config, user: api.UserData}) =>
         </Route>
     </Switch>
 
-const Routes = (props: {config: Config, library: api.LibraryData, user: api.UserData}) => 
+const Routes = (props: {config: Config, library: Library, user: User}) => 
     <BrowserRouter>
-        <App user={props.user} config={props.config} library={props.library}>
+        <AppContainer user={props.user} config={props.config} library={props.library}>
             {props.library ? <LibraryRoutes/> : <AppRoutes config={props.config} user={props.user}/>}
-        </App>
+        </AppContainer>
     </BrowserRouter>
 
 
@@ -72,4 +68,4 @@ const Routes = (props: {config: Config, library: api.LibraryData, user: api.User
     api.auth.configure(config.publicURL);
 
     ReactDOM.render(<Routes config={config} user={user} library={library}/>, document.getElementById('content'));
-})();
+})()
