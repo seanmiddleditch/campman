@@ -1,11 +1,14 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as ReactRouter from 'react-router'
-import {Editor, EditorState, ContentState} from 'draft-js'
+import {Editor, EditorState, ContentState, RichUtils} from 'draft-js'
 
 import Markdown from '../markdown'
+import StyleButton from './components/style-button'
+import PreviewBar from './components/preview-bar'
 
 require('./styles/editor.css')
+require('draft-js/dist/Draft.css')
 
 interface MarkEditorProps
 {
@@ -45,9 +48,20 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
         this.setState({editorState})
     }
 
-    private _handleBlur()
+    private _flushState()
     {
         this.props.onChange(this.state.editorState.getCurrentContent().getPlainText())
+    }
+
+    private _handleKeyCommand(command: string, editorState: EditorState)
+    {
+        const newState = RichUtils.handleKeyCommand(editorState, command)
+        if (newState)
+        {
+            this._onChange(newState)
+            return 'handled'
+        }
+        return 'not-handled'
     }
 
     componentDidMount()
@@ -57,30 +71,46 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
 
     componentWillUnmount()
     {
-        this.props.onChange(this.state.editorState.getCurrentContent().getPlainText())
+        this._flushState()
+    }
+
+    private _onInlineStyleClicked<T>(style: 'BOLD'|'ITALIC'|'UNDERLINE')
+    {
+        this._onChange(RichUtils.toggleInlineStyle(this.state.editorState, style))
+    }
+
+    private _inlineStyleActive(style: string)
+    {
+        return this.state.editorState.getCurrentInlineStyle().contains(style)
     }
 
     render() {
         return (
             <div className='mark-editor' onClick={() => this.refs.editor.focus()}>
                 <div>
-                    <ul className='nav nav-tabs'>
-                        <li className="nav-item">
-                            <a className={'nav-link ' + (!this.state.preview && 'active')} href='#' onClick={ev => {this.setState({preview: false}); ev.preventDefault()}}>Edit</a>
-                        </li>
-                        <li className="nav-item">
-                            <a className={'nav-link ' + (this.state.preview && 'active')} href='#' onClick={ev => {this.setState({preview: true}); ev.preventDefault()}}>Preview</a>
-                        </li>
-                    </ul>
+                    <PreviewBar preview={this.state.preview} onChange={preview => this.setState({preview})}/>
                 </div>
-                <div className='input-group draft-editor' hidden={this.state.preview}>
-                    <Editor ref='editor'
-                        editorState={this.state.editorState}
-                        readOnly={this.props.disabled}
-                        onBlur={() => this._handleBlur()}
-                        onChange={editorState => this._onChange(editorState)}
-                        placeholder='Note body text goes here'
-                    />
+                <div className='draft-editor' hidden={this.state.preview}>
+                    <div>
+                        <span className='btn-group' role='group'>
+                            <StyleButton active={this._inlineStyleActive('BOLD')} onToggle={() => this._onInlineStyleClicked('BOLD')}>B</StyleButton>
+                            <StyleButton active={this._inlineStyleActive('ITALIC')} onToggle={() => this._onInlineStyleClicked('ITALIC')}>I</StyleButton>
+                            <StyleButton active={this._inlineStyleActive('UNDERLINE')} onToggle={() => this._onInlineStyleClicked('UNDERLINE')}>U</StyleButton>
+                        </span>
+                        <span className='btn-group ml-sm-2' role='group'>
+                            <StyleButton active={false} onToggle={() => {}}>@</StyleButton>
+                        </span>
+                    </div>
+                    <div>
+                        <Editor ref='editor'
+                            editorState={this.state.editorState}
+                            onBlur={() => this._flushState()}
+                            handleKeyCommand={(c, s) => this._handleKeyCommand(c, s)}
+                            readOnly={this.props.disabled}
+                            onChange={editorState => this._onChange(editorState)}
+                            placeholder='Note body text goes here'
+                        />
+                    </div>
                 </div>
                 <div className='preview' hidden={!this.state.preview}>
                     <Markdown markup={this.props.document} history={this.context.router.history}/>
