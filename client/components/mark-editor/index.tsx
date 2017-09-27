@@ -114,7 +114,7 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
                             <StyleButton active={this._blockStyleActive('header-three')} onToggle={() => this._onBlockStyleClicked('header-three')}>H3</StyleButton>
                         </span>
                     </div>
-                    <div>
+                    <div className='edit-area'>
                         <Editor ref='editor'
                             editorState={this.state.editorState}
                             onBlur={() => this._flushState()}
