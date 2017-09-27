@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as ReactRouter from 'react-router'
-import {Editor, EditorState, ContentState, RichUtils} from 'draft-js'
+import Draft, {Editor, EditorState, ContentState, RichUtils} from 'draft-js'
 
 import Markdown from '../markdown'
 import StyleButton from './components/style-button'
@@ -74,14 +74,24 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
         this._flushState()
     }
 
-    private _onInlineStyleClicked<T>(style: 'BOLD'|'ITALIC'|'UNDERLINE')
+    private _onInlineStyleClicked(style: 'BOLD'|'ITALIC'|'UNDERLINE')
     {
         this._onChange(RichUtils.toggleInlineStyle(this.state.editorState, style))
+    }
+
+    private _onBlockStyleClicked(style: string)
+    {
+        this._onChange(RichUtils.toggleBlockType(this.state.editorState, style));
     }
 
     private _inlineStyleActive(style: string)
     {
         return this.state.editorState.getCurrentInlineStyle().contains(style)
+    }
+
+    private _blockStyleActive(style: string)
+    {
+        return RichUtils.getCurrentBlockType(this.state.editorState) == style
     }
 
     render() {
@@ -91,14 +101,17 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
                     <PreviewBar preview={this.state.preview} onChange={preview => this.setState({preview})}/>
                 </div>
                 <div className='draft-editor' hidden={this.state.preview}>
-                    <div>
+                    <div className='edit-bar'>
                         <span className='btn-group' role='group'>
                             <StyleButton active={this._inlineStyleActive('BOLD')} onToggle={() => this._onInlineStyleClicked('BOLD')}>B</StyleButton>
                             <StyleButton active={this._inlineStyleActive('ITALIC')} onToggle={() => this._onInlineStyleClicked('ITALIC')}>I</StyleButton>
                             <StyleButton active={this._inlineStyleActive('UNDERLINE')} onToggle={() => this._onInlineStyleClicked('UNDERLINE')}>U</StyleButton>
                         </span>
                         <span className='btn-group ml-sm-2' role='group'>
-                            <StyleButton active={false} onToggle={() => {}}>@</StyleButton>
+                            <StyleButton active={this._blockStyleActive('unstyled')} onToggle={() => this._onBlockStyleClicked('unstyled')}>Normal</StyleButton>
+                            <StyleButton active={this._blockStyleActive('header-one')} onToggle={() => this._onBlockStyleClicked('header-one')}>H1</StyleButton>
+                            <StyleButton active={this._blockStyleActive('header-two')} onToggle={() => this._onBlockStyleClicked('header-two')}>H2</StyleButton>
+                            <StyleButton active={this._blockStyleActive('header-three')} onToggle={() => this._onBlockStyleClicked('header-three')}>H3</StyleButton>
                         </span>
                     </div>
                     <div>
