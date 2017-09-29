@@ -46,7 +46,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
             this.setState({saving: true});
 
             api.notes.update(this.props.slug, note)
-                .then(() => this.setState({saving: false, editing: false, note}))
+                .then(() => this.setState({saving: false, editing: true, note}))
                 .catch((err: Error) => this.setState({saving: false}));
         }
     }

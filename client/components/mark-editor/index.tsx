@@ -1,11 +1,123 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as ReactRouter from 'react-router'
-import Draft, {Editor, EditorState, ContentState, RichUtils} from 'draft-js'
+import Draft, {Editor, EditorState, ContentState, ContentBlock, RichUtils, SelectionState, Modifier, CompositeDecorator, genKey} from 'draft-js'
 
 import Markdown from '../markdown'
 import StyleButton from './components/style-button'
 import PreviewBar from './components/preview-bar'
+
+import findWithRegex from './decorators/helpers'
+import decorators from './decorators'
+
+const LINK_REGEX = /\[\[(.*)\]\]$/
+const STRONG_REGEX = /\*\*([^*]+)\*\*$/
+const EM_REGEX = /[^*]\*([^*]+)\*$/
+const UNDERLINE_REGEX = /_([^_]*)_$/
+const HEADER1_REGEX = /^#\s*([^\s#].*)$/
+const HEADER2_REGEX = /^##\s*([^\s#].*)$/
+const HEADER3_REGEX = /^###\s*([^\s#].*)$/
+
+function linkifyBeforeInput(text: string, editorState: EditorState)
+{
+    const contentState = editorState.getCurrentContent()
+    const selection = editorState.getSelection()
+    const activeBlock = contentState.getBlockForKey(selection.getFocusKey())
+    const prefixText = activeBlock.getText().substr(0, selection.getFocusOffset())
+
+    const line = prefixText + text
+
+    const match = line.match(LINK_REGEX)
+    if (match)
+    {
+        const lineSelection = new SelectionState({
+            anchorKey: activeBlock.getKey(),
+            focusKey: activeBlock.getKey(),
+            anchorOffset: line.length - match[0].length,
+            focusOffset: prefixText.length
+        })
+
+        const contentStateWithEntity = contentState.createEntity('wiki-link', 'MUTABLE', {target: match[1]})
+        const entityKey = contentState.getLastCreatedEntityKey()
+
+        const contentStateReplaced = Modifier.replaceText(contentStateWithEntity, lineSelection, match[1], null, entityKey)
+        const editorStateReplaced = EditorState.push(editorState, contentStateReplaced, 'apply-entity')
+
+        const newSelection = contentStateReplaced.getSelectionAfter()
+        const editorStateSelection = EditorState.forceSelection(editorStateReplaced, newSelection)
+        return editorStateSelection
+    }
+
+    return editorState
+}
+
+function blockStyleBeforeInput(text: string, editorState: EditorState, regex: RegExp, type: string)
+{
+    const contentState = editorState.getCurrentContent()
+    const selection = editorState.getSelection()
+    const activeBlock = contentState.getBlockForKey(selection.getFocusKey())
+    const prefixText = activeBlock.getText().substr(0, selection.getFocusOffset())
+
+    const line = prefixText + text
+
+    const match = line.match(regex)
+    if (match && activeBlock.getType() == 'unstyled')
+    {
+
+        const lineSelection = new SelectionState({
+            anchorKey: activeBlock.getKey(),
+            focusKey: activeBlock.getKey(),
+            anchorOffset: line.length - match[0].length,
+            focusOffset: prefixText.length
+        })
+
+        const contentStateReplaced = Modifier.replaceText(contentState, lineSelection, match[1])
+        const newSelection = contentStateReplaced.getSelectionAfter()
+
+        const editorStateReplaced = EditorState.push(editorState, contentStateReplaced, 'insert-characters')
+        const editorStateSelection = EditorState.forceSelection(editorStateReplaced, newSelection)
+
+        const cleanState = RichUtils.toggleBlockType(editorStateSelection, type)
+        return cleanState
+    }
+
+    return editorState
+}
+
+function inlineStyleBeforeInput(text: string, editorState: EditorState, regex: RegExp, style: string)
+{
+    const contentState = editorState.getCurrentContent()
+    const selection = editorState.getSelection()
+    const activeBlock = contentState.getBlockForKey(selection.getFocusKey())
+    const prefixText = activeBlock.getText().substr(0, selection.getFocusOffset())
+
+    const line = prefixText + text
+
+    const match = line.match(regex)
+    if (match)
+    {
+        const lineSelection = new SelectionState({
+            anchorKey: activeBlock.getKey(),
+            focusKey: activeBlock.getKey(),
+            anchorOffset: line.length - match[0].length,
+            focusOffset: prefixText.length
+        })
+
+        const oldStyle = activeBlock.getInlineStyleAt(prefixText.length)
+        const newStyle = oldStyle.add(style)
+
+        const contentStateReplaced = Modifier.replaceText(contentState, lineSelection, match[1], newStyle)
+        const newSelection = contentStateReplaced.getSelectionAfter()
+
+        const editorStateReplaced = EditorState.push(editorState, contentStateReplaced, 'insert-characters')
+        const editorStateSelection = EditorState.forceSelection(editorStateReplaced, newSelection)
+
+        const cleanState = RichUtils.toggleInlineStyle(editorStateSelection, style)
+        return cleanState
+    }
+
+    return editorState
+}
 
 require('./styles/editor.css')
 require('draft-js/dist/Draft.css')
@@ -38,7 +150,7 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
         const content = ContentState.createFromText(props.document)
 
         this.state = {
-            editorState: EditorState.createWithContent(content),
+            editorState: EditorState.createWithContent(content, decorators),
             preview: false
         }
     }
@@ -53,7 +165,30 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
         this.props.onChange(this.state.editorState.getCurrentContent().getPlainText())
     }
 
-    private _handleKeyCommand(command: string, editorState: EditorState)
+    private _handleBeforeInput(text: string, editorState: EditorState) :  'handled'|'not-handled'
+    {
+        let newEditorState = editorState
+
+        newEditorState = linkifyBeforeInput(text, newEditorState)
+        newEditorState = inlineStyleBeforeInput(text, newEditorState, STRONG_REGEX, 'BOLD')
+        newEditorState = inlineStyleBeforeInput(text, newEditorState, EM_REGEX, 'ITALIC')
+        newEditorState = inlineStyleBeforeInput(text, newEditorState, UNDERLINE_REGEX, 'UNDERLINE')
+        newEditorState = blockStyleBeforeInput(text, newEditorState, HEADER1_REGEX, 'header-one')
+        newEditorState = blockStyleBeforeInput(text, newEditorState, HEADER2_REGEX, 'header-two')
+        newEditorState = blockStyleBeforeInput(text, newEditorState, HEADER3_REGEX, 'header-three')
+
+        if (newEditorState !== editorState)
+        {
+            this.setState({editorState: newEditorState})
+            return 'handled'
+        }
+        else
+        {
+            return 'not-handled'
+        }
+    }
+
+    private _handleKeyCommand(command: string, editorState: EditorState) :  'handled'|'not-handled'
     {
         const newState = RichUtils.handleKeyCommand(editorState, command)
         if (newState)
@@ -61,6 +196,25 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
             this._onChange(newState)
             return 'handled'
         }
+        return 'not-handled'
+    }
+
+    private _handleReturn(ev: React.KeyboardEvent<{}>, editorState: EditorState) :  'handled'|'not-handled'
+    {
+        const contentState = editorState.getCurrentContent()
+        const selection = editorState.getSelection()
+        const block = contentState.getBlockForKey(selection.getFocusKey())
+
+        if (/^header-/.test(block.getType()))
+        {
+            const contentStateSplit = Modifier.splitBlock(contentState, selection)
+            const editorStateSplit = EditorState.push(editorState, contentStateSplit, 'split-block')
+            const editorStatePlain = RichUtils.toggleBlockType(editorStateSplit, block.getType())
+
+            this.setState({editorState: editorStatePlain})
+            return 'handled'
+        }
+
         return 'not-handled'
     }
 
@@ -118,7 +272,9 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
                         <Editor ref='editor'
                             editorState={this.state.editorState}
                             onBlur={() => this._flushState()}
+                            handleBeforeInput={(text, s) => this._handleBeforeInput(text, s)}
                             handleKeyCommand={(c, s) => this._handleKeyCommand(c, s)}
+                            handleReturn={(ev, s) => this._handleReturn(ev, s)}
                             readOnly={this.props.disabled}
                             onChange={editorState => this._onChange(editorState)}
                             placeholder='Note body text goes here'
