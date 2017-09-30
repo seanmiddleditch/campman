@@ -12,11 +12,13 @@ import decorators from './decorators'
 
 const LINK_REGEX = /\[\[(.*)\]\]$/
 const STRONG_REGEX = /\*\*([^*]+)\*\*$/
-const EM_REGEX = /[^*]\*([^*]+)\*$/
+//const EM_REGEX = /[^*]\*([^*]+)\*$/ -- somewhat problematic with the simpler matcher; FIXME
 const UNDERLINE_REGEX = /_([^_]*)_$/
 const HEADER1_REGEX = /^#\s*([^\s#].*)$/
 const HEADER2_REGEX = /^##\s*([^\s#].*)$/
 const HEADER3_REGEX = /^###\s*([^\s#].*)$/
+const UNORDERED_LIST_REGEX = /\s*-\s+(\S)$/
+const ORDERED_LIST_REGEX = /\s*\d+[.]\s+(\S)$/
 
 function linkifyBeforeInput(text: string, editorState: EditorState)
 {
@@ -171,11 +173,13 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
 
         newEditorState = linkifyBeforeInput(text, newEditorState)
         newEditorState = inlineStyleBeforeInput(text, newEditorState, STRONG_REGEX, 'BOLD')
-        newEditorState = inlineStyleBeforeInput(text, newEditorState, EM_REGEX, 'ITALIC')
+        //newEditorState = inlineStyleBeforeInput(text, newEditorState, EM_REGEX, 'ITALIC')
         newEditorState = inlineStyleBeforeInput(text, newEditorState, UNDERLINE_REGEX, 'UNDERLINE')
         newEditorState = blockStyleBeforeInput(text, newEditorState, HEADER1_REGEX, 'header-one')
         newEditorState = blockStyleBeforeInput(text, newEditorState, HEADER2_REGEX, 'header-two')
         newEditorState = blockStyleBeforeInput(text, newEditorState, HEADER3_REGEX, 'header-three')
+        newEditorState = blockStyleBeforeInput(text, newEditorState, UNORDERED_LIST_REGEX, 'unordered-list-item')
+        newEditorState = blockStyleBeforeInput(text, newEditorState, ORDERED_LIST_REGEX, 'ordered-list-item')
 
         if (newEditorState !== editorState)
         {
@@ -210,6 +214,14 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
             const contentStateSplit = Modifier.splitBlock(contentState, selection)
             const editorStateSplit = EditorState.push(editorState, contentStateSplit, 'split-block')
             const editorStatePlain = RichUtils.toggleBlockType(editorStateSplit, block.getType())
+
+            this.setState({editorState: editorStatePlain})
+            return 'handled'
+        }
+
+        if (block.getText().length === 0 && /-list-item$/.test(block.getType()))
+        {
+            const editorStatePlain = RichUtils.toggleBlockType(editorState, block.getType())
 
             this.setState({editorState: editorStatePlain})
             return 'handled'

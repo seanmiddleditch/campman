@@ -33,10 +33,7 @@ export default class ViewNote extends React.Component<ViewNoteProps>
             <div className='note-page'>
                 <div className='note-subtitle'>{note.subtitle}</div>
                 <div className='note-labels'><Labels labels={note.labels}/></div>
-                <div className='note-body'>
-                    <Markdown history={this.context.router.history} markup={note.body}/>
-                </div>
-                <div>
+                <div className='float-right'>
                     <div className='btn-group'>
                         <button id='note-btn-edit' className='btn btn-default' about='Edit' onClick={() => props.onEdit()}><i className='fa fa-pencil'></i> Edit</button>
                         <div className='btn-group'>
@@ -46,6 +43,9 @@ export default class ViewNote extends React.Component<ViewNoteProps>
                             </div>
                         </div>
                     </div>
+                </div>
+                <div className='note-body'>
+                    <Markdown history={this.context.router.history} markup={note.body}/>
                 </div>
             </div>
         )
