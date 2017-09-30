@@ -8,7 +8,8 @@ import AppContainer from './components/app-container'
 
 import NotFoundPage from './pages/not-found'
 import SearchPage from './pages/search'
-import NotePage from './pages/note'
+import ViewNotePage from './pages/view-note'
+import EditNotePage from './pages/edit-note'
 import MediaBrowserPage from './pages/media-browser'
 import MyProfilePage from './pages/my-profile'
 import ListLabelsPage from './pages/list-labels'
@@ -25,9 +26,10 @@ const LibraryRoutes = () => (
         </Route>
         <Route path='/search' exact render={p => <SearchPage {...p} query={(new URLSearchParams(p.location.search)).get('q')}/>}/>
         <Route path='/media/:path*' render={p => <MediaBrowserPage path={p.match.params.path} {...p}/>}/>
-        <Route path='/n/:slug' exact render={p => <NotePage slug={p.match.params.slug} {...p}/>}/>
+        <Route path='/n/:slug' exact render={p => <ViewNotePage slug={p.match.params.slug} {...p}/>}/>
+        <Route path='/n/:slug/edit' exact render={p => <EditNotePage slug={p.match.params.slug} {...p}/>}/>
         <Route path='/' exact>
-            <NotePage slug='home'/>
+            <ViewNotePage slug='home'/>
         </Route>
         <Route>
             <NotFoundPage/>

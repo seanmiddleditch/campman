@@ -7,8 +7,10 @@ import {Note} from '../../types'
 
 import Page, {PageHeader, PageBody} from '../../components/page'
 
-import NoteEditor from './components/note-editor'
-import ViewNote from './components/view-note'
+import Labels from './components/labels'
+import Subtitle from './components/subtitle'
+import Bar from './components/bar'
+import Body from './components/body'
 
 require('./styles/notes.css')
 
@@ -18,9 +20,7 @@ export interface NotePageProps
 };
 interface NotePageState
 {
-    editing: boolean
     failed: boolean
-    saving: boolean
     note?: Note
 };
 export default class NotePage extends React.Component<NotePageProps, NotePageState>
@@ -33,25 +33,11 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
     {
         super(props)
         this.state = {
-            editing: false,
-            saving: false,
             failed: false
         }
     }
-    
-    private _save(note: Note)
-    {
-        if (!this.state.saving)
-        {
-            this.setState({saving: true});
 
-            api.notes.update(this.props.slug, note)
-                .then(() => this.setState({saving: false, editing: true, note}))
-                .catch((err: Error) => this.setState({saving: false}));
-        }
-    }
-
-    private _delete()
+    private _onDelete()
     {
         if (confirm('This operation cannot be reversed! Click Cancel to keep this page.'))
         {
@@ -63,16 +49,19 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
     private _fetch()
     {
         api.notes.fetch(this.props.slug)
-            .then(note => this.setState({note, editing: false}))
+            .then(note => this.setState({note}))
             .catch(err => {
                 if (err.status == 404)
-                    this.setState({
-                        editing: true,
-                        note: null
-                    });
+                    this._onEdit()
                 else if (err.status == 401)
                     this.setState({failed: true});
             });
+    }
+
+    private _onEdit()
+    {
+        const url = `/n/${this.props.slug}/edit`
+        this.context.router.history.push(`/n/${this.props.slug}/edit`)
     }
 
     componentDidMount()
@@ -84,7 +73,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
     {
         if (this.props.slug !== nextProps.slug)
         {
-            this.setState({note: undefined, editing: false, saving: false, failed: false})
+            this.setState({note: undefined, failed: false})
         }
     }
 
@@ -98,7 +87,9 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
 
     render()
     {
-        if (this.state.note === undefined)
+        const {note} = this.state
+
+        if (note === undefined)
             return (
                 <Page>
                     <PageHeader icon='file' title='Note'/>
@@ -110,10 +101,10 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
                 <Page>
                     <PageHeader icon='file' title={this.state.note ? this.state.note.title : 'Note'}/>
                     <PageBody>
-                        {this.state.editing ?
-                            <NoteEditor slug={this.props.slug} disabled={this.state.saving} note={this.state.note} onSave={note => this._save(note)} onCancel={() => this.setState({editing: false})}/> :
-                            <ViewNote note={this.state.note} onEdit={() => this.setState({editing: true})} onDelete={() => this._delete()}/>
-                        }
+                        <Subtitle subtitle={note.subtitle}/>
+                        <Labels labels={note.labels}/>
+                        <Bar onEdit={() => this._onEdit()} onDelete={() => this._onDelete()}/>
+                        <Body body={note.body}/>
                     </PageBody>
                 </Page>
             )
