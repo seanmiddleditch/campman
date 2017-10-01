@@ -27,12 +27,12 @@ export default class MediaBrowserPage extends React.Component<MediaBrowserPagePr
         }
     }
 
-    private _startUpload(file: File)
+    private _startUpload(data: {file: File, caption: string})
     {
         if (!this.state.uploading)
         {
             this.setState({uploading: true});
-            api.media.upload(file).then(url => {
+            api.media.upload(data).then(url => {
                 this.setState({uploading: false, dialogOpen: false});
                 this.forceUpdate()
             });

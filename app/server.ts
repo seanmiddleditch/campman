@@ -74,6 +74,7 @@ class Config
     db.define(models.LabelModel);
     db.define(models.NoteModel);
     db.define(models.UserModel);
+    db.define(models.MediaModel);
 
     await db.sync();
 

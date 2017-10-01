@@ -5,6 +5,7 @@ import FileItem from './file-item'
 import ImagePopup from './image-popup'
 
 import * as api from '../../../api'
+import MediaFile from '../../../types/media-file'
 
 interface FilesFoldersListProps
 {
@@ -13,9 +14,8 @@ interface FilesFoldersListProps
 }
 interface FilesFoldersListState
 {
-    files?: string[]
-    folders?: string[]
-    viewing?: string
+    media?: MediaFile[]
+    viewing?: MediaFile
 }
 export default class FilesFoldersList extends React.Component<FilesFoldersListProps, FilesFoldersListState>
 {
@@ -28,15 +28,11 @@ export default class FilesFoldersList extends React.Component<FilesFoldersListPr
     private _fetch(path: string)
     {
         api.media.list(path)
-        .then(({files, folders}) => 
-            this.setState({
-                files,
-                folders
-            })
+        .then(media => this.setState({media})
         )
         .catch(err => {
             console.log(err, err.stack);
-            this.setState({files: [], folders: []});
+            this.setState({media: []});
         })
     }
 
@@ -49,7 +45,7 @@ export default class FilesFoldersList extends React.Component<FilesFoldersListPr
     {
         if (this.props.path !== nextProps.path)
         {
-            this.setState({files: undefined, folders: undefined});
+            this.setState({media: undefined});
             this._fetch(nextProps.path);    
         }
     }
@@ -58,13 +54,12 @@ export default class FilesFoldersList extends React.Component<FilesFoldersListPr
     {
         return (
             <div className='list-group'>
-                <ImagePopup url={this.state.viewing} onClose={() => this.setState({viewing: undefined})}/>
-                {this.state.files === undefined ?
+                <ImagePopup file={this.state.viewing} onClose={() => this.setState({viewing: undefined})}/>
+                {this.state.media === undefined ?
                     <div className='list-group-item'>loading...</div> :
                     Array.prototype.concat(
                         (this.props.path && this.props.path !== '/') ? [<FolderItem path='..'/>] : [],
-                        this.state.folders.map(folder => <FolderItem path={folder}/>),
-                        this.state.files.map(file => <FileItem url={file} onClick={() => this.setState({viewing: file})}/>)
+                        this.state.media.map(file => <FileItem file={file} onClick={file => this.setState({viewing: file})}/>)
                     )
                 }
                 {this.props.children}
