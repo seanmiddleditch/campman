@@ -14,116 +14,8 @@ import PreviewBar from './components/preview-bar'
 import findWithRegex from './decorators/helpers'
 import decorators from './decorators'
 
-const LINK_REGEX = /\[\[(.*)\]\]$/
-const STRONG_REGEX = /\*\*([^*]+)\*\*$/
-//const EM_REGEX = /[^*]\*([^*]+)\*$/ -- somewhat problematic with the simpler matcher; FIXME
-const UNDERLINE_REGEX = /_([^_]*)_$/
-const HEADER1_REGEX = /^#\s*([^\s#].*)$/
-const HEADER2_REGEX = /^##\s*([^\s#].*)$/
-const HEADER3_REGEX = /^###\s*([^\s#].*)$/
-const UNORDERED_LIST_REGEX = /\s*-\s+(\S)$/
-const ORDERED_LIST_REGEX = /\s*\d+[.]\s+(\S)$/
-
-function linkifyBeforeInput(text: string, editorState: EditorState)
-{
-    const contentState = editorState.getCurrentContent()
-    const selection = editorState.getSelection()
-    const activeBlock = contentState.getBlockForKey(selection.getFocusKey())
-    const prefixText = activeBlock.getText().substr(0, selection.getFocusOffset())
-
-    const line = prefixText + text
-
-    const match = line.match(LINK_REGEX)
-    if (match)
-    {
-        const lineSelection = new SelectionState({
-            anchorKey: activeBlock.getKey(),
-            focusKey: activeBlock.getKey(),
-            anchorOffset: line.length - match[0].length,
-            focusOffset: prefixText.length
-        })
-
-        const contentStateWithEntity = contentState.createEntity('wiki-link', 'MUTABLE', {target: match[1]})
-        const entityKey = contentState.getLastCreatedEntityKey()
-
-        const contentStateReplaced = Modifier.replaceText(contentStateWithEntity, lineSelection, match[1], null, entityKey)
-        const editorStateReplaced = EditorState.push(editorState, contentStateReplaced, 'apply-entity')
-
-        const newSelection = contentStateReplaced.getSelectionAfter()
-        const editorStateSelection = EditorState.forceSelection(editorStateReplaced, newSelection)
-        return editorStateSelection
-    }
-
-    return editorState
-}
-
-function blockStyleBeforeInput(text: string, editorState: EditorState, regex: RegExp, type: string)
-{
-    const contentState = editorState.getCurrentContent()
-    const selection = editorState.getSelection()
-    const activeBlock = contentState.getBlockForKey(selection.getFocusKey())
-    const prefixText = activeBlock.getText().substr(0, selection.getFocusOffset())
-
-    const line = prefixText + text
-
-    const match = line.match(regex)
-    if (match && activeBlock.getType() == 'unstyled')
-    {
-
-        const lineSelection = new SelectionState({
-            anchorKey: activeBlock.getKey(),
-            focusKey: activeBlock.getKey(),
-            anchorOffset: line.length - match[0].length,
-            focusOffset: prefixText.length
-        })
-
-        const contentStateReplaced = Modifier.replaceText(contentState, lineSelection, match[1])
-        const newSelection = contentStateReplaced.getSelectionAfter()
-
-        const editorStateReplaced = EditorState.push(editorState, contentStateReplaced, 'insert-characters')
-        const editorStateSelection = EditorState.forceSelection(editorStateReplaced, newSelection)
-
-        const cleanState = RichUtils.toggleBlockType(editorStateSelection, type)
-        return cleanState
-    }
-
-    return editorState
-}
-
-function inlineStyleBeforeInput(text: string, editorState: EditorState, regex: RegExp, style: string)
-{
-    const contentState = editorState.getCurrentContent()
-    const selection = editorState.getSelection()
-    const activeBlock = contentState.getBlockForKey(selection.getFocusKey())
-    const prefixText = activeBlock.getText().substr(0, selection.getFocusOffset())
-
-    const line = prefixText + text
-
-    const match = line.match(regex)
-    if (match)
-    {
-        const lineSelection = new SelectionState({
-            anchorKey: activeBlock.getKey(),
-            focusKey: activeBlock.getKey(),
-            anchorOffset: line.length - match[0].length,
-            focusOffset: prefixText.length
-        })
-
-        const oldStyle = activeBlock.getInlineStyleAt(prefixText.length)
-        const newStyle = oldStyle.add(style)
-
-        const contentStateReplaced = Modifier.replaceText(contentState, lineSelection, match[1], newStyle)
-        const newSelection = contentStateReplaced.getSelectionAfter()
-
-        const editorStateReplaced = EditorState.push(editorState, contentStateReplaced, 'insert-characters')
-        const editorStateSelection = EditorState.forceSelection(editorStateReplaced, newSelection)
-
-        const cleanState = RichUtils.toggleInlineStyle(editorStateSelection, style)
-        return cleanState
-    }
-
-    return editorState
-}
+import {applyMarkdownShortcutsOnInput} from './helpers/markdown-shortcuts'
+import {blockRenderer, handleReturn} from './helpers/block-utils'
 
 require('./styles/editor.css')
 require('draft-js/dist/Draft.css')
@@ -175,61 +67,26 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
 
     private _blockRenderer(block: ContentBlock)
     {
-        const Img = (props: {blockProps: {url: string}}) => (<img className='img-fluid rounded' src={props.blockProps.url} alt='image'/>)
-
-        if (block.getType() !== 'atomic')
-            return null
-
-        const contentState = this.state.editorState.getCurrentContent()
-        const entityKey = block.getEntityAt(0)
-        if (!entityKey)
-            return null
-
-        const type = contentState.getEntity(entityKey).getType()
-        if (type !== 'image')
-            return null
-
-        const entity = contentState.getEntity(entityKey)
-        const url = entity.getData().url
-        
-        return {
-            component: Img,
-            editable: false,
-            props: {url}
-        }
+        return blockRenderer(block, this.state.editorState)
     }
 
     private _handleBeforeInput(text: string, editorState: EditorState) :  'handled'|'not-handled'
     {
-        let newEditorState = editorState
-
-        newEditorState = linkifyBeforeInput(text, newEditorState)
-        newEditorState = inlineStyleBeforeInput(text, newEditorState, STRONG_REGEX, 'BOLD')
-        //newEditorState = inlineStyleBeforeInput(text, newEditorState, EM_REGEX, 'ITALIC')
-        newEditorState = inlineStyleBeforeInput(text, newEditorState, UNDERLINE_REGEX, 'UNDERLINE')
-        newEditorState = blockStyleBeforeInput(text, newEditorState, HEADER1_REGEX, 'header-one')
-        newEditorState = blockStyleBeforeInput(text, newEditorState, HEADER2_REGEX, 'header-two')
-        newEditorState = blockStyleBeforeInput(text, newEditorState, HEADER3_REGEX, 'header-three')
-        newEditorState = blockStyleBeforeInput(text, newEditorState, UNORDERED_LIST_REGEX, 'unordered-list-item')
-        newEditorState = blockStyleBeforeInput(text, newEditorState, ORDERED_LIST_REGEX, 'ordered-list-item')
-
+        const newEditorState = applyMarkdownShortcutsOnInput(text, editorState)
         if (newEditorState !== editorState)
         {
             this.setState({editorState: newEditorState})
             return 'handled'
         }
-        else
-        {
-            return 'not-handled'
-        }
+        return 'not-handled'
     }
 
     private _handleKeyCommand(command: string, editorState: EditorState) :  'handled'|'not-handled'
     {
-        const newState = RichUtils.handleKeyCommand(editorState, command)
-        if (newState)
+        const newEditorstate = RichUtils.handleKeyCommand(editorState, command)
+        if (newEditorstate !== editorState)
         {
-            this._onChange(newState)
+            this.setState({editorState: newEditorstate})
             return 'handled'
         }
         return 'not-handled'
@@ -237,28 +94,12 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
 
     private _handleReturn(ev: React.KeyboardEvent<{}>, editorState: EditorState) :  'handled'|'not-handled'
     {
-        const contentState = editorState.getCurrentContent()
-        const selection = editorState.getSelection()
-        const block = contentState.getBlockForKey(selection.getFocusKey())
-
-        if (/^header-/.test(block.getType()))
+        const newEditorstate = handleReturn(editorState)
+        if (newEditorstate !== editorState)
         {
-            const contentStateSplit = Modifier.splitBlock(contentState, selection)
-            const editorStateSplit = EditorState.push(editorState, contentStateSplit, 'split-block')
-            const editorStatePlain = RichUtils.toggleBlockType(editorStateSplit, block.getType())
-
-            this.setState({editorState: editorStatePlain})
+            this.setState({editorState: newEditorstate})
             return 'handled'
         }
-
-        if (block.getText().length === 0 && /-list-item$/.test(block.getType()))
-        {
-            const editorStatePlain = RichUtils.toggleBlockType(editorState, block.getType())
-
-            this.setState({editorState: editorStatePlain})
-            return 'handled'
-        }
-
         return 'not-handled'
     }
 
