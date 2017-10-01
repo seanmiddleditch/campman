@@ -104,7 +104,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
                         <Subtitle subtitle={note.subtitle}/>
                         <Labels labels={note.labels}/>
                         <Bar onEdit={() => this._onEdit()} onDelete={() => this._onDelete()}/>
-                        <Body body={note.body}/>
+                        <Body rawbody={note.rawbody}/>
                     </PageBody>
                 </Page>
             )

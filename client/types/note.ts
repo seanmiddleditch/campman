@@ -4,6 +4,6 @@ export default interface Note
     slug?: string
     title?: string
     subtitle?: string
-    body?: string
+    rawbody?: Object
     labels?: string[]
 }

@@ -3,10 +3,11 @@ import * as ReactRouter from 'react-router'
 import * as PropTypes from 'prop-types'
 
 import Markdown from '../../../components/markdown'
+import MarkEditor from '../../../components/mark-editor'
 
 export interface BodyProps
 {
-    body: string
+    rawbody: Object
 }
 export default class Body extends React.Component<BodyProps>
 {
@@ -18,7 +19,7 @@ export default class Body extends React.Component<BodyProps>
     {
         return (
             <div className='note-body'>
-                <Markdown history={this.context.router.history} markup={this.props.body}/>
+                <MarkEditor disabled={true} document={this.props.rawbody} onChange={()=>{}}/>
             </div>
         )
     }

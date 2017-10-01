@@ -1,5 +1,4 @@
-.mark-editor { min-height: 20em; margin-top: 4px; cursor: text; width: 100% }
-.mark-editor .draft-editor { border: 1px solid #ddd; border-top: 0; }
-.mark-editor .preview { border: 1px solid #ddd; border-top: 0; padding: 4px }
-.mark-editor .edit-bar { padding: 4px; border-bottom: 1px solid #ddd }
-.mark-editor .edit-area { margin: 8px }
+.draft-editor { min-height: 20em; margin-top: 8px; cursor: text; width: 100%; border: 1px solid #ddd; border-radius: 4px }
+.draft-editor .preview { border: 1px solid #ddd; border-top: 0; padding: 4px }
+.draft-editor .edit-bar { padding: 4px }
+.draft-editor .edit-area { margin: 8px }

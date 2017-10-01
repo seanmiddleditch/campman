@@ -42,13 +42,13 @@ export default function NoteAPIRoutes(db: Database)
         const noteSlug = req.params.note;
 
         const note = await db.query(NoteModel)
-            .attributes(m => [m.slug, m.title, m.subtitle, m.body])
+            .attributes(m => [m.slug, m.title, m.subtitle, m.rawbody])
             .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug)))
             .include(LabelModel, m => [m.labels, {required: false}], q => q.attributes(m => [m.slug]))
             .where(m => m.slug.eq(noteSlug)).findOne()
 
         if (!note) return notFound();
-        else return success({...note, labels: note.labels.map(l => l.slug)});
+        else return success({...note, rawbody: JSON.parse(note.rawbody), labels: note.labels.map(l => l.slug)});
     }));
 
     router.post('/api/notes/:note', authorized(db, Access.GM), wrap(async (req) => {
@@ -74,7 +74,7 @@ export default function NoteAPIRoutes(db: Database)
 
         note.title = req.body['title'] || note.title || 'New Note';
         note.subtitle = req.body['subtitle'] || note.subtitle || '';
-        note.body = req.body['body'] || note.body || '';
+        note.rawbody = JSON.stringify(req.body['rawbody']) || note.rawbody || '';
         if (req.body['labels'])
             note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body['labels']));
         if (!note.labels)

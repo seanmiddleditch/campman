@@ -1,11 +1,23 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as ReactRouter from 'react-router'
-import Draft, {Editor, EditorState, ContentState, ContentBlock, RichUtils, SelectionState, Modifier, CompositeDecorator, AtomicBlockUtils, genKey} from 'draft-js'
+import {
+    Editor,
+    EditorState,
+    ContentState,
+    ContentBlock,
+    RichUtils,
+    SelectionState,
+    Modifier,
+    CompositeDecorator,
+    AtomicBlockUtils,
+    genKey,
+    convertToRaw,
+    convertFromRaw
+} from 'draft-js'
 
 import MediaFile from '../../types/media-file'
 
-import Markdown from '../markdown'
 import MediaSelector from '../media-selector'
 
 import StyleButton from './components/style-button'
@@ -22,9 +34,10 @@ require('draft-js/dist/Draft.css')
 
 interface MarkEditorProps
 {
-    document: string
+    document: any
     disabled?: boolean
-    onChange: (document: string) => void
+    editable?: boolean
+    onChange: (document: any) => void
 }
 interface MarkEditorState
 {
@@ -46,10 +59,17 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
     {
         super(props)
 
-        const content = ContentState.createFromText(props.document)
+        const editorState = (() => {
+            if (props.document)
+            {
+                const content = convertFromRaw(props.document)
+                return EditorState.createWithContent(content, decorators)
+            }
+            return EditorState.createEmpty(decorators)
+        })()
 
         this.state = {
-            editorState: EditorState.createWithContent(content, decorators),
+            editorState,
             preview: false,
             mediaPopupOpen: false
         }
@@ -62,7 +82,9 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
 
     private _flushState()
     {
-        this.props.onChange(this.state.editorState.getCurrentContent().getPlainText())
+        const contentState = this.state.editorState.getCurrentContent()
+        const rawState = convertToRaw(contentState)
+        this.props.onChange(rawState)
     }
 
     private _blockRenderer(block: ContentBlock)
@@ -73,7 +95,7 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
     private _handleBeforeInput(text: string, editorState: EditorState) :  'handled'|'not-handled'
     {
         const newEditorState = applyMarkdownShortcutsOnInput(text, editorState)
-        if (newEditorState !== editorState)
+        if (newEditorState && newEditorState !== editorState)
         {
             this.setState({editorState: newEditorState})
             return 'handled'
@@ -83,10 +105,10 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
 
     private _handleKeyCommand(command: string, editorState: EditorState) :  'handled'|'not-handled'
     {
-        const newEditorstate = RichUtils.handleKeyCommand(editorState, command)
-        if (newEditorstate !== editorState)
+        const newEditorState = RichUtils.handleKeyCommand(editorState, command)
+        if (newEditorState && newEditorState !== editorState)
         {
-            this.setState({editorState: newEditorstate})
+            this.setState({editorState: newEditorState})
             return 'handled'
         }
         return 'not-handled'
@@ -95,7 +117,7 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
     private _handleReturn(ev: React.KeyboardEvent<{}>, editorState: EditorState) :  'handled'|'not-handled'
     {
         const newEditorstate = handleReturn(editorState)
-        if (newEditorstate !== editorState)
+        if (newEditorstate && newEditorstate !== editorState)
         {
             this.setState({editorState: newEditorstate})
             return 'handled'
@@ -157,44 +179,36 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
 
     render() {
         return (
-            <div className='mark-editor' onClick={() => this.refs.editor.focus()}>
+            <div className='draft-editor' hidden={this.state.preview}>
                 <MediaSelector visible={this.state.mediaPopupOpen} onSelect={file => this._handleMedia(file)} onCancel={() => this.setState({mediaPopupOpen: false})}/>
-                <div>
-                    <PreviewBar preview={this.state.preview} onChange={preview => this.setState({preview})}/>
+                <div className='edit-bar'>
+                    <span className='btn-group' role='group'>
+                        <StyleButton active={this._isInlineStyleActive('BOLD')} onToggle={() => this._handleInlineStyleClicked('BOLD')}>B</StyleButton>
+                        <StyleButton active={this._isInlineStyleActive('ITALIC')} onToggle={() => this._handleInlineStyleClicked('ITALIC')}>I</StyleButton>
+                        <StyleButton active={this._isInlineStyleActive('UNDERLINE')} onToggle={() => this._handleInlineStyleClicked('UNDERLINE')}>U</StyleButton>
+                    </span>
+                    <span className='btn-group ml-sm-2' role='group'>
+                        <StyleButton active={this._isBlockStyleActive('unstyled')} onToggle={() => this._handleBlockStyleClicked('unstyled')}>Normal</StyleButton>
+                        <StyleButton active={this._isBlockStyleActive('header-one')} onToggle={() => this._handleBlockStyleClicked('header-one')}>H1</StyleButton>
+                        <StyleButton active={this._isBlockStyleActive('header-two')} onToggle={() => this._handleBlockStyleClicked('header-two')}>H2</StyleButton>
+                        <StyleButton active={this._isBlockStyleActive('header-three')} onToggle={() => this._handleBlockStyleClicked('header-three')}>H3</StyleButton>
+                    </span>
+                    <span className='btn-group ml-sm-2' role='group'>
+                        <button className='btn btn-secondary' onClick={() => this.setState({mediaPopupOpen: true})}><i className='fa fa-picture-o'></i></button>
+                    </span>
                 </div>
-                <div className='draft-editor' hidden={this.state.preview}>
-                    <div className='edit-bar'>
-                        <span className='btn-group' role='group'>
-                            <StyleButton active={this._isInlineStyleActive('BOLD')} onToggle={() => this._handleInlineStyleClicked('BOLD')}>B</StyleButton>
-                            <StyleButton active={this._isInlineStyleActive('ITALIC')} onToggle={() => this._handleInlineStyleClicked('ITALIC')}>I</StyleButton>
-                            <StyleButton active={this._isInlineStyleActive('UNDERLINE')} onToggle={() => this._handleInlineStyleClicked('UNDERLINE')}>U</StyleButton>
-                        </span>
-                        <span className='btn-group ml-sm-2' role='group'>
-                            <StyleButton active={this._isBlockStyleActive('unstyled')} onToggle={() => this._handleBlockStyleClicked('unstyled')}>Normal</StyleButton>
-                            <StyleButton active={this._isBlockStyleActive('header-one')} onToggle={() => this._handleBlockStyleClicked('header-one')}>H1</StyleButton>
-                            <StyleButton active={this._isBlockStyleActive('header-two')} onToggle={() => this._handleBlockStyleClicked('header-two')}>H2</StyleButton>
-                            <StyleButton active={this._isBlockStyleActive('header-three')} onToggle={() => this._handleBlockStyleClicked('header-three')}>H3</StyleButton>
-                        </span>
-                        <span className='btn-group ml-sm-2' role='group'>
-                            <button className='btn btn-secondary' onClick={() => this.setState({mediaPopupOpen: true})}><i className='fa fa-picture-o'></i></button>
-                        </span>
-                    </div>
-                    <div className='edit-area'>
-                        <Editor ref='editor'
-                            editorState={this.state.editorState}
-                            onBlur={() => this._flushState()}
-                            handleBeforeInput={(text, s) => this._handleBeforeInput(text, s)}
-                            handleKeyCommand={(c, s) => this._handleKeyCommand(c, s)}
-                            handleReturn={(ev, s) => this._handleReturn(ev, s)}
-                            readOnly={this.props.disabled || this.state.mediaPopupOpen}
-                            onChange={editorState => this._onChange(editorState)}
-                            placeholder='Note body text goes here'
-                            blockRendererFn={this._blockRenderer.bind(this)}
-                        />
-                    </div>
-                </div>
-                <div className='preview' hidden={!this.state.preview}>
-                    <Markdown markup={this.props.document} history={this.context.router.history}/>
+                <div className='edit-area'>
+                    <Editor ref='editor'
+                        editorState={this.state.editorState}
+                        onBlur={() => this._flushState()}
+                        handleBeforeInput={(text, s) => this._handleBeforeInput(text, s)}
+                        handleKeyCommand={(c, s) => this._handleKeyCommand(c, s)}
+                        handleReturn={(ev, s) => this._handleReturn(ev, s)}
+                        readOnly={this.props.disabled || this.state.mediaPopupOpen}
+                        onChange={editorState => this._onChange(editorState)}
+                        placeholder='Note body text goes here'
+                        blockRendererFn={this._blockRenderer.bind(this)}
+                    />
                 </div>
             </div>
         )

@@ -31,7 +31,7 @@ export default class NoteModel extends modelsafe.Model
     public subtitle: string;
 
     @modelsafe.attr(modelsafe.TEXT)
-    public body: string;
+    public rawbody: string;
 
     @modelsafe.assoc(modelsafe.BELONGS_TO_MANY, () => LabelModel)
     @squell.assoc({through: 'note_label'})

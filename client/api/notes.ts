@@ -25,7 +25,7 @@ export class NotesAPI
         return this._rpc.post('/api/notes/' + slug, {
             title: data.title,
             subtitle: data.subtitle,
-            body: data.body,
+            rawbody: data.rawbody,
             labels: data.labels
         });
     }

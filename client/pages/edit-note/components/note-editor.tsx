@@ -24,7 +24,7 @@ interface NoteEditorState
     title: string,
     subtitle: string,
     labels: string[]
-    body: string
+    rawbody: any
     preview: boolean
 }
 export default class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState>
@@ -44,7 +44,7 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
 
             title: props.note && props.note.title ? props.note.title : '',
             subtitle: props.note && props.note.subtitle ? props.note.subtitle : '',
-            body: props.note && props.note.body ? props.note.body : '',
+            rawbody: props.note && props.note.rawbody ? props.note.rawbody : '',
             labels: props.note && props.note.labels ? props.note.labels.slice() : []
         };
     }
@@ -53,7 +53,7 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
     {
         return this.props.note && (this.props.note.title !== this.state.title ||
             this.props.note.subtitle !== this.state.subtitle ||
-            this.props.note.body !== this.state.body ||
+            this.props.note.rawbody !== this.state.rawbody ||
             this.props.note.labels.join(',') !== this.state.labels.join(','));
     }
 
@@ -63,7 +63,7 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
             title: this.state.title,
             subtitle: this.state.subtitle,
             labels: this.state.labels.slice(),
-            body: this.state.body
+            rawbody: this.state.rawbody
         })
     }
 
@@ -96,7 +96,7 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
         }
     }
 
-    private _update(fields: {title?: string, subtitle?: string, labels?: string|string[], body?: string})
+    private _update(fields: {title?: string, subtitle?: string, labels?: string|string[], rawbody?: string})
     {
         if (fields.title)
             this.setState({title: fields.title});
@@ -106,8 +106,8 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
             this.setState({labels: fields.labels.split(',').filter(s => s.length)});
         else if (fields.labels)
             this.setState({labels: fields.labels});
-        if (fields.body)
-            this.setState({body: fields.body});
+        if (fields.rawbody)
+            this.setState({rawbody: fields.rawbody});
     }
 
     componentDidMount()
@@ -153,7 +153,7 @@ export default class NoteEditor extends React.Component<NoteEditorProps, NoteEdi
                     </div>
                 </div>
             </div>
-            <MarkEditor document={this.state.body} disabled={this.props.disabled || this.state.preview} onChange={document => this._update({body: document})}/>
+            <MarkEditor document={this.state.rawbody} disabled={this.props.disabled || this.state.preview} onChange={document => this._update({rawbody: document})}/>
         </div>;
     }
 };
