@@ -1,9 +1,13 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as ReactRouter from 'react-router'
-import Draft, {Editor, EditorState, ContentState, ContentBlock, RichUtils, SelectionState, Modifier, CompositeDecorator, genKey} from 'draft-js'
+import Draft, {Editor, EditorState, ContentState, ContentBlock, RichUtils, SelectionState, Modifier, CompositeDecorator, AtomicBlockUtils, genKey} from 'draft-js'
+
+import MediaFile from '../../types/media-file'
 
 import Markdown from '../markdown'
+import MediaSelector from '../media-selector'
+
 import StyleButton from './components/style-button'
 import PreviewBar from './components/preview-bar'
 
@@ -134,6 +138,7 @@ interface MarkEditorState
 {
     editorState: EditorState
     preview: boolean
+    mediaPopupOpen: boolean
 }
 export default class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState>
 {
@@ -153,7 +158,8 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
 
         this.state = {
             editorState: EditorState.createWithContent(content, decorators),
-            preview: false
+            preview: false,
+            mediaPopupOpen: false
         }
     }
 
@@ -165,6 +171,32 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
     private _flushState()
     {
         this.props.onChange(this.state.editorState.getCurrentContent().getPlainText())
+    }
+
+    private _blockRenderer(block: ContentBlock)
+    {
+        const Img = (props: {blockProps: {url: string}}) => (<img className='img-fluid rounded' src={props.blockProps.url} alt='image'/>)
+
+        if (block.getType() !== 'atomic')
+            return null
+
+        const contentState = this.state.editorState.getCurrentContent()
+        const entityKey = block.getEntityAt(0)
+        if (!entityKey)
+            return null
+
+        const type = contentState.getEntity(entityKey).getType()
+        if (type !== 'image')
+            return null
+
+        const entity = contentState.getEntity(entityKey)
+        const url = entity.getData().url
+        
+        return {
+            component: Img,
+            editable: false,
+            props: {url}
+        }
     }
 
     private _handleBeforeInput(text: string, editorState: EditorState) :  'handled'|'not-handled'
@@ -240,22 +272,44 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
         this._flushState()
     }
 
-    private _onInlineStyleClicked(style: 'BOLD'|'ITALIC'|'UNDERLINE')
+    private _handleInlineStyleClicked(style: 'BOLD'|'ITALIC'|'UNDERLINE')
     {
         this._onChange(RichUtils.toggleInlineStyle(this.state.editorState, style))
     }
 
-    private _onBlockStyleClicked(style: string)
+    private _handleBlockStyleClicked(style: string)
     {
         this._onChange(RichUtils.toggleBlockType(this.state.editorState, style));
     }
 
-    private _inlineStyleActive(style: string)
+    private _handleMedia(file: MediaFile)
+    {
+        this.setState({mediaPopupOpen: false})
+
+        const {editorState} = this.state
+        const contentState = editorState.getCurrentContent()
+        const selection = editorState.getSelection()
+
+        const contentStateWithEntity = contentState.createEntity('image', 'IMMUTABLE', {url: file.url})
+        const entityKey = contentStateWithEntity.getLastCreatedEntityKey()
+        const editorStateWithBlock = AtomicBlockUtils.insertAtomicBlock(
+            editorState,
+            entityKey,
+            ' '
+        )
+        const editorStateWithSelection = EditorState.forceSelection(
+            editorStateWithBlock,
+            editorState.getCurrentContent().getSelectionAfter()
+        )
+        this.setState({editorState: editorStateWithSelection})
+    }
+
+    private _isInlineStyleActive(style: string)
     {
         return this.state.editorState.getCurrentInlineStyle().contains(style)
     }
 
-    private _blockStyleActive(style: string)
+    private _isBlockStyleActive(style: string)
     {
         return RichUtils.getCurrentBlockType(this.state.editorState) == style
     }
@@ -263,21 +317,25 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
     render() {
         return (
             <div className='mark-editor' onClick={() => this.refs.editor.focus()}>
+                <MediaSelector visible={this.state.mediaPopupOpen} onSelect={file => this._handleMedia(file)} onCancel={() => this.setState({mediaPopupOpen: false})}/>
                 <div>
                     <PreviewBar preview={this.state.preview} onChange={preview => this.setState({preview})}/>
                 </div>
                 <div className='draft-editor' hidden={this.state.preview}>
                     <div className='edit-bar'>
                         <span className='btn-group' role='group'>
-                            <StyleButton active={this._inlineStyleActive('BOLD')} onToggle={() => this._onInlineStyleClicked('BOLD')}>B</StyleButton>
-                            <StyleButton active={this._inlineStyleActive('ITALIC')} onToggle={() => this._onInlineStyleClicked('ITALIC')}>I</StyleButton>
-                            <StyleButton active={this._inlineStyleActive('UNDERLINE')} onToggle={() => this._onInlineStyleClicked('UNDERLINE')}>U</StyleButton>
+                            <StyleButton active={this._isInlineStyleActive('BOLD')} onToggle={() => this._handleInlineStyleClicked('BOLD')}>B</StyleButton>
+                            <StyleButton active={this._isInlineStyleActive('ITALIC')} onToggle={() => this._handleInlineStyleClicked('ITALIC')}>I</StyleButton>
+                            <StyleButton active={this._isInlineStyleActive('UNDERLINE')} onToggle={() => this._handleInlineStyleClicked('UNDERLINE')}>U</StyleButton>
                         </span>
                         <span className='btn-group ml-sm-2' role='group'>
-                            <StyleButton active={this._blockStyleActive('unstyled')} onToggle={() => this._onBlockStyleClicked('unstyled')}>Normal</StyleButton>
-                            <StyleButton active={this._blockStyleActive('header-one')} onToggle={() => this._onBlockStyleClicked('header-one')}>H1</StyleButton>
-                            <StyleButton active={this._blockStyleActive('header-two')} onToggle={() => this._onBlockStyleClicked('header-two')}>H2</StyleButton>
-                            <StyleButton active={this._blockStyleActive('header-three')} onToggle={() => this._onBlockStyleClicked('header-three')}>H3</StyleButton>
+                            <StyleButton active={this._isBlockStyleActive('unstyled')} onToggle={() => this._handleBlockStyleClicked('unstyled')}>Normal</StyleButton>
+                            <StyleButton active={this._isBlockStyleActive('header-one')} onToggle={() => this._handleBlockStyleClicked('header-one')}>H1</StyleButton>
+                            <StyleButton active={this._isBlockStyleActive('header-two')} onToggle={() => this._handleBlockStyleClicked('header-two')}>H2</StyleButton>
+                            <StyleButton active={this._isBlockStyleActive('header-three')} onToggle={() => this._handleBlockStyleClicked('header-three')}>H3</StyleButton>
+                        </span>
+                        <span className='btn-group ml-sm-2' role='group'>
+                            <button className='btn btn-secondary' onClick={() => this.setState({mediaPopupOpen: true})}><i className='fa fa-picture-o'></i></button>
                         </span>
                     </div>
                     <div className='edit-area'>
@@ -287,9 +345,10 @@ export default class MarkEditor extends React.Component<MarkEditorProps, MarkEdi
                             handleBeforeInput={(text, s) => this._handleBeforeInput(text, s)}
                             handleKeyCommand={(c, s) => this._handleKeyCommand(c, s)}
                             handleReturn={(ev, s) => this._handleReturn(ev, s)}
-                            readOnly={this.props.disabled}
+                            readOnly={this.props.disabled || this.state.mediaPopupOpen}
                             onChange={editorState => this._onChange(editorState)}
                             placeholder='Note body text goes here'
+                            blockRendererFn={this._blockRenderer.bind(this)}
                         />
                     </div>
                 </div>
