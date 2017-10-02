@@ -1,6 +1,0 @@
-.markdown h1 { font-size: x-large; font-family: serif; font-weight: bold; margin-bottom: 0.75em }
-.markdown h2 { font-size: large; font-family: serif; font-weight: bold; margin-bottom: 0.75em }
-.markdown h3 { font-size: medium; font-family: serif; font-weight: bold; font-style: italic; margin-bottom: 0.5em }
-.markdown h4, .markdown h5, .markdown h6 { font-size: medium; font-family: serif; font-weight: bold; margin-bottom: 0.25em }
-
-.markdown-secret { opacity: .5 }
