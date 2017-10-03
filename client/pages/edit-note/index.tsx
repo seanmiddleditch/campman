@@ -64,7 +64,12 @@ export default class NotePage extends React.Component<EditNotePageProps, EditNot
             .catch(err => {
                 if (err.status == 404)
                     this.setState({
-                        note: null
+                        note: {
+                            labels: [],
+                            title: '',
+                            subtitle: '',
+                            rawbody: ''
+                        }
                     });
                 else if (err.status == 401)
                     this.setState({failed: true});
@@ -109,7 +114,6 @@ export default class NotePage extends React.Component<EditNotePageProps, EditNot
         else
             return (
                 <Page>
-                    <PageHeader icon='file' title={this.state.note ? this.state.note.title : 'Note'}/>
                     <PageBody>
                         <NoteEditor slug={this.props.slug} disabled={this.state.saving} note={this.state.note} onSave={note => this._save(note)} onCancel={() => this._onCancel()}/>
                     </PageBody>

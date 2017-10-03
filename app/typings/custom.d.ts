@@ -1,5 +1,5 @@
-import LibraryModel from '../models/library'
-import Access from '../auth/access'
+import {LibraryModel} from '../models/library'
+import {Access} from '../auth/access'
 
 declare global
 {

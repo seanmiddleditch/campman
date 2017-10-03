@@ -1,8 +1,8 @@
-export default interface User
+export interface User
 {
-    id: number;
-    fullName: string;
-    nickname?: string;
-    email: string;
-    googleId?: string;
+    id: number
+    fullName: string
+    nickname?: string
+    email: string
+    googleId?: string
 }

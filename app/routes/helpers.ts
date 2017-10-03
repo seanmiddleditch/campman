@@ -1,42 +1,42 @@
 import {Request, Response, NextFunction} from 'express'
 import * as squell from 'squell'
-import LibraryModel from '../models/library'
-import User from '../auth/user'
-import Access from '../auth/access'
+import {LibraryModel} from '../models/library'
+import {User} from '../auth/user'
+import {Access} from '../auth/access'
 
 export interface ErrorSchema
 {
     status: 'error',
     httpStatusCode?: number,
     message: string
-};
+}
 
 export interface SuccessSchema<T>
 {
     status: 'success',
     data?: T
-};
+}
 
-export type ResultSchema<T> = ErrorSchema|SuccessSchema<T>;
+export type ResultSchema<T> = ErrorSchema|SuccessSchema<T>
 
 export function success<T>(data?: T) : SuccessSchema<T>
 {
-    return {status: 'success', data};
+    return {status: 'success', data}
 }
 
 export function notFound(detail?: string) : ErrorSchema
 {
-    return {status: 'error', httpStatusCode: 404, message: detail || 'Resource not found'};
+    return {status: 'error', httpStatusCode: 404, message: detail || 'Resource not found'}
 }
 
 export function accessDenied(detail?: string) : ErrorSchema
 {
-    return {status: 'error', httpStatusCode: 401, message: detail || 'Access denied'};
+    return {status: 'error', httpStatusCode: 401, message: detail || 'Access denied'}
 }
 
 export function badInput(detail?: string) : ErrorSchema
 {
-    return {status: 'error', httpStatusCode: 400, message: detail || 'Bad input'};
+    return {status: 'error', httpStatusCode: 400, message: detail || 'Bad input'}
 }
 
 export function authenticated()
@@ -79,22 +79,22 @@ export function authorized(db: squell.Database, access: Access = Access.Visitor)
     }
 }
 
-type Wrapper<T> = (req: {query: {[key: string]: string|string[]}, params: {[key: string]: string}, body?: any, library?: {slug: string}, user?: User, session?: {id: string, destroy: (err: any)=>void}}) => Promise<ResultSchema<T>>;
+type Wrapper<T> = (req: {query: {[key: string]: string|string[]}, params: {[key: string]: string}, body?: any, library?: {slug: string}, user?: User, session?: {id: string, destroy: (err: any)=>void}}) => Promise<ResultSchema<T>>
 export function wrap<T>(func: Wrapper<T>)
 {
     return async (req: Request, res: Response) => {
         try
         {
-            const result = await func(req);
+            const result = await func(req)
             if (result.status === 'error')
-                res.status(result.httpStatusCode || 400).json({status: 'error', message: result.message});
+                res.status(result.httpStatusCode || 400).json({status: 'error', message: result.message})
             else
-                res.json({status: 'success', data: result.data});
+                res.json({status: 'success', data: result.data})
         }
         catch (err)
         {
-            console.error(err, err.stack);
-            res.status(500).json({status: 'error', message: 'Internal server error'});
+            console.error(err, err.stack)
+            res.status(500).json({status: 'error', message: 'Internal server error'})
         }
-    };
+    }
 }

@@ -14,7 +14,7 @@ import {URL} from 'url';
 
 import * as routes from './routes';
 import * as models from './models';
-import {GoogleAuth, User} from './auth';
+import {googleAuth, User} from './auth';
 
 class Config
 {
@@ -154,7 +154,7 @@ class Config
     app.use(BodyParser.urlencoded({extended: false}));
     app.use(BodyParser.json());
     
-    passport.use(GoogleAuth(db, config.publicURL.toString(), config.googleClientID, config.googleAuthSecret));
+    passport.use(googleAuth(db, config.publicURL.toString(), config.googleClientID, config.googleAuthSecret));
     passport.serializeUser((user: models.UserModel, done) => done(null, user));
     passport.deserializeUser((user: User, done) => done(null, user));
 
@@ -178,11 +178,11 @@ class Config
         });
     });
 
-    app.use(routes.AuthRoutes(db, config));
-    app.use(routes.NoteRouter(db));
-    app.use(routes.LabelRouter(db));
-    app.use(routes.LibraryRouter(db));
-    app.use(routes.MediaRoutes(db, config));
+    app.use(routes.authRoutes(db, config));
+    app.use(routes.noteAPIRoutes(db));
+    app.use(routes.labelAPIRoutes(db));
+    app.use(routes.libraryAPIRoutes(db));
+    app.use(routes.mediaAPIRoutes(db, config));
 
     app.use(async (req, res) => res.render('index', {
         session: JSON.stringify({

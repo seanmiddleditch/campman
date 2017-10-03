@@ -1,13 +1,13 @@
-import {Request, Response, Router} from 'express';
-import {LibraryModel, LibraryAccessModel, UserModel} from '../../models';
-import * as squell from 'squell';
-import Access from '../../auth/access';
-import {wrap, success, accessDenied, notFound, badInput, authenticated} from '../helpers';
-import * as slug from '../../util/slug';
+import {Request, Response, Router} from 'express'
+import {LibraryModel, LibraryAccessModel, UserModel} from '../../models'
+import * as squell from 'squell'
+import {Access} from '../../auth/access'
+import {wrap, success, accessDenied, notFound, badInput, authenticated} from '../helpers'
+import * as slug from '../../util/slug'
 
-export default function LabelAPIRoutes(db: squell.Database)
+export function libraryAPIRoutes(db: squell.Database)
 {
-    const router = Router();
+    const router = Router()
 
     router.get('/api/libraries', wrap(async (req) => {
         const userID = req.user ? req.user.id : null
@@ -16,57 +16,57 @@ export default function LabelAPIRoutes(db: squell.Database)
             .attributes(m => [m.slug, m.title])
             .include(LibraryAccessModel, m => [m.acl, {required: false}], q => q.attributes(m => []).where(m => squell.attribute('userId').eq(userID).or(squell.attribute('userId').eq(null))))
             .order(m => [[m.slug, squell.ASC]])
-            .find();
+            .find()
 
-        return success(all);
-    }));
+        return success(all)
+    }))
 
     router.get('/api/libraries/:library', wrap(async (req) => {
         const userID = req.user ? req.user.id : null
 
-        const librarySlug = req.params.library;
+        const librarySlug = req.params.library
         const library = await db.query(LibraryModel)
             .attributes(m => [m.slug])
             //.include(LibraryAccessModel, m => m.acl, q => q.attributes(m => []).include(UserModel, m => m.user, q => q.where(m => m.id.eq(userID))))
             .where(m => m.slug.eq(librarySlug))
-            .findOne();
+            .findOne()
 
-        if (!library) return notFound();
-        else return success(library);
-    }));
+        if (!library) return notFound()
+        else return success(library)
+    }))
 
     router.put('/api/libraries/:library', authenticated(), wrap(async (req) => {
         const userID = req.user ? req.user.id : null
-        const user = await db.query(UserModel).findById(userID);
-        if (!user) return accessDenied();
+        const user = await db.query(UserModel).findById(userID)
+        if (!user) return accessDenied()
 
-        const librarySlug = req.params.library;
-        const title = req.body.title;
+        const librarySlug = req.params.library
+        const title = req.body.title
 
         if (!slug.isValid(librarySlug))
-            return badInput();
+            return badInput()
 
         const library = await db.transaction(async (tx) => {
-            const newLibrary = new LibraryModel();
-            newLibrary.slug = librarySlug;
-            newLibrary.title = title;
-            newLibrary.creator = user;
+            const newLibrary = new LibraryModel()
+            newLibrary.slug = librarySlug
+            newLibrary.title = title
+            newLibrary.creator = user
 
             const library = await db.query(LibraryModel)
                 .include(UserModel, m => m.creator)
-                .create(newLibrary, {transaction: tx});
+                .create(newLibrary, {transaction: tx})
             
-            const newAccess = new LibraryAccessModel();
-            newAccess.library = library;
-            newAccess.user = user;
-            newAccess.access = Access.Owner;
-            const access = await db.query(LibraryAccessModel).includeAll().save(newAccess, {transaction: tx});
+            const newAccess = new LibraryAccessModel()
+            newAccess.library = library
+            newAccess.user = user
+            newAccess.access = Access.Owner
+            const access = await db.query(LibraryAccessModel).includeAll().save(newAccess, {transaction: tx})
 
-            return library;
-        });
+            return library
+        })
 
-        return success(library);
-    }));
+        return success(library)
+    }))
 
-    return router;
+    return router
 }

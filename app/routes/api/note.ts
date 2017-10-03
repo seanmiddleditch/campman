@@ -1,20 +1,20 @@
-import {Request, Response, Router} from 'express';
-import {LibraryModel, LabelModel, NoteModel} from '../../models';
-import {Database, ASC} from 'squell';
-import * as slug from '../../util/slug';
-import Access from '../../auth/access';
-import {wrap, success, notFound, accessDenied, badInput, authorized} from '../helpers';
+import {Request, Response, Router} from 'express'
+import {LibraryModel, LabelModel, NoteModel} from '../../models'
+import {Database, ASC} from 'squell'
+import * as slug from '../../util/slug'
+import {Access} from '../../auth/access'
+import {wrap, success, notFound, accessDenied, badInput, authorized} from '../helpers'
 
-export default function NoteAPIRoutes(db: Database)
+export function noteAPIRoutes(db: Database)
 {
-    const router = Router();
+    const router = Router()
 
     router.get('/api/notes', authorized(db), wrap(async (req) => {
-        if (!req.library) return notFound();
+        if (!req.library) return notFound()
         
         const userID = req.user ? req.user.id : null
-        const librarySlug = req.library.slug;
-        const labelSlug = req.query.label;
+        const librarySlug = req.library.slug
+        const labelSlug = req.query.label
         
         // has to be a cleaner way to write this
         const all = typeof labelSlug === 'string' ?
@@ -31,15 +31,15 @@ export default function NoteAPIRoutes(db: Database)
                 .order(m => [[m.title, ASC]])
                 .find()
 
-        return success(all.map(n => ({...n, labels: n.labels.map(l => l.slug)})));
-    }));
+        return success(all.map(n => ({...n, labels: n.labels.map(l => l.slug)})))
+    }))
 
     router.get('/api/notes/:note', authorized(db), wrap(async (req) => {
-        if (!req.library) return notFound();
+        if (!req.library) return notFound()
         
         const userID = req.user ? req.user.id : null
-        const librarySlug = req.library.slug;
-        const noteSlug = req.params.note;
+        const librarySlug = req.library.slug
+        const noteSlug = req.params.note
 
         const note = await db.query(NoteModel)
             .attributes(m => [m.slug, m.title, m.subtitle, m.rawbody])
@@ -47,59 +47,59 @@ export default function NoteAPIRoutes(db: Database)
             .include(LabelModel, m => [m.labels, {required: false}], q => q.attributes(m => [m.slug]))
             .where(m => m.slug.eq(noteSlug)).findOne()
 
-        if (!note) return notFound();
-        else return success({...note, rawbody: JSON.parse(note.rawbody), labels: note.labels.map(l => l.slug)});
-    }));
+        if (!note) return notFound()
+        else return success({...note, rawbody: JSON.parse(note.rawbody), labels: note.labels.map(l => l.slug)})
+    }))
 
     router.post('/api/notes/:note', authorized(db, Access.GM), wrap(async (req) => {
-        if (!req.library) return notFound();
+        if (!req.library) return notFound()
         
         const userID = req.user ? req.user.id : null
-        const librarySlug = req.library.slug;
-        const noteSlug = req.params.note;
+        const librarySlug = req.library.slug
+        const noteSlug = req.params.note
 
         const currentNote = await db.query(NoteModel)
                 .include(LibraryModel, m => m.library, m => m.where(m => m.slug.eq(librarySlug)))
                 .include(LabelModel, m => [m.labels, {required: false}])
                 .where(m => m.slug.eq(noteSlug)).findOne()
 
-        const note = currentNote || new NoteModel();
+        const note = currentNote || new NoteModel()
 
-        note.slug = slug.sanitize(noteSlug);
+        note.slug = slug.sanitize(noteSlug)
         if (!slug.isValid(noteSlug))
-            return badInput();
+            return badInput()
 
         if (!note.library)
-            note.library = await db.query(LibraryModel).where(m => m.slug.eq(librarySlug)).findOne();
+            note.library = await db.query(LibraryModel).where(m => m.slug.eq(librarySlug)).findOne()
 
-        note.title = req.body['title'] || note.title || 'New Note';
-        note.subtitle = req.body['subtitle'] || note.subtitle || '';
-        note.rawbody = JSON.stringify(req.body['rawbody']) || note.rawbody || '';
+        note.title = req.body['title'] || note.title || 'New Note'
+        note.subtitle = req.body['subtitle'] || note.subtitle || ''
+        note.rawbody = JSON.stringify(req.body['rawbody']) || note.rawbody || ''
         if (req.body['labels'])
-            note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body['labels']));
+            note.labels = await LabelModel.reify(db, LabelModel.fromString(req.body['labels']))
         if (!note.labels)
-            note.labels = [];
+            note.labels = []
 
         await db.query(NoteModel)
             .include(LibraryModel, m => m.library)
             .include(LabelModel, m => m.labels)
-            .save(note);
+            .save(note)
 
-        return success(note);
-    }));
+        return success(note)
+    }))
 
     router.delete('/api/notes/:note', authorized(db, Access.GM), wrap(async (req) => {
-        if (!req.library) return notFound();
+        if (!req.library) return notFound()
         
         const userID = req.user ? req.user.id : null
-        const librarySlug = req.library.slug;
-        const noteSlug = req.params.note;
+        const librarySlug = req.library.slug
+        const noteSlug = req.params.note
 
-        const count = await db.query(NoteModel).where(m => m.slug.eq(noteSlug)).destroy();
-        if (!count) return notFound();
+        const count = await db.query(NoteModel).where(m => m.slug.eq(noteSlug)).destroy()
+        if (!count) return notFound()
 
-        return success({count});
-    }));
+        return success({count})
+    }))
 
-    return router;
+    return router
 }

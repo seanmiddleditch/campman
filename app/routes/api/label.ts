@@ -1,17 +1,17 @@
-import {Request, Response, Router} from 'express';
-import {LabelModel, NoteModel, LibraryModel} from '../../models';
-import {Database, ASC} from 'squell';
-import * as helpers from '../helpers';
-import Access from '../../auth/access';
+import {Request, Response, Router} from 'express'
+import {LabelModel, NoteModel, LibraryModel} from '../../models'
+import {Database, ASC} from 'squell'
+import * as helpers from '../helpers'
+import {Access} from '../../auth/access'
 
-export default function LabelAPIRoutes(db: Database)
+export function labelAPIRoutes(db: Database)
 {
-    const router = Router();
+    const router = Router()
 
     router.get('/api/labels', helpers.authorized(db), helpers.wrap(async (req) => {
-        if (!req.library) return helpers.notFound();
+        if (!req.library) return helpers.notFound()
 
-        const librarySlug = req.library.slug;
+        const librarySlug = req.library.slug
 
         const all = await db.query(LabelModel)
                 .attributes(m => [m.slug])
@@ -19,14 +19,14 @@ export default function LabelAPIRoutes(db: Database)
                 .order(m => [[m.slug, ASC]])
                 .find()
 
-        return helpers.success(all.map(l => ({slug: l.slug, numNotes: l.notes.length})));
-    }));
+        return helpers.success(all.map(l => ({slug: l.slug, numNotes: l.notes.length})))
+    }))
 
     router.get('/api/labels/:label', helpers.authorized(db), helpers.wrap(async (req) => {
-        if (!req.library) return helpers.notFound();
+        if (!req.library) return helpers.notFound()
         
-        const labelSlug = req.params.label;
-        const librarySlug = req.library.slug;
+        const labelSlug = req.params.label
+        const librarySlug = req.library.slug
 
         const [label, notes] = await Promise.all([
             db.query(LabelModel)
@@ -38,11 +38,11 @@ export default function LabelAPIRoutes(db: Database)
                 .include(LibraryModel, m => m.library, q => q.where(m => m.slug.eq(librarySlug)))
                 .include(LabelModel, m => m.labels, q => q.where(m => m.slug.eq(labelSlug)))
                 .find()
-        ]);
+        ])
 
-        if (!label) return helpers.notFound();
-        else return helpers.success({slug: label, notes});
-    }));
+        if (!label) return helpers.notFound()
+        else return helpers.success({slug: label, notes})
+    }))
 
-    return router;
+    return router
 }
