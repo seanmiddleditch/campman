@@ -17,7 +17,7 @@ interface ListNotesPageState
     dialogOpen: boolean
     saving: boolean
 }
-export default class ListNotesPage extends React.Component<ListNotesPageProps, ListNotesPageState>
+export class ListNotesPage extends React.Component<ListNotesPageProps, ListNotesPageState>
 {
     static contextTypes = { router: PropTypes.object.isRequired }
     

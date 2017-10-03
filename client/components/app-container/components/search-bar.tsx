@@ -10,7 +10,7 @@ interface SearchBarState
 {
     searchText: string
 }
-export default class SearchBar extends React.Component<SearchBarProps, SearchBarState>
+export class SearchBar extends React.Component<SearchBarProps, SearchBarState>
 {
     static contextTypes = { router: PropTypes.object.isRequired }
     
@@ -47,5 +47,4 @@ export default class SearchBar extends React.Component<SearchBarProps, SearchBar
             </form>
         )
     }
-};
-
+}

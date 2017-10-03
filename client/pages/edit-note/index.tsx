@@ -21,7 +21,7 @@ interface EditNotePageState
     saving: boolean
     note?: Note
 };
-export default class NotePage extends React.Component<EditNotePageProps, EditNotePageState>
+export class EditNotePage extends React.Component<EditNotePageProps, EditNotePageState>
 {
     static contextTypes = { router: PropTypes.object.isRequired }
     

@@ -3,18 +3,17 @@ import * as PropTypes from 'prop-types'
 import * as ReactRouter from 'react-router'
 import {NavLink} from 'react-router-dom'
 
-import SearchBar from './search-bar'
+import {SearchBar} from './search-bar'
 
-import * as api from '../../api'
-import {Config} from '../../client'
+import {User, Config} from '../../../types'
 
 export interface ProfileBarProps
 {
     config: Config
-    user: api.UserData
+    user: User
     onLogout: () => void
 }
-const ProfileBar = (props: ProfileBarProps) => (
+export const ProfileBar = (props: ProfileBarProps) => (
     <div className='btn-group' role='group'>
         <button className='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
             <span className='navigation-bar-profile'>
@@ -32,4 +31,3 @@ const ProfileBar = (props: ProfileBarProps) => (
         </div>
     </div>
 )
-export default ProfileBar

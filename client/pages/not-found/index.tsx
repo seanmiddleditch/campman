@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import Page, {PageHeader, PageBody} from '../../components/page'
 
-export default function NotFoundPage()
+export function NotFoundPage()
 {
     return (
         <Page>

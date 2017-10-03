@@ -8,7 +8,7 @@ export interface ProfileViewProps
 {
     user: User
 }
-export default class MyProfilePage extends React.Component<ProfileViewProps>
+export class MyProfilePage extends React.Component<ProfileViewProps>
 {
     constructor(props: ProfileViewProps)
     {

@@ -1,4 +1,4 @@
-export default interface LibraryData
+export interface Library
 {
     id?: number
     slug?: string

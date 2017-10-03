@@ -14,22 +14,22 @@ import Body from './components/body'
 
 require('./styles/notes.css')
 
-export interface NotePageProps
+export interface ViewNotePageProps
 {
     slug: string
 };
-interface NotePageState
+interface ViewNotePageState
 {
     failed: boolean
     note?: Note
 };
-export default class NotePage extends React.Component<NotePageProps, NotePageState>
+export class ViewNotePage extends React.Component<ViewNotePageProps, ViewNotePageState>
 {
     static contextTypes = { router: PropTypes.object.isRequired }
     
-    context: ReactRouter.RouterChildContext<NotePageProps>
+    context: ReactRouter.RouterChildContext<ViewNotePageProps>
 
-    constructor(props: NotePageProps)
+    constructor(props: ViewNotePageProps)
     {
         super(props)
         this.state = {
@@ -69,7 +69,7 @@ export default class NotePage extends React.Component<NotePageProps, NotePageSta
         this._fetch()
     }
 
-    componentWillReceiveProps(nextProps: NotePageProps)
+    componentWillReceiveProps(nextProps: ViewNotePageProps)
     {
         if (this.props.slug !== nextProps.slug)
         {

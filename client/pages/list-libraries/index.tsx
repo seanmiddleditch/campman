@@ -8,16 +8,16 @@ import Modal, {ModalHeader, ModalBody, ModalFooter} from '../../components/modal
 import LibrariesList from './components/libraries-list'
 import NewLibraryDialog from './components/new-library-dialog'
 
-export interface LibrariesViewProps
+export interface ListLibrariesPageProps
 {
     config: {publicURL: string}
 }
-interface LibrariesViewState
+interface ListLibrariesPageState
 {
     dialogOpen: boolean
     saving: boolean
 }
-export default class LibrariesView extends React.Component<LibrariesViewProps, LibrariesViewState>
+export class ListLibrariesPage extends React.Component<ListLibrariesPageProps, ListLibrariesPageState>
 {
     refs: {
         libraries: LibrariesList

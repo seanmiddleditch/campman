@@ -1,4 +1,4 @@
-export default interface MediaFile
+export interface MediaFile
 {
     path: string
     url: string

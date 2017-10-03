@@ -16,7 +16,7 @@ import {
     convertFromRaw
 } from 'draft-js'
 
-import MediaFile from '../../types/media-file'
+import {MediaFile} from '../../types/media-file'
 
 import MediaSelector from '../media-selector'
 
@@ -45,7 +45,7 @@ interface MarkEditorState
     preview: boolean
     mediaPopupOpen: boolean
 }
-export default class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState>
+export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState>
 {
     static contextTypes = { router: PropTypes.object.isRequired }
     

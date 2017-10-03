@@ -3,9 +3,9 @@ import * as PropTypes from 'prop-types'
 import * as ReactRouter from 'react-router'
 import {NavLink} from 'react-router-dom'
 
-import SearchBar from './search-bar'
-import ProfileBar from './profile-bar'
-import LoginBar from './login-bar'
+import {SearchBar} from './search-bar'
+import {ProfileBar} from './profile-bar'
+import {LoginBar} from './login-bar'
 
 import * as api from '../../../api'
 import {Config, User, Library} from '../../../types'
@@ -20,7 +20,7 @@ export interface NavigationBarProps
     onLogin: () => void
     onLogout: () => void
 }
-const NavigationBar = (props: NavigationBarProps) => (
+export const NavigationBar = (props: NavigationBarProps) => (
     <nav className='navbar fixed-top navbar-expand-lg navbar-light bg-light'>
         <NavLink className='navbar-brand' to='/' exact>{(props.library && props.library.title) || 'Campaign Manager'}</NavLink>
         <div className='collapse navbar-collapse' id='navbarTogglerDemo03'>
@@ -48,4 +48,3 @@ const NavigationBar = (props: NavigationBarProps) => (
         </div>
     </nav>
 )
-export default NavigationBar

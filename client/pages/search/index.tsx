@@ -9,7 +9,7 @@ export interface SearchPageProps
 interface SearchPageState
 {
 }
-export default class SearchPage extends React.Component<SearchPageProps, SearchPageState>
+export class SearchPage extends React.Component<SearchPageProps, SearchPageState>
 {
     constructor(props: SearchPageProps)
     {

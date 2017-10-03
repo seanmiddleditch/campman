@@ -5,7 +5,7 @@ import * as PropTypes from 'prop-types'
 import * as api from '../../api'
 import {Config, User, Library} from '../../types'
 
-import NavigationBar from './components/navigation-bar'
+import {NavigationBar} from './components/navigation-bar'
 
 require('./styles/site.css')
 
@@ -20,7 +20,7 @@ interface AppContainerState
 {
     user?: User
 }
-export default class AppContainer extends React.Component<AppContainerProps, AppContainerState>
+export class AppContainer extends React.Component<AppContainerProps, AppContainerState>
 {
     constructor(props: AppContainerProps)
     {

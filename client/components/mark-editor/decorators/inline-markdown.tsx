@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {ContentBlock, ContentState, Entity, CompositeDecorator} from 'draft-js'
-import findWithRegex from './helpers'
+import {findWithRegex} from './helpers'
 
 const STRONG_REGEX = /[*][*]([^*]+)[*][*]/g
 const EM_REGEX = /[*]([^*]+)[*]($|[^*])/g
@@ -24,11 +24,10 @@ const InlineMarkdownComponent = (props: {contentState: ContentState, style: any,
 
 const s = inlineMarkdownStrategy(STRONG_REGEX)
 
-const inlineMarkdownDecorator = new CompositeDecorator([
+export const inlineMarkdownDecorator = new CompositeDecorator([
     {
         strategy: inlineMarkdownStrategy(STRONG_REGEX),
         component: InlineMarkdownComponent,
         props: {style: {fontWeight: 'bold'}}
     },
 ])
-export default inlineMarkdownDecorator

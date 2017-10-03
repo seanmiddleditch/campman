@@ -16,7 +16,7 @@ interface MediaBrowserPageState
     uploading: boolean
     dialogOpen: boolean
 };
-export default class MediaBrowserPage extends React.Component<MediaBrowserPageProps, MediaBrowserPageState>
+export class MediaBrowserPage extends React.Component<MediaBrowserPageProps, MediaBrowserPageState>
 {
     constructor(props: MediaBrowserPageProps)
     {
