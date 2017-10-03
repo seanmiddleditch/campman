@@ -1,8 +1,9 @@
 import * as React from 'react'
 
-import LibraryItem from './library-item';
+import {LibraryItem} from './library-item';
 
 import * as api from '../../../api'
+import {Library} from '../../../types'
 
 interface LibrariesListProps
 {
@@ -11,9 +12,9 @@ interface LibrariesListProps
 }
 interface LibrariesListState
 {
-    libraries?: api.LibraryData[]
+    libraries?: Library[]
 }
-export default class LibrariesList extends React.Component<LibrariesListProps, LibrariesListState>
+export class LibrariesList extends React.Component<LibrariesListProps, LibrariesListState>
 {
     constructor(props: LibrariesListProps)
     {

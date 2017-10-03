@@ -15,8 +15,7 @@ const WikiLinkComponent = (props: {contentState: ContentState, entityKey: string
     return <a href={'/n/' + target} target='_blank' data-offset-key={offsetKey}>{props.children}</a>
 }
 
-const wikiLinkDecorator: any = {
+export const wikiLinkDecorator: any = {
     strategy: wikiLinkDecoratorStrategy,
     component: WikiLinkComponent
 }
-export default wikiLinkDecorator

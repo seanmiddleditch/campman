@@ -1,7 +1,7 @@
 import * as React from 'react';
-import Modal, {ModalBody, ModalHeader} from '../../../components/modal'
+import {Modal, ModalBody, ModalHeader} from '../../../components/modal'
 
-import MediaFile from '../../../types/media-file'
+import {MediaFile} from '../../../types/media-file'
 
 require('../styles/popup.css')
 
@@ -9,7 +9,7 @@ const copyToClipboard = (text: string) => {
     alert(`FIXME: copy to clipboard: ${text}`)
 }
 
-const ImagePopup = (props: {file?: MediaFile, onClose: () => void}) => (
+export const ImagePopup = (props: {file?: MediaFile, onClose: () => void}) => (
     <div className='media-browser-image-popup'>
         <Modal visible={!!props.file} backdrop='visible' onClose={props.onClose}>
             <ModalHeader>
@@ -25,4 +25,3 @@ const ImagePopup = (props: {file?: MediaFile, onClose: () => void}) => (
         </Modal>
     </div>
 )
-export default ImagePopup

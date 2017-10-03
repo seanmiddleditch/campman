@@ -1,9 +1,9 @@
 import * as React from 'react'
 
 import * as api from '../../api'
-import MediaFile from '../../types/media-file'
+import {MediaFile} from '../../types/media-file'
 
-import Modal, {ModalHeader, ModalBody} from '../modal'
+import {Modal, ModalHeader, ModalBody} from '../modal'
 
 interface MediaSelectorProps
 {
@@ -16,7 +16,7 @@ interface MediaSelectorState
 {
     media?: MediaFile[]
 }
-export default class FilesFoldersList extends React.Component<MediaSelectorProps, MediaSelectorState>
+export class MediaSelector extends React.Component<MediaSelectorProps, MediaSelectorState>
 {
     constructor(props: MediaSelectorProps)
     {

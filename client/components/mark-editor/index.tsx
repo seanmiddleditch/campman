@@ -18,13 +18,12 @@ import {
 
 import {MediaFile} from '../../types/media-file'
 
-import MediaSelector from '../media-selector'
+import {MediaSelector} from '../media-selector'
 
-import StyleButton from './components/style-button'
-import PreviewBar from './components/preview-bar'
+import {StyleButton} from './components/style-button'
+import {PreviewBar} from './components/preview-bar'
 
-import findWithRegex from './decorators/helpers'
-import decorators from './decorators'
+import {decorators} from './decorators'
 
 import {applyMarkdownShortcutsOnInput} from './helpers/markdown-shortcuts'
 import {blockRenderer, handleReturn} from './helpers/block-utils'

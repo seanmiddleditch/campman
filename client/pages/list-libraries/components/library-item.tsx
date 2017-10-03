@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-export default function LibraryItem(props: {library: {slug?: string, title?: string}, publicURL: string})
+export function LibraryItem(props: {library: {slug?: string, title?: string}, publicURL: string})
 {
     const {library, publicURL} = props;
     const url = new URL(publicURL);

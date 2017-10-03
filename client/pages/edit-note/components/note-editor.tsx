@@ -3,9 +3,8 @@ import * as ReactRouter from 'react-router'
 import * as PropTypes from 'prop-types'
 import * as ReactDOM from 'react-dom'
 
-import LabelInput from './label-input'
-import MarkEditor from '../../../components/mark-editor'
-import Markdown from '../../../components/markdown'
+import {LabelInput} from './label-input'
+import {MarkEditor} from '../../../components/mark-editor'
 
 import * as api from '../../../api'
 import {Note} from '../../../types'
@@ -27,7 +26,7 @@ interface NoteEditorState
     rawbody: any
     preview: boolean
 }
-export default class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState>
+export class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState>
 {
     static contextTypes = { router: PropTypes.object.isRequired };
     

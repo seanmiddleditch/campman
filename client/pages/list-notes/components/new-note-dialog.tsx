@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import Modal, {ModalHeader, ModalFooter, ModalBody} from '../../../components/modal';
+import {Modal, ModalHeader, ModalFooter, ModalBody} from '../../../components/modal';
 
 interface NewNoteDialogProps
 {
@@ -9,7 +9,7 @@ interface NewNoteDialogProps
     onClose: () => void
     onCreate: (note: {slug: string, title: string}) => void
 }
-export default class NewNoteDialog extends React.Component<NewNoteDialogProps>
+export class NewNoteDialog extends React.Component<NewNoteDialogProps>
 {
     refs: {
         slug: HTMLInputElement

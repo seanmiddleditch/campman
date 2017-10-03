@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-export default function Labels(props: {labels?: string[]})
+export function Labels(props: {labels?: string[]})
 {
     const {labels} = props
 

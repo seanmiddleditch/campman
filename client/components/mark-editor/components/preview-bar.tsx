@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-const PreviewBar = (props: {preview: boolean, onChange: (preview: boolean) => void}) => (
+export const PreviewBar = (props: {preview: boolean, onChange: (preview: boolean) => void}) => (
     <ul className='nav nav-tabs'>
         <li className="nav-item">
             <a className={'nav-link ' + (!props.preview && 'active')} href='#' onClick={ev => {props.onChange(false); ev.preventDefault()}}>Edit</a>
@@ -10,4 +10,3 @@ const PreviewBar = (props: {preview: boolean, onChange: (preview: boolean) => vo
         </li>
     </ul>
 )
-export default PreviewBar

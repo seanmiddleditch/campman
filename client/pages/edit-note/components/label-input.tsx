@@ -13,7 +13,7 @@ interface LabalInputState
     input: string
     focused: boolean
 }
-export default class LabelInput extends React.Component<LabelInputProps, LabalInputState>
+export class LabelInput extends React.Component<LabelInputProps, LabalInputState>
 {
     refs: {
         input: HTMLInputElement

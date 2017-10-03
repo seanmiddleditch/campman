@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-export default function Bar(props: {onEdit: () => void, onDelete: () => void})
+export function Bar(props: {onEdit: () => void, onDelete: () => void})
 {
     return (
         <div className='float-right'>

@@ -1,11 +1,11 @@
 import * as React from 'react'
 
-import FolderItem from './folder-item'
-import FileItem from './file-item'
-import ImagePopup from './image-popup'
+import {FolderItem} from './folder-item'
+import {FileItem} from './file-item'
+import {ImagePopup} from './image-popup'
 
 import * as api from '../../../api'
-import MediaFile from '../../../types/media-file'
+import {MediaFile} from '../../../types/media-file'
 
 interface FilesFoldersListProps
 {
@@ -17,7 +17,7 @@ interface FilesFoldersListState
     media?: MediaFile[]
     viewing?: MediaFile
 }
-export default class FilesFoldersList extends React.Component<FilesFoldersListProps, FilesFoldersListState>
+export class FilesFoldersList extends React.Component<FilesFoldersListProps, FilesFoldersListState>
 {
     constructor(props: FilesFoldersListProps)
     {

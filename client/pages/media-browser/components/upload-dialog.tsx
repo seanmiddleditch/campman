@@ -4,7 +4,7 @@ import {Link} from 'react-router-dom'
 import * as api from '../../../api'
 import * as path from 'path'
 
-import Modal, {ModalHeader, ModalBody, ModalFooter} from '../../../components/modal'
+import {Modal, ModalHeader, ModalBody, ModalFooter} from '../../../components/modal'
 
 require('../styles/upload.css')
 
@@ -20,7 +20,7 @@ interface UploadDialogState
     file?: File,
     caption: string
 }
-export default class UploadDialog extends React.Component<UploadDialogProps, UploadDialogState>
+export class UploadDialog extends React.Component<UploadDialogProps, UploadDialogState>
 {
     refs: {
         file: HTMLInputElement,

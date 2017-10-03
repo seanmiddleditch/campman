@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import LabelItem from './label-item';
+import {LabelItem} from './label-item';
 
 import * as api from '../../../api'
 
@@ -12,7 +12,7 @@ interface LabelsListState
 {
     labels?: api.LabelData[]
 }
-export default class LabelsList extends React.Component<LabelsListProps, LabelsListState>
+export class LabelsList extends React.Component<LabelsListProps, LabelsListState>
 {
     constructor(props: LabelsListProps)
     {

@@ -1,7 +1,7 @@
 import * as React from 'react';
-import MediaFile from '../../../types/media-file'
+import {MediaFile} from '../../../types/media-file'
 
-const FileItem = (props: {file: MediaFile, onClick: (file: MediaFile) => void}) => (
+export const FileItem = (props: {file: MediaFile, onClick: (file: MediaFile) => void}) => (
     <div key={props.file.url} className='list-group-item' onClick={() => props.onClick(props.file)}>
         <figure className='figure'>
             <img src={props.file.url} className='figure-img img-fluid rounded img-thumbnail' style={{width: '100px'}} alt={props.file.caption}/>
@@ -9,4 +9,3 @@ const FileItem = (props: {file: MediaFile, onClick: (file: MediaFile) => void}) 
         </figure>
     </div>
 )
-export default FileItem

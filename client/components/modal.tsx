@@ -8,7 +8,7 @@ export interface ModalProps
     backdrop?: 'visible'|'hidden'|'static'
     onClose?: () => void
 }
-export default class Modal extends React.Component<ModalProps>
+export class Modal extends React.Component<ModalProps>
 {
     refs: {
         modalDiv: HTMLDivElement

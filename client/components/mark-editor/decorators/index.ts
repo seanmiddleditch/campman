@@ -1,7 +1,6 @@
 import {CompositeDecorator} from 'draft-js'
-import wikiLinkDecorator from './wiki-link'
+import {wikiLinkDecorator} from './wiki-link'
 
-const decorators = new CompositeDecorator([
+export const decorators = new CompositeDecorator([
     wikiLinkDecorator
 ])
-export default decorators

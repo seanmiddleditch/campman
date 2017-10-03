@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {Link} from 'react-router-dom'
 
-export default function LabelItem(props: {label: {slug?: string, numNotes?: number}})
+export function LabelItem(props: {label: {slug?: string, numNotes?: number}})
 {
     const {label} = props;
     return <Link key={label.slug} to={'/notes?label=' + encodeURIComponent(label.slug)} className='list-group-item'>

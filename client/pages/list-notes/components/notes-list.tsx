@@ -1,8 +1,9 @@
 import * as React from 'react'
 
-import NoteItem from './note-item';
+import {NoteItem} from './note-item';
 
 import * as api from '../../../api'
+import {Note} from '../../../types'
 
 interface NotesListProps
 {
@@ -11,9 +12,9 @@ interface NotesListProps
 }
 interface NotesListState
 {
-    notes?: api.NoteData[]
+    notes?: Note[]
 }
-export default class NotesList extends React.Component<NotesListProps, NotesListState>
+export class NotesList extends React.Component<NotesListProps, NotesListState>
 {
     constructor(props: NotesListProps)
     {
