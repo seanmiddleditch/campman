@@ -1,5 +1,5 @@
 import {Request, Response, Router} from 'express'
-import {LibraryModel, LabelModel, NoteModel} from '../../models'
+import {LibraryModel, LabelModel, NoteModel, UserModel} from '../../models'
 import {Database, ASC} from 'squell'
 import * as slug from '../../util/slug'
 import {Access} from '../../auth/access'
@@ -71,6 +71,8 @@ export function noteAPIRoutes(db: Database)
 
         if (!note.library)
             note.library = await db.query(LibraryModel).where(m => m.slug.eq(librarySlug)).findOne()
+        if (!note.author && userID)
+            note.author = await db.query(UserModel).where(m => m.id.eq(userID)).findOne()
 
         note.title = req.body['title'] || note.title || 'New Note'
         note.subtitle = req.body['subtitle'] || note.subtitle || ''
