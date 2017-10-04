@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import {User} from '../../types'
 
-import Page, {PageHeader, PageBody} from '../../components/page'
+import {Page, PageHeader, PageBody} from '../../components/page'
 
 export interface ProfileViewProps
 {

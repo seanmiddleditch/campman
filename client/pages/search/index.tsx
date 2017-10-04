@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import Page, {PageHeader, PageBody} from '../../components/page'
+import {Page, PageHeader, PageBody} from '../../components/page'
 
 export interface SearchPageProps
 {

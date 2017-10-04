@@ -4,9 +4,9 @@ import * as ReactRouter from 'react-router';
 import {Link} from 'react-router-dom';
 import * as api from '../../api';
 
-import Page, {PageHeader, PageBody} from '../../components/page';
-import NewNoteDialog from './components/new-note-dialog';
-import NotesList from './components/notes-list';
+import {Page, PageHeader, PageBody} from '../../components/page';
+import {NewNoteDialog} from './components/new-note-dialog';
+import {NotesList} from './components/notes-list';
 
 interface ListNotesPageProps
 {

@@ -5,9 +5,9 @@ import * as PropTypes from 'prop-types'
 import * as api from '../../api'
 import {Note} from '../../types'
 
-import Page, {PageHeader, PageBody} from '../../components/page'
+import {Page, PageHeader, PageBody} from '../../components/page'
 
-import NoteEditor from './components/note-editor'
+import {NoteEditor} from './components/note-editor'
 
 require('./styles/notes.css')
 

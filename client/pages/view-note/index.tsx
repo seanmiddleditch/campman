@@ -5,12 +5,12 @@ import * as PropTypes from 'prop-types'
 import * as api from '../../api'
 import {Note} from '../../types'
 
-import Page, {PageHeader, PageBody} from '../../components/page'
+import {Page, PageHeader, PageBody} from '../../components/page'
 
-import Labels from './components/labels'
-import Subtitle from './components/subtitle'
-import Bar from './components/bar'
-import Body from './components/body'
+import {Labels} from './components/labels'
+import {Subtitle} from './components/subtitle'
+import {Bar} from './components/bar'
+import {Body} from './components/body'
 
 require('./styles/notes.css')
 

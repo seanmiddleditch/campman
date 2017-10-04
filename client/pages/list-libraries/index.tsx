@@ -2,11 +2,11 @@ import * as React from 'react';
 import {Link} from 'react-router-dom';
 
 import * as api from '../../api'
-import Page, {PageHeader, PageBody} from '../../components/page'
-import Modal, {ModalHeader, ModalBody, ModalFooter} from '../../components/modal'
+import {Page, PageHeader, PageBody} from '../../components/page'
+import {Modal, ModalHeader, ModalBody, ModalFooter} from '../../components/modal'
 
-import LibrariesList from './components/libraries-list'
-import NewLibraryDialog from './components/new-library-dialog'
+import {LibrariesList} from './components/libraries-list'
+import {NewLibraryDialog} from './components/new-library-dialog'
 
 export interface ListLibrariesPageProps
 {

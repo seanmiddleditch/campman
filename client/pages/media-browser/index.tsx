@@ -3,9 +3,9 @@ import {Link} from 'react-router-dom'
 import * as api from '../../api'
 import * as path from 'path'
 
-import Page, {PageHeader, PageBody} from '../../components/page'
-import FilesFoldersList from './components/files-folders-list'
-import UploadDialog from './components/upload-dialog'
+import {Page, PageHeader, PageBody} from '../../components/page'
+import {FilesFoldersList} from './components/files-folders-list'
+import {UploadDialog} from './components/upload-dialog'
 
 export interface MediaBrowserPageProps
 {

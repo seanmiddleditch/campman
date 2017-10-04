@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import Page, {PageHeader, PageBody} from '../../components/page'
-import LabelsList from './components/labels-list'
+import {Page, PageHeader, PageBody} from '../../components/page'
+import {LabelsList} from './components/labels-list'
 
 export function ListLabelsPage()
 {
