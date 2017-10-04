@@ -1,10 +1,9 @@
 import {Request, Response, Router} from 'express'
-import {LibraryModel, LabelModel, NoteModel, UserModel} from '../models'
-import {Database, ASC} from 'squell'
-import * as slug from '../util/slug'
+import {Database} from 'squell'
 import {Access} from '../auth/access'
 import {wrap, success, notFound, accessDenied, badInput, authorized} from './helpers'
 import {NoteController} from '../controllers/note-controller'
+import * as slug from '../util/slug'
 
 export function noteAPIRoutes(db: Database)
 {
@@ -42,11 +41,6 @@ export function noteAPIRoutes(db: Database)
                 labels: req.body['labels']
             }
         })
-
-        // if (!note.library)
-        //     note.library = await db.query(LibraryModel).where(m => m.slug.eq(librarySlug)).findOne()
-        // if (!note.author && userID)
-        //     note.author = await db.query(UserModel).where(m => m.id.eq(userID)).findOne()
 
         return success({})
     }))

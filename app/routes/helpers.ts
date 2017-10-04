@@ -1,6 +1,6 @@
 import {Request, Response, NextFunction} from 'express'
 import * as squell from 'squell'
-import {LibraryModel} from '../models/library'
+import {LibraryModel} from '../models/library-model'
 import {User} from '../auth/user'
 import {Access} from '../auth/access'
 

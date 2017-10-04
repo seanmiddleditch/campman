@@ -1,4 +1,4 @@
-import {LibraryAccessModel} from './library'
+import {LibraryAccessModel} from './library-model'
 import * as modelsafe from 'modelsafe'
 import * as squell from 'squell'
 import {User} from '../auth/user'
