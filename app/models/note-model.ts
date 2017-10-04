@@ -1,4 +1,4 @@
-import {LabelModel} from './label'
+import {LabelModel} from './label-model'
 import {LibraryModel} from './library'
 import {UserModel} from './user'
 import * as modelsafe from 'modelsafe'
@@ -16,7 +16,7 @@ export class NoteModel extends modelsafe.Model
     @squell.assoc({onDelete: 'CASCADE', foreignKey: {name: 'libraryId', allowNull: false}, foreignKeyConstraint: true})
     public library: LibraryModel
 
-    @modelsafe.assoc(modelsafe.BELONGS_TO, () => LibraryModel)
+    @modelsafe.assoc(modelsafe.BELONGS_TO, () => UserModel)
     @squell.assoc({onDelete: 'SET NULL', foreignKey: {name: 'userId', allowNull: true}, foreignKeyConstraint: true})
     public author: UserModel
 

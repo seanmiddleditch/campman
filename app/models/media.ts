@@ -1,4 +1,4 @@
-import {LabelModel} from './label'
+import {LabelModel} from './label-model'
 import {LibraryModel} from './library'
 import * as modelsafe from 'modelsafe'
 import * as squell from 'squell'

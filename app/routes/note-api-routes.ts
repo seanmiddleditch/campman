@@ -1,10 +1,10 @@
 import {Request, Response, Router} from 'express'
-import {LibraryModel, LabelModel, NoteModel, UserModel} from '../../models'
+import {LibraryModel, LabelModel, NoteModel, UserModel} from '../models'
 import {Database, ASC} from 'squell'
-import * as slug from '../../util/slug'
-import {Access} from '../../auth/access'
-import {wrap, success, notFound, accessDenied, badInput, authorized} from '../helpers'
-import {NoteController} from '../../controllers/note-controller'
+import * as slug from '../util/slug'
+import {Access} from '../auth/access'
+import {wrap, success, notFound, accessDenied, badInput, authorized} from './helpers'
+import {NoteController} from '../controllers/note-controller'
 
 export function noteAPIRoutes(db: Database)
 {
@@ -21,10 +21,10 @@ export function noteAPIRoutes(db: Database)
     router.get('/api/notes/:note', authorized(db), wrap(async (req) => {
         if (!req.library) return notFound()
 
-        const note = await controller.fetchNote({noteSlug: req.params['note'], librarySlug: req.library.slug})
+        const result = await controller.fetchNote({noteSlug: req.params['note'], librarySlug: req.library.slug})
 
-        if (!note) return notFound()
-        else return success(note)
+        if (!result.note) return notFound()
+        else return success(result.note)
     }))
 
     router.post('/api/notes/:note', authorized(db, Access.GM), wrap(async (req) => {

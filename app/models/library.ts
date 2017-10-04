@@ -1,6 +1,6 @@
 import * as modelsafe from 'modelsafe'
 import * as squell from 'squell'
-import {NoteModel} from './note'
+import {NoteModel} from './note-model'
 import {UserModel} from './user'
 import {Access} from '../auth/access'
 

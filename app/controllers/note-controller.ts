@@ -6,7 +6,7 @@ interface ListNotesParams { librarySlug: string }
 interface ListNotesResults { notes: { slug: string, title: string, subtitle: string }[] }
 
 interface FetchNoteParams { noteSlug: string, librarySlug: string }
-interface FetchNoteResults { slug: string, title: string, subtitle: string, labels: string[], rawbody: Object }
+interface FetchNoteResults { note?: { slug: string, title: string, subtitle: string, labels: string[], rawbody: Object }}
 
 interface UpdateNoteParams
 {
@@ -56,11 +56,13 @@ export class NoteController
             .where(m => m.slug.eq(noteSlug)).findOne()
 
         return {
-            slug: note.slug,
-            title: note.title,
-            subtitle: note.subtitle,
-            rawbody: JSON.parse(note.rawbody),
-            labels: note.labels.map(label => label.slug)
+            note: note ? {
+                slug: noteSlug,
+                title: note.title,
+                subtitle: note.subtitle,
+                rawbody: JSON.parse(note.rawbody),
+                labels: note.labels.map(label => label.slug)
+            } : undefined
         }
     }
 
@@ -69,21 +71,24 @@ export class NoteController
         if (!slug.isValid(noteSlug))
             throw new Error('Invalid slug')
 
-        const originalNote = await this._db.query(NoteModel)
-            .attributes(m => [m.id])
+        let note = await this._db.query(NoteModel)
             .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug)))
+            .include(LabelModel, m => [m.labels, {required: false}])
             .where(m => m.slug.eq(noteSlug)).findOne()
 
-        const updatedNote = await this._db.query(NoteModel)
-            .includeAll()
-            .upsert({
-                id: originalNote.id,
-                slug: slug.sanitize(noteSlug),
-                title: noteData.title,
-                subtitle: noteData.subtitle,
-                rawbody: JSON.stringify(noteData.rawbody),
-                labels: noteData.labels ? await LabelModel.reify(this._db, noteData.labels) : undefined
-            })
+        if (!note)
+            note = new NoteModel()
+
+        note.slug = noteSlug
+        note.title = noteData.title || note.title || ''
+        note.subtitle = noteData.subtitle || note.subtitle || ''
+        note.rawbody = noteData.rawbody ? JSON.stringify(noteData.rawbody) : note.rawbody || ''
+        note.labels = noteData.labels ? await LabelModel.reify(this._db, noteData.labels) : note.labels
+
+        if (!note.library)
+            note.library = await this._db.query(LibraryModel).where(m => m.slug.eq(librarySlug)).findOne()
+
+        await this._db.query(NoteModel).includeAll().save(note)
 
         return {}
     }

@@ -1,6 +1,7 @@
-import {NoteModel} from './note'
+import {NoteModel} from './note-model'
 import * as modelsafe from 'modelsafe'
 import * as squell from 'squell'
+import * as slug from '../util/slug'
 
 @modelsafe.model({name: 'label'})
 export class LabelModel extends modelsafe.Model
@@ -20,10 +21,9 @@ export class LabelModel extends modelsafe.Model
 
     public static fromString(input: string|string[]): string[]
     {
-        const clean = (s: string) => s.replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-/, '').replace(/-$/, '')
         if (typeof input === 'string')
             input = input.split(/[\s,]+/)
-        return input.map(clean).filter(s => s.length).map(s => s.substring(0, 32))
+        return input.map(slug.sanitize).filter(s => s.length)
     }
 
     public static async reify(db: squell.Database, slugs: string[]) : Promise<LabelModel[]>
