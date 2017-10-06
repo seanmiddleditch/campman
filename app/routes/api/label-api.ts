@@ -10,13 +10,13 @@ export function labelAPIRoutes(db: Database)
     const controller = new LabelController(db)
 
     router.get('/api/labels', wrapper(async (req, res) => {
-        if (!req.libraryID)
+        const result = await controller.listLabels({libraryID: req.libraryID})
+        if (!result.labels)
         {
-            res.status(404).json({message: 'Library not found'})
+            res.status(404).json({message: 'Labels not found'})
         }
         else
         {
-            const result = await controller.listLabels({libraryID: req.libraryID})
             res.json(result.labels.filter(label => checkAccess({
                 target: 'label:view',
                 userID: req.userID,
@@ -26,26 +26,19 @@ export function labelAPIRoutes(db: Database)
     }))
 
     router.get('/api/labels/:label', wrapper(async (req, res) => {
-        if (!req.libraryID)
+        const labelSlug = req.params.label
+        const result = await controller.fetchLabel({labelSlug, libraryID: req.libraryID})
+        if (!result.label)
         {
-            res.status(404).json({message: 'Library not found'})
+            res.status(404).json({message: 'Label not found'})
         }
         else
         {
-            const labelSlug = req.params.label
-            const result = await controller.fetchLabel({labelSlug, libraryID: req.libraryID})
-            if (!result.label)
-            {
-                res.status(404).json({message: 'Label not found'})
-            }
-            else
-            {
-                const {label} = result
-                res.json({
-                    slug: label.slug,
-                    notes: result.notes.length
-                })
-            }
+            const {label} = result
+            res.json({
+                slug: label.slug,
+                notes: result.notes.length
+            })
         }
     }))
 

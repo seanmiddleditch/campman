@@ -7,10 +7,10 @@ declare global
     {
         export interface Request
         {
-            domainSlug?: string
+            domainSlug: string
             library?: LibraryModel
-            libraryID?: number
-            userID?: number
+            libraryID: number
+            userID: number
             userRole: Role
         }
     }

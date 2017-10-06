@@ -28,15 +28,15 @@ interface NoteEditorState
 }
 export class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState>
 {
-    static contextTypes = { router: PropTypes.object.isRequired };
+    static contextTypes = { router: PropTypes.object.isRequired }
     
-    context: ReactRouter.RouterChildContext<NoteEditorProps>;
+    context: ReactRouter.RouterChildContext<NoteEditorProps>
 
-    private unblockHistory: () => void;
+    private unblockHistory: () => void
     
     constructor(props: NoteEditorProps)
     {
-        super(props);
+        super(props)
         this.state = {
             saving: false,
             preview: false,
@@ -45,7 +45,7 @@ export class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState
             subtitle: props.note && props.note.subtitle ? props.note.subtitle : '',
             rawbody: props.note && props.note.rawbody ? props.note.rawbody : '',
             labels: props.note && props.note.labels ? props.note.labels.slice() : []
-        };
+        }
     }
 
     private _hasChanges()
@@ -53,7 +53,7 @@ export class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState
         return this.props.note && (this.props.note.title !== this.state.title ||
             this.props.note.subtitle !== this.state.subtitle ||
             this.props.note.rawbody !== this.state.rawbody ||
-            this.props.note.labels.join(',') !== this.state.labels.join(','));
+            this.props.note.labels.join(',') !== this.state.labels.join(','))
     }
 
     private _handleSaveClicked()
@@ -70,58 +70,58 @@ export class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState
     {
         if (!this._hasChanges() || confirm('Canceling now will lose your changes. Click Cancel to continue editing.'))
         {
-            this.unblockHistory();
-            this.props.onCancel();
+            this.unblockHistory()
+            this.props.onCancel()
         }
     }
 
     private _removeLabel(label: string)
     {
-        const index = this.state.labels.findIndex(l => l === label);
+        const index = this.state.labels.findIndex(l => l === label)
         if (index !== -1)
         {
-            this.state.labels.splice(index, 1);
-            this.setState({labels: this.state.labels});
+            this.state.labels.splice(index, 1)
+            this.setState({labels: this.state.labels})
         }
     }
 
     private _addLabel(label: string)
     {
-        const index = this.state.labels.findIndex(l => l === label);
+        const index = this.state.labels.findIndex(l => l === label)
         if (index === -1)
         {
-            this.state.labels.push(label);
-            this.setState({labels: this.state.labels});
+            this.state.labels.push(label)
+            this.setState({labels: this.state.labels})
         }
     }
 
     private _update(fields: {title?: string, subtitle?: string, labels?: string|string[], rawbody?: string})
     {
         if (fields.title)
-            this.setState({title: fields.title});
+            this.setState({title: fields.title})
         if (fields.subtitle)
-            this.setState({subtitle: fields.subtitle});
+            this.setState({subtitle: fields.subtitle})
         if (typeof fields.labels === 'string')
-            this.setState({labels: fields.labels.split(',').filter(s => s.length)});
+            this.setState({labels: fields.labels.split(',').filter(s => s.length)})
         else if (fields.labels)
-            this.setState({labels: fields.labels});
+            this.setState({labels: fields.labels})
         if (fields.rawbody)
-            this.setState({rawbody: fields.rawbody});
+            this.setState({rawbody: fields.rawbody})
     }
 
     componentDidMount()
     {
         this.unblockHistory = (this.context.router.history as any).block((location: any, action: any) => {
             if (this._hasChanges())
-                return 'Navigating away now will lose your changes. Click Cancel to continue editing.';
+                return 'Navigating away now will lose your changes. Click Cancel to continue editing.'
             else
-                return undefined;
-        }) as () => void;
+                return undefined
+        }) as () => void
     }
 
     componentWillUnmount()
     {
-        this.unblockHistory();
+        this.unblockHistory()
     }
 
     render()
@@ -153,6 +153,6 @@ export class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState
                 </div>
             </div>
             <MarkEditor document={this.state.rawbody} disabled={this.props.disabled || this.state.preview} onChange={document => this._update({rawbody: document})}/>
-        </div>;
+        </div>
     }
-};
+}

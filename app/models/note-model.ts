@@ -16,7 +16,7 @@ export class NoteModel extends modelsafe.Model
 {
     @modelsafe.attr(modelsafe.INTEGER, {optional: true})
     @squell.attr({primaryKey: true, autoIncrement: true})
-    public id?: number
+    public id: number
 
     @modelsafe.assoc(modelsafe.BELONGS_TO, () => LibraryModel)
     @squell.assoc({onDelete: 'CASCADE', foreignKey: {name: 'libraryId', allowNull: false}, foreignKeyConstraint: true})

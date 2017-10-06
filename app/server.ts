@@ -114,6 +114,8 @@ class Config
     app.use(async (req, res, next) => {
         const library = domainCache.get(req.hostname)
 
+        req.libraryID = 0
+
         if (library === undefined)
         {
             const protocol = req.secure ? 'https' : 'http'
@@ -180,7 +182,7 @@ class Config
         const sessionKey = `library[${req.libraryID}].role`
         const sessionRole = req.session && req.session[sessionKey]
 
-        req.userID = req.user && req.user.id
+        req.userID = req.user ? req.user.id : 0
         req.userRole = sessionRole || Role.Visitor
 
         if (req.userID && req.session && !sessionRole)

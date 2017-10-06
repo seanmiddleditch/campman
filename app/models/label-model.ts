@@ -8,7 +8,7 @@ export class LabelModel extends modelsafe.Model
 {
     @modelsafe.attr(modelsafe.INTEGER, {optional: true})
     @squell.attr({primaryKey: true, autoIncrement: true})
-    public id?: number
+    public id: number
 
     @modelsafe.attr(modelsafe.STRING, {unique: true})
     @modelsafe.minLength(1)
