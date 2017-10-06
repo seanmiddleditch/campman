@@ -2,7 +2,7 @@ import * as modelsafe from 'modelsafe'
 import * as squell from 'squell'
 import {NoteModel} from './note-model'
 import {UserModel} from './user'
-import {Access} from '../auth/access'
+import {Role} from '../auth/access'
 
 @modelsafe.model({name: 'library'})
 export class LibraryModel extends modelsafe.Model
@@ -37,21 +37,15 @@ export class LibraryModel extends modelsafe.Model
         return db.query(LibraryModel).includeAll().where(m => m.slug.eq(slug)).findOne()
     }
 
-    public static async queryAccess(db: squell.Database, librarySlug: string, userID: number): Promise<[LibraryModel|null, number]>
+    public static async queryAccess(db: squell.Database, librarySlug: string, userID: number): Promise<[LibraryModel|null, Role]>
     {
          const rs = await db.query(LibraryAccessModel)
-            .attributes(m => [m.access])
+            .attributes(m => [m.role])
             .include(LibraryModel, m => m.library, q => q.where(m => m.slug.eq(librarySlug)))
             .where(m => squell.attribute('userId').eq(userID).or(squell.attribute('userId').eq(null)))
-            .order(m => [[m.access, squell.DESC]])
+            .order(m => [[m.role, squell.DESC]])
             .findOne()
-        return rs ? [rs.library, rs.access] : [null, 0]
-    }
-
-    public static async findBySlugACL(db: squell.Database, librarySlug: string, userID: number, required: Access): Promise<LibraryModel|null>
-    {
-        const rs = await LibraryModel.queryAccess(db, librarySlug, userID)
-        return rs[1] >= required ? rs[0] : null
+        return rs ? [rs.library, rs.role || Role.Visitor] : [null, Role.Visitor]
     }
 }
 
@@ -67,6 +61,6 @@ export class LibraryAccessModel extends modelsafe.Model
     @squell.assoc({foreignKeyConstraint: true, foreignKey: {allowNull: true}})
     public user?: UserModel
 
-    @modelsafe.attr(modelsafe.INTEGER)
-    public access: number
+    @modelsafe.attr(modelsafe.ENUM(['Owner', 'GameMaster', 'Player', 'Visitor']))
+    public role: Role
 }

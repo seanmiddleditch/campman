@@ -1,10 +1,10 @@
 import {Database, ASC, attribute} from 'squell'
 import {LabelModel, NoteModel, LibraryModel} from '../models'
 
-interface ListLabelsParams { librarySlug: string }
+interface ListLabelsParams { libraryID: number }
 interface ListLabelsResult { labels: { slug: string, numNotes: number }[] }
 
-interface FetchLabelParams { labelSlug: string, librarySlug: string }
+interface FetchLabelParams { labelSlug: string, libraryID: number }
 interface FetchLabelResult { label: { slug: string }, notes: { slug: string, title: string }[] }
 
 export class LabelController
@@ -16,11 +16,11 @@ export class LabelController
         this._db = db
     }
 
-    async listLabels({librarySlug}: ListLabelsParams) : Promise<ListLabelsResult>
+    async listLabels({libraryID}: ListLabelsParams) : Promise<ListLabelsResult>
     {
         const labels = await this._db.query(LabelModel)
                 .attributes(m => [m.slug])
-                .include(NoteModel, m => m.notes, q => q.attributes(m => [m.id]).include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug))))
+                .include(NoteModel, m => m.notes, q => q.attributes(m => [m.id]).include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.id.eq(libraryID))))
                 .order(m => [[m.slug, ASC]])
                 .find()
 
@@ -29,7 +29,7 @@ export class LabelController
         }
     }
 
-    async fetchLabel({labelSlug, librarySlug}: FetchLabelParams) : Promise<FetchLabelResult>
+    async fetchLabel({labelSlug, libraryID}: FetchLabelParams) : Promise<FetchLabelResult>
     {
         const [label, notes] = await Promise.all([
             this._db.query(LabelModel)
@@ -38,7 +38,7 @@ export class LabelController
                 .findOne(),
             this._db.query(NoteModel)
                 .attributes(m => [m.slug, m.title])
-                .include(LibraryModel, m => m.library, q => q.where(m => m.slug.eq(librarySlug)))
+                .include(LibraryModel, m => m.library, q => q.where(m => m.id.eq(libraryID)))
                 .include(LabelModel, m => m.labels, q => q.where(m => m.slug.eq(labelSlug)))
                 .find()
         ])

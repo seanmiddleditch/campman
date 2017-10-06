@@ -3,7 +3,7 @@ import * as passport from 'passport'
 import {Database} from 'squell'
 import {User} from '../auth'
 import {UserModel} from '../models/user'
-import {wrap, success, accessDenied, authenticated} from './helpers'
+import {wrapper} from './helpers'
 import {URL} from 'url'
 
 export interface AuthRoutesConfig
@@ -26,26 +26,37 @@ export function authRoutes(db: Database, config: AuthRoutesConfig)
             next()
     })
 
-    router.post('/auth/logout', authenticated(), wrap(async (req) =>
+    router.post('/auth/logout', wrapper(async (req, res) =>
     {
-        if (!req.session) return accessDenied()
-        const session = req.session
-        return (new Promise(res => session.destroy(res))).then(() => success({}))
+        if (!req.session)
+        {
+            res.status(401).json({message: 'Not authenticated'})
+        }
+        else
+        {
+            const session = req.session;
+            (new Promise(res => session.destroy(res))).then(() => res.json({}))
+        }
     }))
 
-    router.get('/auth/session', authenticated(), wrap(async (req) => {
-        if (!req.session) return accessDenied()
-
-        const user = req.user ? req.user as User : null
-        return success({
-            googleClientId: config.googleClientID,
-            sessionKey: req.session.id,
-            user: !user ? null : {
-                id: user.id,
-                fullName: user.fullName,
-                nickname: user.nickname || user.fullName
-            }
-        })
+    router.get('/auth/session', wrapper(async (req, res) => {
+        if (!req.session)
+        {
+            res.status(401).json({message: 'Not authenticated'})
+        }
+        else
+        {
+            const user = req.user ? req.user as User : null
+            res.json({
+                googleClientId: config.googleClientID,
+                sessionKey: req.session.id,
+                user: !user ? null : {
+                    id: user.id,
+                    fullName: user.fullName,
+                    nickname: user.nickname || user.fullName
+                }
+            })
+        }
     }))
 
     router.get('/auth/google/callback',

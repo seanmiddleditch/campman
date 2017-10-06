@@ -1,5 +1,5 @@
 import {LibraryModel} from '../models/library-model'
-import {Access} from '../auth/access'
+import {Role} from '../auth/access'
 
 declare global
 {
@@ -7,8 +7,11 @@ declare global
     {
         export interface Request
         {
+            domainSlug?: string
             library?: LibraryModel
-            accessLevel?: Access
+            libraryID?: number
+            userID?: number
+            userRole: Role
         }
     }
 }

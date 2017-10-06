@@ -4,6 +4,12 @@ import {UserModel} from './user'
 import * as modelsafe from 'modelsafe'
 import * as squell from 'squell'
 
+export enum NoteStatus
+{
+    Published = 'Published',
+    Hidden = 'Hidden'
+}
+
 @modelsafe.model({name: 'note'})
 @squell.model({indexes: [{name: 'library_note_unique_slug', fields: ['libraryId', 'slug'], unique: true}], timestamps: true})
 export class NoteModel extends modelsafe.Model
@@ -25,6 +31,9 @@ export class NoteModel extends modelsafe.Model
     @modelsafe.maxLength(32)
     public slug: string
 
+    // @modelsafe.attr(modelsafe.ENUM(['Published', 'Hidden']))
+    // public status: NoteStatus = NoteStatus.Hidden
+
     @modelsafe.attr(modelsafe.STRING)
     @modelsafe.maxLength(255)
     @modelsafe.minLength(1)
@@ -40,7 +49,7 @@ export class NoteModel extends modelsafe.Model
 
     @modelsafe.assoc(modelsafe.BELONGS_TO_MANY, () => LabelModel)
     @squell.assoc({through: 'note_label'})
-    public labels: LabelModel[] = []
+    public labels: LabelModel[]
 }
 
 @modelsafe.model({name: 'note_label'})

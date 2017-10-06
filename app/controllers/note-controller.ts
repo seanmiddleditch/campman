@@ -2,16 +2,17 @@ import {LibraryModel, LabelModel, NoteModel, UserModel} from '../models'
 import {Database, ASC, attribute} from 'squell'
 import * as slug from '../util/slug'
 
-interface ListNotesParams { librarySlug: string }
-interface ListNotesResults { notes: { slug: string, title: string, subtitle: string }[] }
 
-interface FetchNoteParams { noteSlug: string, librarySlug: string }
-interface FetchNoteResults { note?: { slug: string, title: string, subtitle: string, labels: string[], rawbody: Object }}
+interface ListNotesParams { libraryID: number }
+interface ListNotesResults { notes: { slug: string, title: string, subtitle: string, authorID: number }[] }
+
+interface FetchNoteParams { noteSlug: string, libraryID: number }
+interface FetchNoteResults { note?: { slug: string, title: string, subtitle: string, labels: string[], rawbody: Object, authorID: number }}
 
 interface UpdateNoteParams
 {
     noteSlug: string,
-    librarySlug: string
+    libraryID: number
     noteData: {
         title?: string,
         subtitle?: string,
@@ -21,7 +22,7 @@ interface UpdateNoteParams
 }
 interface UpdateNoteResults {}
 
-interface DeleteNoteParams { noteSlug: string, librarySlug: string }
+interface DeleteNoteParams { noteSlug: string, libraryID: number }
 interface DeleteNoteResults { deleted: number }
 
 export class NoteController
@@ -33,26 +34,26 @@ export class NoteController
         this._db = db
     }
 
-    async listNotes({librarySlug}: ListNotesParams) : Promise<ListNotesResults>
+    async listNotes({libraryID}: ListNotesParams) : Promise<ListNotesResults>
     {
         // has to be a cleaner way to write this
         const query = await this._db.query(NoteModel)
-                .attributes(m => [m.slug, m.title, m.subtitle])
-                .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug)))
+                .attributes(m => [m.slug, m.title, m.subtitle, attribute('userId')])
                 .include(LabelModel, m => [m.labels, {required: false}], q => q.attributes(m => [m.slug]))
+                .where(m => attribute('libraryId').eq(libraryID))
                 .order(m => [[m.title, ASC]])
             
         const notes = await query.find()
 
-        return {notes: notes.map(note => ({... note, labels: note.labels.map(label => label.slug)}))}
+        return {notes: notes.map(note => ({...note, authorID: (note as any).creatorId as number, labels: note.labels.map(label => label.slug)}))}
     }
 
-    async fetchNote({noteSlug, librarySlug}: FetchNoteParams) : Promise<FetchNoteResults>
+    async fetchNote({noteSlug, libraryID}: FetchNoteParams) : Promise<FetchNoteResults>
     {
         const note = await this._db.query(NoteModel)
-            .attributes(m => [m.slug, m.title, m.subtitle, m.rawbody])
-            .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug)))
+            .attributes(m => [m.slug, m.title, m.subtitle, m.rawbody, attribute('userId')])
             .include(LabelModel, m => [m.labels, {required: false}], q => q.attributes(m => [m.slug]))
+            .where(m => attribute('libraryId').eq(libraryID))
             .where(m => m.slug.eq(noteSlug)).findOne()
 
         return {
@@ -60,19 +61,20 @@ export class NoteController
                 slug: noteSlug,
                 title: note.title,
                 subtitle: note.subtitle,
-                rawbody: JSON.parse(note.rawbody),
-                labels: note.labels.map(label => label.slug)
+                rawbody: note.rawbody ? JSON.parse(note.rawbody) : null,
+                labels: note.labels.map(label => label.slug),
+                authorID: (note as any).creatorId as number
             } : undefined
         }
     }
 
-    async updateNote({noteSlug, noteData, librarySlug}: UpdateNoteParams) : Promise<UpdateNoteResults>
+    async updateNote({noteSlug, noteData, libraryID}: UpdateNoteParams) : Promise<UpdateNoteResults>
     {
         if (!slug.isValid(noteSlug))
             throw new Error('Invalid slug')
 
         let note = await this._db.query(NoteModel)
-            .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug)))
+            .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.id.eq(libraryID)))
             .include(LabelModel, m => [m.labels, {required: false}])
             .where(m => m.slug.eq(noteSlug)).findOne()
 
@@ -86,19 +88,19 @@ export class NoteController
         note.labels = noteData.labels ? await LabelModel.reify(this._db, noteData.labels) : note.labels
 
         if (!note.library)
-            note.library = await this._db.query(LibraryModel).where(m => m.slug.eq(librarySlug)).findOne()
+            note.library = await this._db.query(LibraryModel).where(m => m.id.eq(libraryID)).findOne()
 
         await this._db.query(NoteModel).includeAll().save(note)
 
         return {}
     }
 
-    async deleteNote({noteSlug, librarySlug}: DeleteNoteParams) : Promise<DeleteNoteResults>
+    async deleteNote({noteSlug, libraryID}: DeleteNoteParams) : Promise<DeleteNoteResults>
     {
         const count = await this._db
             .query(NoteModel)
             .where(m => m.slug.eq(noteSlug))
-            .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.slug.eq(librarySlug)))
+            .include(LibraryModel, m => m.library, q => q.attributes(m => []).where(m => m.id.eq(libraryID)))
             .destroy()
         return {deleted: count}
     }

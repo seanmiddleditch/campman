@@ -1,71 +1,95 @@
 import {Request, Response, Router} from 'express'
 import {LibraryModel, LibraryAccessModel, UserModel} from '../../models'
 import * as squell from 'squell'
-import {Access} from '../../auth/access'
-import {wrap, success, accessDenied, notFound, badInput, authenticated} from '../helpers'
+import {checkAccess, Role} from '../../auth/access'
+import {LibraryController} from '../../controllers/library-controller'
+import {wrapper} from '../helpers'
 import * as slug from '../../util/slug'
 
 export function libraryAPIRoutes(db: squell.Database)
 {
     const router = Router()
+    const controller = new LibraryController(db)
 
-    router.get('/api/libraries', wrap(async (req) => {
-        const userID = req.user ? req.user.id : null
+    router.get('/api/libraries', wrapper(async (req, res) => {
+        const userID = req.user && req.user.id
 
-        const all = await db.query(LibraryModel)
-            .attributes(m => [m.slug, m.title])
-            .include(LibraryAccessModel, m => [m.acl, {required: false}], q => q.attributes(m => []).where(m => squell.attribute('userId').eq(userID).or(squell.attribute('userId').eq(null))))
-            .order(m => [[m.slug, squell.ASC]])
-            .find()
+        const result = await controller.listLibraries({userID})
 
-        return success(all)
+        res.json(result.libraries.filter(library => checkAccess({
+            target: 'library:view',
+            hidden: true,
+            ownerID: library.creatorID,
+            role: library.role,
+            userID: req.userID
+        })).map(library => ({slug: library.slug, title: library.title, role: library.role})))
     }))
 
-    router.get('/api/libraries/:library', wrap(async (req) => {
-        const userID = req.user ? req.user.id : null
-
+    router.get('/api/libraries/:library', wrapper(async (req, res) => {
         const librarySlug = req.params.library
+
         const library = await db.query(LibraryModel)
             .attributes(m => [m.slug])
-            //.include(LibraryAccessModel, m => m.acl, q => q.attributes(m => []).include(UserModel, m => m.user, q => q.where(m => m.id.eq(userID))))
+            .include(LibraryAccessModel, m => [m.acl, {required: false}], q => q
+                .attributes(m => [m.role])
+                .where(m => squell.attribute('userId').eq(req.userID).or(squell.attribute('userId').eq(null)))
+            )
             .where(m => m.slug.eq(librarySlug))
             .findOne()
 
-        if (!library) return notFound()
-        else return success(library)
+        if (!library)
+        {
+            res.status(404).json({message: 'Library not found'})
+        }
+        else if (!checkAccess({target: 'library:view', userID: req.userID, role: req.userRole, ownerID: library.creator.id}))
+        {
+            res.status(403).json({message: 'Access denied'})
+        }
+        else
+        {
+            res.json({slug: library.slug, title: library.title, role: req.userRole})
+        }
     }))
 
-    router.put('/api/libraries/:library', authenticated(), wrap(async (req) => {
-        const userID = req.user ? req.user.id : null
-        const user = await db.query(UserModel).findById(userID)
-        if (!user) return accessDenied()
+    router.put('/api/libraries/:library', wrapper(async (req, res) => {
+        const userID = req.user && req.user.id
+        if (checkAccess({target: 'library:create', userID, role: Role.Visitor}))
+        {
+            res.status(403).json({message: 'Access denied'})
+        }
+        else
+        {
+            const librarySlug = req.params.library
+            const title = req.body.title
 
-        const librarySlug = req.params.library
-        const title = req.body.title
+            if (!slug.isValid(librarySlug))
+            {
+                res.status(400).json({message: 'Invalid slug'})
+            }
 
-        if (!slug.isValid(librarySlug))
-            return badInput()
+            const library = await db.transaction(async (tx) => {
+                const user = await db.query(UserModel).where(m => m.id.eq(userID || 0)).findOne()
 
-        const library = await db.transaction(async (tx) => {
-            const newLibrary = new LibraryModel()
-            newLibrary.slug = librarySlug
-            newLibrary.title = title
-            newLibrary.creator = user
+                const newLibrary = new LibraryModel()
+                newLibrary.slug = librarySlug
+                newLibrary.title = title
+                newLibrary.creator = user
 
-            const library = await db.query(LibraryModel)
-                .include(UserModel, m => m.creator)
-                .create(newLibrary, {transaction: tx})
-            
-            const newAccess = new LibraryAccessModel()
-            newAccess.library = library
-            newAccess.user = user
-            newAccess.access = Access.Owner
-            const access = await db.query(LibraryAccessModel).includeAll().save(newAccess, {transaction: tx})
+                const library = await db.query(LibraryModel)
+                    .include(UserModel, m => m.creator)
+                    .create(newLibrary, {transaction: tx})
+                
+                const newAccess = new LibraryAccessModel()
+                newAccess.library = library
+                newAccess.user = user
+                newAccess.role = Role.Owner
+                const access = await db.query(LibraryAccessModel).includeAll().save(newAccess, {transaction: tx})
 
-            return library
-        })
+                return library
+            })
 
-        return success(library)
+            res.status(201).json(library)
+        }
     }))
 
     return router

@@ -21,30 +21,27 @@ export class RPCHelper
             .join('&');
     }
 
-    private static async _processResult<T>(url: string, result: any)
+    private static async _processResult<T>(url: string, result: Response)
     {
-        if (!result.ok)
-        {
-            console.warn(url + ': returned status code ' + result.status);
-            throw new APIError(result.statusText, result.status);
-        }
-
         try
         {
-            const jsonResult = await result.json();
-            if (jsonResult.status == 'success')
+            if (result.ok)
             {
-                return jsonResult.data as T;
+                const json = await result.json()
+                return json as T
             }
             else
             {
-                throw new APIError(jsonResult.message, jsonResult.code || 400);
+                const isJson = result.headers.get('Content-type') === 'application/json'
+                const message = isJson ? await result.json() : await result.text()
+                console.warn(url + ': returned status code ' + result.status + ' and message: ' + message)
+                throw new APIError(message, result.status || 400)
             }
         }
         catch (err)
         {
-            console.error(url + ': ' + err.message, err.stack);
-            throw err;
+            console.error(url + ': ' + err.message, err.stack)
+            throw err
         }
     }
 

@@ -3,9 +3,9 @@ import {S3} from 'aws-sdk'
 import {Request, Response, Router} from "express"
 import * as express from 'express'
 import {Database} from 'squell'
-import {wrap, success, accessDenied, notFound, authorized} from '../helpers'
+import {wrapper} from '../helpers'
 import {LibraryModel, MediaModel} from '../../models'
-import {Access} from '../../auth'
+import {checkAccess} from '../../auth'
 import * as path from 'path'
 import * as shortid from 'shortid'
 
@@ -28,107 +28,82 @@ export function mediaAPIRoutes(db: Database, config: MediaRoutesConfig)
     s3.config.accessKeyId = config.awsAccessKey
     s3.config.secretAccessKey = config.awsAuthSecret
 
-    router.post('/api/media/presign', authorized(db, Access.Player), wrap(async (req) => {
-        const filename = req.body['filename']
-        const filetype = req.body['filetype']
-        const caption = req.body['caption']
-        const folder = '/' // req.body['folder'] -- eventually allow user folders FIXME
-        
-        if (!req.library) return notFound()
-
-        const path = folder + filename
-
-        const librarySlug = req.library.slug
-        const uniq = shortid.generate()
-        const key = `library/${librarySlug}/media/${folder}${uniq}`
-
-        const newMedia = new MediaModel({
-            path,
-            s3key: key,
-            caption,
-            library: await db.query(LibraryModel).where(m => m.slug.eq(librarySlug)).findOne(),
-            attribution: '',
-            labels: []
-        })
-        const media = await db.query(MediaModel)
-            .include(LibraryModel, m => m.library)
-            .create(newMedia, {associate: true})
-
-        const params = {
-            Bucket: config.s3Bucket,
-            Key: key,
-            Expires: 60, 
-            ContentType: filetype,
-            ACL: 'public-read'
+    router.post('/api/media/presign', wrapper(async (req, res) => {
+        if (!req.library)
+        {
+            res.status(404).json({message: 'Library not found'})
         }
+        else if (!checkAccess({target: 'media:upload', hidden: false, userID: req.userID, role: req.userRole}))
+        {
+            res.status(403).json({message: 'Permission denied'})
+        }
+        else
+        {
 
-        const signed = await new Promise((resolve, reject) => {
-            s3.getSignedUrl('putObject', params, (err, data) => {
-                if (err) reject(err)
-                else resolve(data)
+            const filename = req.body['filename']
+            const filetype = req.body['filetype']
+            const caption = req.body['caption']
+            const folder = '/' // req.body['folder'] -- eventually allow user folders FIXME
+
+            const path = folder + filename
+
+            const librarySlug = req.library.slug
+            const uniq = shortid.generate()
+            const key = `library/${librarySlug}/media/${folder}${uniq}`
+
+            const newMedia = new MediaModel({
+                path,
+                s3key: key,
+                caption,
+                library: await db.query(LibraryModel).where(m => m.slug.eq(librarySlug)).findOne(),
+                attribution: '',
+                labels: []
             })
-        })
+            const media = await db.query(MediaModel)
+                .include(LibraryModel, m => m.library)
+                .create(newMedia, {associate: true})
 
-        console.log(signed)
+            const params = {
+                Bucket: config.s3Bucket,
+                Key: key,
+                Expires: 60, 
+                ContentType: filetype,
+                ACL: 'public-read'
+            }
 
-        return success({
-            signedRequest: signed,
-            url: makeMediaURL(key)
-        })
+            const signed = await new Promise((resolve, reject) => {
+                s3.getSignedUrl('putObject', params, (err, data) => {
+                    if (err) reject(err)
+                    else resolve(data)
+                })
+            })
+
+            res.json({
+                signedRequest: signed,
+                url: makeMediaURL(key)
+            })
+        }
     }))
 
-    router.get('/api/media/list/:pathspec?', authorized(db), wrap(async (req) => {
-        if (!req.library) return notFound()
-        
-        const librarySlug = req.library.slug
+    router.get('/api/media/list/:pathspec?', wrapper(async (req, res) => {
+        if (!req.library)
+        {
+            res.status(404).json({message: 'Library not found'})
+        }
+        else if (!checkAccess({target: 'media:list', hidden: false, userID: req.userID, role: req.userRole}))
+        {
+            res.status(403).json({message: 'Permission denied'})
+        }
+        else
+        {
+            const media = await db.query(MediaModel)
+                .attributes(m => [m.path, m.s3key, m.caption])
+                .include(LibraryModel, q => q.library, m => m.where(m => m.id.eq(req.libraryID)))
+                .find()
 
-        const media = await db.query(MediaModel)
-            .attributes(m => [m.path, m.s3key, m.caption])
-            .include(LibraryModel, q => q.library, m => m.where(m => m.slug.eq(librarySlug)))
-            .find()
-
-        console.log(media)
-        return success(media.map(m => ({path: m.path, url: makeMediaURL(m.s3key), caption: m.caption, attribution: m.attribution})))
+            res.json(media.map(m => ({path: m.path, url: makeMediaURL(m.s3key), caption: m.caption, attribution: m.attribution})))
+        }
     }))
-        
-
-    // old S3-list code
-    //     const key = `library/${librarySlug}/media/${pathspec}`
-
-    //     const params = {
-    //         Delimiter: '/',
-    //         Bucket: config.s3Bucket,
-    //         Prefix: key
-    //     }
-
-    //     const result = await new Promise<S3.Types.ListObjectsV2Output>((resolve, reject) => {
-    //         s3.listObjectsV2(params, (err, data) => {
-    //             if (err) reject(err)
-    //             else resolve(data)
-    //         })
-    //     })
-        
-    //     const folders = result.CommonPrefixes ? result.CommonPrefixes.map(dir => path.basename(dir.Prefix || '/')) : []
-        
-    //     // files need a full URL instead of just a key
-    //     const files = result.Contents ? result.Contents.map(file => ({key: file.Key || '', url: makeMediaURL(file.Key || '')})) : []
-
-    //     files.forEach(f => {
-    //         if (f.url.endsWith('/'))
-    //         {
-    //             console.log('deleting ' + f.key)
-    //             s3.deleteObject({
-    //                 Bucket: config.s3Bucket,
-    //                 Key: f.key
-    //             }, (err, data) => {
-    //                 if (err) console.error(err)
-    //                 else console.log(data)
-    //             })
-    //         }
-    //     })
-
-    //     return success({folders, files})
-    // }))
 
     return router
 }
