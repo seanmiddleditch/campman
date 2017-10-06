@@ -192,12 +192,6 @@ class Config
         next()
     })
 
-    app.get('/config.js', (req, res) => {
-        res.json({
-            publicURL: config.publicURL
-        })
-    })
-
     app.use(routes.authRoutes(db, config))
     app.use(routes.noteAPIRoutes(db))
     app.use(routes.labelAPIRoutes(db))

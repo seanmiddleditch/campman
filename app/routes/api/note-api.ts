@@ -1,9 +1,9 @@
 import {Request, Response, Router} from 'express'
 import {Database} from 'squell'
-import {wrapper} from './helpers'
-import {checkAccess} from '../auth'
-import {NoteController} from '../controllers/note-controller'
-import * as slug from '../util/slug'
+import {wrapper} from '../helpers'
+import {checkAccess} from '../../auth'
+import {NoteController} from '../../controllers/note-controller'
+import * as slug from '../../util/slug'
 
 export function noteAPIRoutes(db: Database)
 {

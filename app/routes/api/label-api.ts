@@ -1,8 +1,8 @@
 import {Request, Response, Router} from 'express'
 import {Database} from 'squell'
-import {LabelController} from '../controllers/label-controller'
-import {wrapper} from './helpers'
-import {checkAccess} from '../auth'
+import {LabelController} from '../../controllers/label-controller'
+import {wrapper} from '../helpers'
+import {checkAccess} from '../../auth'
 
 export function labelAPIRoutes(db: Database)
 {

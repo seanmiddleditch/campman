@@ -1,6 +1,6 @@
 import {LabelModel} from './label-model'
 import {LibraryModel} from './library-model'
-import {UserModel} from './user'
+import {UserModel} from './user-model'
 import * as modelsafe from 'modelsafe'
 import * as squell from 'squell'
 

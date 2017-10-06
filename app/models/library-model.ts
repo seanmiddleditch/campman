@@ -1,7 +1,7 @@
 import * as modelsafe from 'modelsafe'
 import * as squell from 'squell'
 import {NoteModel} from './note-model'
-import {UserModel} from './user'
+import {UserModel} from './user-model'
 import {Role} from '../auth/access'
 
 @modelsafe.model({name: 'library'})

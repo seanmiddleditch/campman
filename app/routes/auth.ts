@@ -2,7 +2,7 @@ import {Request, Response, Router} from 'express'
 import * as passport from 'passport'
 import {Database} from 'squell'
 import {User} from '../auth'
-import {UserModel} from '../models/user'
+import {UserModel} from '../models'
 import {wrapper} from './helpers'
 import {URL} from 'url'
 
