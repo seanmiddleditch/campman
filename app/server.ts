@@ -95,17 +95,17 @@ class Config
     app.use(express.static(staticRoot))
 
     // development support for webpack
-    if (!config.production)
-    {
-        console.log('Enabling WebPack development middlware')
+    // if (!config.production)
+    // {
+    //     console.log('Enabling WebPack development middlware')
 
-        const webpackConfig = require(path.join(clientRoot, 'webpack.config.js'))
-        const webpackDevMiddleware = require('webpack-dev-middleware')
-        const webpack = require('webpack')
-        app.use(webpackDevMiddleware(webpack(webpackConfig), {
-            publicPath: webpackConfig.output.publicPath
-        }))
-    }
+    //     const webpackConfig = require(path.join(clientRoot, 'webpack.config.js'))
+    //     const webpackDevMiddleware = require('webpack-dev-middleware')
+    //     const webpack = require('webpack')
+    //     app.use(webpackDevMiddleware(webpack(webpackConfig), {
+    //         publicPath: webpackConfig.output.publicPath
+    //     }))
+    // }
 
     app.use('/dist', express.static(path.join(clientRoot, 'dist')))
 
