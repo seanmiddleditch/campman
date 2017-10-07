@@ -20,7 +20,7 @@ function matchLineInput(text: string, editorState: EditorState, regex: RegExp, c
 
     const line = prefixText + text
 
-    const match = line.match(LINK_REGEX)
+    const match = line.match(regex)
     if (match)
     {
         const lineSelection = new SelectionState({

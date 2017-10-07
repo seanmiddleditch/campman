@@ -40,7 +40,7 @@ export const accessConfiguration : AccessConfiguration = {
         p => p.role !== Role.Visitor
     ],
     'media:list': [
-        p => p.role !== Role.Visitor
+        p => !p.hidden
     ],
     'note:view': [
         p => p.ownerID === p.userID,

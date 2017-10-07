@@ -1,6 +1,6 @@
 import * as React from 'react'
 import {EditorState, Modifier, RichUtils, ContentBlock, ContentState, EntityInstance} from 'draft-js'
-import AtomicImage from '../components/atomic-image'
+import {AtomicImage} from '../components/atomic-image'
 
 export function handleReturn(editorState: EditorState)
 {
@@ -44,18 +44,20 @@ function matchAtomicBlockTypes(block: ContentBlock, contentState: ContentState, 
     }
 }
 
+const blockMap = new Map<string, MatchAtomicBlockTypeCallback>([
+    ['image', entity => {
+        const url = entity.getData().url
+        
+        return {
+            component: AtomicImage,
+            editable: false,
+            props: {url}
+        }
+    }]
+])
+
 export function blockRenderer(block: ContentBlock, editorState: EditorState)
 {
     const contentState = editorState.getCurrentContent()
-    return matchAtomicBlockTypes(block, contentState, new Map<string, MatchAtomicBlockTypeCallback>([
-        ['image', entity => {
-            const url = entity.getData().url
-            
-            return {
-                component: AtomicImage,
-                editable: false,
-                props: {url}
-            }
-        }]
-    ]))
+    return matchAtomicBlockTypes(block, contentState, blockMap)
 }

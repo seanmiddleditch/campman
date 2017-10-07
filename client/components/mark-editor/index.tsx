@@ -37,6 +37,8 @@ interface MarkEditorProps
     disabled?: boolean
     editable?: boolean
     onChange: (document: any) => void
+    buttons?: () => any
+    tabIndex?: number
 }
 interface MarkEditorState
 {
@@ -166,6 +168,12 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
         this.setState({editorState: editorStateWithSelection})
     }
 
+    private _handleClick(ev: React.MouseEvent<HTMLElement>)
+    {
+        this.refs.editor.focus()
+        ev.preventDefault()
+    }
+
     private _isInlineStyleActive(style: string)
     {
         return this.state.editorState.getCurrentInlineStyle().contains(style)
@@ -178,7 +186,7 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
 
     render() {
         return (
-            <div className='draft-editor' hidden={this.state.preview}>
+            <div className='draft-editor' hidden={this.state.preview} onClick={ev => this._handleClick(ev)}>
                 {(this.props.editable === undefined || this.props.editable) && (
                     <div>
                         <MediaSelector visible={this.state.mediaPopupOpen} onSelect={file => this._handleMedia(file)} onCancel={() => this.setState({mediaPopupOpen: false})}/>
@@ -197,6 +205,7 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
                             <span className='btn-group ml-sm-2' role='group'>
                                 <button className='btn btn-secondary' onClick={() => this.setState({mediaPopupOpen: true})}><i className='fa fa-picture-o'></i></button>
                             </span>
+                            {this.props.buttons && this.props.buttons()}
                         </div>
                     </div>
                 )}
@@ -211,6 +220,7 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
                         onChange={editorState => this._onChange(editorState)}
                         placeholder='Note body text goes here'
                         blockRendererFn={this._blockRenderer.bind(this)}
+                        tabIndex={this.props.tabIndex}
                     />
                 </div>
             </div>

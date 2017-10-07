@@ -1,5 +1,9 @@
 import * as React from 'react'
 
-export const AtomicImage = (props: {blockProps: {url: string}}) => (
-    <img className='img-fluid rounded' src={props.blockProps.url} alt='image'/>
-)
+export function AtomicImage(props: {blockProps: {url: string}})
+{
+    const {url} = props.blockProps
+    return (
+        <img className='img-fluid rounded' src={url} alt='image'/>
+    )
+}

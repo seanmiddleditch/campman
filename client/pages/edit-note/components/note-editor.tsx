@@ -124,35 +124,37 @@ export class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState
         this.unblockHistory()
     }
 
+    buttons()
+    {
+        return (
+            <div className='btn-group ml-sm-2 float-right' role='group'>
+                <button id='note-btn-save' className='btn btn-primary' about='Save' disabled={this.props.disabled}  onClick={() => this._handleSaveClicked()}><i className='fa fa-floppy-o'></i> Save</button>
+                <div className='btn-group'>
+                    <button className='btn btn-primary dropdown-toggle dropdown-toggle-split' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'><span className='caret'/></button>
+                    <div className='dropdown-menu'>
+                        <button id='note-btn-cancel' className='dropdown-item' about='Cancel' disabled={this.props.disabled} onClick={() => this._handleCancelClicked()}><i className='fa fa-ban'></i> Cancel</button>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
     render()
     {
         return <div className='note-editor'>
             <div className='input-group'>
                 <span className='input-group-addon'>Title</span>
-                <input type='text' className='form-control' disabled={this.props.disabled} onChange={ev => this._update({title: ev.target.value})} defaultValue={this.state.title} placeholder='Note Title'/>
+                <input type='text' className='form-control' tabIndex={1} disabled={this.props.disabled} onChange={ev => this._update({title: ev.target.value})} defaultValue={this.state.title} placeholder='Note Title'/>
             </div>
             <div className='input-group mt-sm-2'>
                 <span className='input-group-addon'>Subtitle</span>
-                <input type='text' className='form-control' disabled={this.props.disabled} onChange={ev => this._update({subtitle: ev.target.value})} defaultValue={this.state.subtitle} placeholder='Subtitle'/>
+                <input type='text' className='form-control' tabIndex={2} disabled={this.props.disabled} onChange={ev => this._update({subtitle: ev.target.value})} defaultValue={this.state.subtitle} placeholder='Subtitle'/>
             </div>
             <div className='input-group mt-sm-2'>
                 <span className='input-group-addon'><i className='col fa fa-tags'></i></span>
-                <LabelInput labels={this.state.labels} disabled={this.props.disabled} onAdd={label => this._addLabel(label)} onRemove={label => this._removeLabel(label)}/>
+                <LabelInput labels={this.state.labels} tabIndex={3} disabled={this.props.disabled} onAdd={label => this._addLabel(label)} onRemove={label => this._removeLabel(label)}/>
             </div>
-            <div className='floating-editbar-container'>
-                <div className='floating-editbar'>
-                    <div className='btn-group mt-sm-2' role='group'>
-                        <button id='note-btn-save' className='btn btn-primary' about='Save' disabled={this.props.disabled}  onClick={() => this._handleSaveClicked()}><i className='fa fa-floppy-o'></i> Save</button>
-                        <div className='btn-group'>
-                            <button className='btn btn-primary dropdown-toggle dropdown-toggle-split' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'><span className='caret'/></button>
-                            <div className='dropdown-menu'>
-                                <button id='note-btn-cancel' className='dropdown-item' about='Cancel' disabled={this.props.disabled} onClick={() => this._handleCancelClicked()}><i className='fa fa-ban'></i> Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <MarkEditor document={this.state.rawbody} disabled={this.props.disabled || this.state.preview} onChange={document => this._update({rawbody: document})}/>
+            <MarkEditor document={this.state.rawbody} tabIndex={4} disabled={this.props.disabled || this.state.preview} onChange={document => this._update({rawbody: document})} buttons={() => this.buttons()}/>
         </div>
     }
 }

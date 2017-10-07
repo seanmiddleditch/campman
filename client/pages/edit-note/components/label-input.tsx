@@ -7,6 +7,7 @@ export interface LabelInputProps
     onAdd: (label: string) => void
     onRemove: (label: string) => void
     onComplete?: (prefix: string) => string[]
+    tabIndex?: number
 }
 interface LabalInputState
 {
@@ -96,6 +97,7 @@ export class LabelInput extends React.Component<LabelInputProps, LabalInputState
                     onFocus={ev => this._handleFocus(ev)}
                     onKeyDown={ev => this._handleKeyDown(ev)}
                     placeholder='Enter tag here'
+                    tabIndex={this.props.tabIndex}
                 />
             </span>
         </span>;
