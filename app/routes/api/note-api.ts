@@ -3,6 +3,7 @@ import {Database} from 'squell'
 import {wrapper} from '../helpers'
 import {checkAccess} from '../../auth'
 import {NoteController} from '../../controllers/note-controller'
+import {NoteVisibility} from '../../models'
 import * as slug from '../../util/slug'
 
 export function noteAPIRoutes(db: Database)
@@ -22,8 +23,9 @@ export function noteAPIRoutes(db: Database)
                 target: 'note:view',
                 userID: req.userID,
                 role: req.userRole,
-                ownerID: note.authorID
-            })).map(note => ({slug: note.slug, title: note.title, subtitle: note.subtitle})))
+                ownerID: note.authorID,
+                hidden: note.visibility !== NoteVisibility.Public
+            })).map(note => ({slug: note.slug, title: note.title, subtitle: note.subtitle, visibility: note.visibility, type: note.type})))
         }
     }))
 
@@ -35,19 +37,19 @@ export function noteAPIRoutes(db: Database)
         else
         {
             const result = await controller.fetchNote({noteSlug: req.params['note'], libraryID: req.libraryID})
-            if (!result.note)
+            const {note} = result
+            if (!note)
             {
                 res.status(404).json({message: 'Note not found'})
             }
-            else if (!checkAccess({target: 'note:view', userID: req.userID, role: req.userRole, ownerID: result.note.authorID}))
+            else if (!checkAccess({target: 'note:view', userID: req.userID, role: req.userRole, ownerID: note.authorID, hidden: note.visibility !== NoteVisibility.Public}))
             {
                 res.status(403).json({message: 'Access denied'})
             }
             else
             {
-                const {note} = result
-                const {slug, title, subtitle, rawbody, labels} = note
-                res.json({slug, title, subtitle, rawbody, labels})
+                const {slug, title, subtitle, rawbody, labels, visibility, type} = note
+                res.json({slug, title, subtitle, rawbody, labels, visibility, type})
             }
         }
     }))
@@ -60,11 +62,12 @@ export function noteAPIRoutes(db: Database)
         else
         {
             const result = await controller.fetchNote({noteSlug: req.params['note'], libraryID: req.libraryID})
-            if (!result.note)
+            const {note} = result
+            if (note && !checkAccess({target: 'note:edit', userID: req.userID, role: req.userRole, ownerID: note.authorID, hidden: note.visibility !== NoteVisibility.Public}))
             {
-                res.status(404).json({message: 'Note not found'})
+                res.status(403).json({message: 'Access denied'})
             }
-            else if (!checkAccess({target: 'note:delete', userID: req.userID, role: req.userRole, ownerID: result.note.authorID}))
+            else if (!note && !checkAccess({target: 'note:create', userID: req.userID, role: req.userRole}))
             {
                 res.status(403).json({message: 'Access denied'})
             }
@@ -77,7 +80,8 @@ export function noteAPIRoutes(db: Database)
                         title: req.body['title'],
                         subtitle: req.body['subtitle'],
                         rawbody: req.body['rawbody'],
-                        labels: req.body['labels']
+                        labels: req.body['labels'],
+                        visibility: req.body['visibility']
                     }
                 })
 

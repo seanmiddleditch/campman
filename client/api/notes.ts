@@ -26,6 +26,7 @@ export class NotesAPI
             title: data.title,
             subtitle: data.subtitle,
             rawbody: data.rawbody,
+            visibility: data.visibility,
             labels: data.labels
         });
     }

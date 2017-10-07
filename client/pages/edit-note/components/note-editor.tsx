@@ -24,6 +24,7 @@ interface NoteEditorState
     subtitle: string,
     labels: string[]
     rawbody: any
+    visibility: 'Hidden'|'Public'
     preview: boolean
 }
 export class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState>
@@ -44,7 +45,8 @@ export class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState
             title: props.note && props.note.title ? props.note.title : '',
             subtitle: props.note && props.note.subtitle ? props.note.subtitle : '',
             rawbody: props.note && props.note.rawbody ? props.note.rawbody : '',
-            labels: props.note && props.note.labels ? props.note.labels.slice() : []
+            labels: props.note && props.note.labels ? props.note.labels.slice() : [],
+            visibility: props.note && props.note.visibility ? props.note.visibility : 'Hidden',
         }
     }
 
@@ -53,6 +55,7 @@ export class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState
         return this.props.note && (this.props.note.title !== this.state.title ||
             this.props.note.subtitle !== this.state.subtitle ||
             this.props.note.rawbody !== this.state.rawbody ||
+            this.props.note.visibility !== this.state.visibility ||
             this.props.note.labels.join(',') !== this.state.labels.join(','))
     }
 
@@ -62,7 +65,8 @@ export class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState
             title: this.state.title,
             subtitle: this.state.subtitle,
             labels: this.state.labels.slice(),
-            rawbody: this.state.rawbody
+            rawbody: this.state.rawbody,
+            visibility: this.state.visibility
         })
     }
 
@@ -95,7 +99,7 @@ export class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState
         }
     }
 
-    private _update(fields: {title?: string, subtitle?: string, labels?: string|string[], rawbody?: string})
+    private _update(fields: {title?: string, subtitle?: string, labels?: string|string[], rawbody?: string, visibility?: 'Hidden'|'Public'})
     {
         if (fields.title)
             this.setState({title: fields.title})
@@ -107,6 +111,8 @@ export class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState
             this.setState({labels: fields.labels})
         if (fields.rawbody)
             this.setState({rawbody: fields.rawbody})
+        if (fields.visibility)
+            this.setState({visibility: fields.visibility})
     }
 
     componentDidMount()
@@ -127,12 +133,18 @@ export class NoteEditor extends React.Component<NoteEditorProps, NoteEditorState
     buttons()
     {
         return (
-            <div className='btn-group ml-sm-2 float-right' role='group'>
-                <button id='note-btn-save' className='btn btn-primary' about='Save' disabled={this.props.disabled}  onClick={() => this._handleSaveClicked()}><i className='fa fa-floppy-o'></i> Save</button>
+            <div className=' ml-sm-2 float-right'>
                 <div className='btn-group'>
-                    <button className='btn btn-primary dropdown-toggle dropdown-toggle-split' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'><span className='caret'/></button>
-                    <div className='dropdown-menu'>
-                        <button id='note-btn-cancel' className='dropdown-item' about='Cancel' disabled={this.props.disabled} onClick={() => this._handleCancelClicked()}><i className='fa fa-ban'></i> Cancel</button>
+                    {this.state.visibility === 'Public' && <button id='note-btn-visibility' className='btn btn-info' about='Toggle Visibility' disabled={this.props.disabled} onClick={() => this._update({visibility: 'Hidden'})}>Public</button>}
+                    {this.state.visibility !== 'Public' && <button id='note-btn-visibility' className='btn btn-light' about='Toggle Visibility' disabled={this.props.disabled} onClick={() => this._update({visibility: 'Public'})}>Hidden</button>}
+                </div>
+                <div className='btn-group ml-sm-2 float-right' role='group'>
+                    <button id='note-btn-save' className='btn btn-primary' about='Save' disabled={this.props.disabled}  onClick={() => this._handleSaveClicked()}><i className='fa fa-floppy-o'></i> Save</button>
+                    <div className='btn-group'>
+                        <button className='btn btn-primary dropdown-toggle dropdown-toggle-split' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'><span className='caret'/></button>
+                        <div className='dropdown-menu'>
+                            <button id='note-btn-cancel' className='dropdown-item' about='Cancel' disabled={this.props.disabled} onClick={() => this._handleCancelClicked()}><i className='fa fa-ban'></i> Cancel</button>
+                        </div>
                     </div>
                 </div>
             </div>

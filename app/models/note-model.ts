@@ -4,9 +4,9 @@ import {UserModel} from './user-model'
 import * as modelsafe from 'modelsafe'
 import * as squell from 'squell'
 
-export enum NoteStatus
+export enum NoteVisibility
 {
-    Published = 'Published',
+    Public = 'Public',
     Hidden = 'Hidden'
 }
 
@@ -31,8 +31,11 @@ export class NoteModel extends modelsafe.Model
     @modelsafe.maxLength(32)
     public slug: string
 
-    // @modelsafe.attr(modelsafe.ENUM(['Published', 'Hidden']))
-    // public status: NoteStatus = NoteStatus.Hidden
+    @modelsafe.attr(modelsafe.STRING, {defaultValue: 'page'})
+    public type: string
+
+    @modelsafe.attr(modelsafe.ENUM(Object.keys(NoteVisibility)), {defaultValue: NoteVisibility.Hidden})
+    public visibility: NoteVisibility
 
     @modelsafe.attr(modelsafe.STRING)
     @modelsafe.maxLength(255)

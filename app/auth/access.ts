@@ -20,6 +20,7 @@ interface AccessConfiguration
     ['media:upload']: AccessControls
     ['media:list']: AccessControls
     ['note:view']: AccessControls
+    ['note:create']: AccessControls
     ['note:edit']: AccessControls
     ['note:delete']: AccessControls
 }
@@ -47,6 +48,10 @@ export const accessConfiguration : AccessConfiguration = {
         p => p.role === Role.Owner,
         p => p.role === Role.GameMaster,
         p => !p.hidden
+    ],
+    'note:create': [
+        p => p.role === Role.Owner,
+        p => p.role === Role.GameMaster,
     ],
     'note:edit': [
         p => p.ownerID === p.userID,

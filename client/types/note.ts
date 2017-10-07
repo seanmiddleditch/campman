@@ -6,4 +6,5 @@ export interface Note
     subtitle?: string
     rawbody?: Object
     labels?: string[]
+    visibility?: 'Public'|'Hidden'
 }

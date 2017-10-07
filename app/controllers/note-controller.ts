@@ -1,13 +1,13 @@
-import {LibraryModel, LabelModel, NoteModel, UserModel} from '../models'
+import {LibraryModel, LabelModel, NoteModel, UserModel, NoteVisibility} from '../models'
 import {Database, ASC, attribute} from 'squell'
 import * as slug from '../util/slug'
 
 
 interface ListNotesParams { libraryID: number }
-interface ListNotesResults { notes: { slug: string, title: string, subtitle: string, authorID: number }[] }
+interface ListNotesResults { notes: { slug: string, title: string, subtitle: string, authorID: number, visibility: NoteVisibility, type: string }[] }
 
 interface FetchNoteParams { noteSlug: string, libraryID: number }
-interface FetchNoteResults { note?: { slug: string, title: string, subtitle: string, labels: string[], rawbody: Object, authorID: number }}
+interface FetchNoteResults { note?: { slug: string, title: string, subtitle: string, labels: string[], rawbody: Object, authorID: number, visibility: NoteVisibility, type: string }}
 
 interface UpdateNoteParams
 {
@@ -17,7 +17,8 @@ interface UpdateNoteParams
         title?: string,
         subtitle?: string,
         labels?: string[],
-        rawbody?: Object
+        rawbody?: Object,
+        visibility?: NoteVisibility
     }
 }
 interface UpdateNoteResults {}
@@ -38,7 +39,7 @@ export class NoteController
     {
         // has to be a cleaner way to write this
         const query = await this._db.query(NoteModel)
-                .attributes(m => [m.slug, m.title, m.subtitle, attribute('userId')])
+                .attributes(m => [m.slug, m.title, m.subtitle, attribute('userId'), m.visibility, m.type])
                 .include(LabelModel, m => [m.labels, {required: false}], q => q.attributes(m => [m.slug]))
                 .where(m => attribute('libraryId').eq(libraryID))
                 .order(m => [[m.title, ASC]])
@@ -51,7 +52,7 @@ export class NoteController
     async fetchNote({noteSlug, libraryID}: FetchNoteParams) : Promise<FetchNoteResults>
     {
         const note = await this._db.query(NoteModel)
-            .attributes(m => [m.slug, m.title, m.subtitle, m.rawbody, attribute('userId')])
+            .attributes(m => [m.slug, m.title, m.subtitle, m.rawbody, attribute('userId'), m.visibility, m.type])
             .include(LabelModel, m => [m.labels, {required: false}], q => q.attributes(m => [m.slug]))
             .where(m => attribute('libraryId').eq(libraryID))
             .where(m => m.slug.eq(noteSlug)).findOne()
@@ -63,7 +64,9 @@ export class NoteController
                 subtitle: note.subtitle,
                 rawbody: note.rawbody ? JSON.parse(note.rawbody) : null,
                 labels: note.labels.map(label => label.slug),
-                authorID: (note as any).creatorId as number
+                authorID: (note as any).creatorId as number,
+                visibility: note.visibility,
+                type: note.type
             } : undefined
         }
     }
@@ -82,10 +85,11 @@ export class NoteController
             note = new NoteModel()
 
         note.slug = noteSlug
-        note.title = noteData.title || note.title || ''
+        note.title = noteData.title || note.title || noteSlug
         note.subtitle = noteData.subtitle || note.subtitle || ''
         note.rawbody = noteData.rawbody ? JSON.stringify(noteData.rawbody) : note.rawbody || ''
         note.labels = noteData.labels ? await LabelModel.reify(this._db, noteData.labels) : note.labels
+        note.visibility = noteData.visibility || noteData.visibility || note.visibility || 'Hidden'
 
         if (!note.library)
             note.library = await this._db.query(LibraryModel).where(m => m.id.eq(libraryID)).findOne()
