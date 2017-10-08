@@ -15,6 +15,8 @@ interface MediaSelectorProps
 interface MediaSelectorState
 {
     media?: MediaFile[]
+    search?: string
+    searchRegexes?: RegExp[]
 }
 export class MediaSelector extends React.Component<MediaSelectorProps, MediaSelectorState>
 {
@@ -49,13 +51,41 @@ export class MediaSelector extends React.Component<MediaSelectorProps, MediaSele
         }
     }
 
+    private _handleSearchChange(ev: React.FormEvent<HTMLInputElement>)
+    {
+        const search = ev.currentTarget.value
+        const words = search.split(/\s+/).filter(s => s.length).sort()
+        const searchRegexes = search.length ? words.map(w => new RegExp('\\b' + w, 'i')) : undefined
+
+        this.setState({search, searchRegexes})
+        ev.stopPropagation()
+    }
+
+    private _filter(media: MediaFile)
+    {
+        if (this.state.searchRegexes)
+        {
+            for (const regex of this.state.searchRegexes)
+                if (regex.test(media.caption))
+                    return true
+            return false
+        }
+        else
+        {
+            return true
+        }
+    }
+
     render()
     {
         return (
             <Modal visible={this.props.visible} backdrop='visible' onClose={this.props.onCancel}>
                 <ModalBody>
+                    <div>
+                        <input type='text' placeholder='search...' value={this.state.search} onChange={ev => this._handleSearchChange(ev)}/>
+                    </div>
                     <div className='list-group'>
-                        {this.state.media && this.state.media.map(file => (
+                        {this.state.media && this.state.media.filter(f => this._filter(f)).map(file => (
                             <div key={file.url} className='list-group-item' style={{cursor: 'pointer'}} onClick={() => this.props.onSelect(file)}>
                                 <figure className='figure'>
                                     <img src={file.url} className='figure-img img-fluid rounded img-thumbnail' style={{width: '100px'}} alt={file.caption}/>

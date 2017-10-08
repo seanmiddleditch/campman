@@ -128,7 +128,8 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
 
     componentDidMount()
     {
-        this.refs.editor.focus()
+        if (!this.props.disabled)
+            this.refs.editor.focus()
     }
 
     componentWillUnmount()
@@ -170,8 +171,11 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
 
     private _handleClick(ev: React.MouseEvent<HTMLElement>)
     {
-        this.refs.editor.focus()
-        ev.preventDefault()
+        if (!this.props.disabled && !this.state.mediaPopupOpen)
+        {
+            this.refs.editor.focus()
+            ev.preventDefault()
+        }
     }
 
     private _isInlineStyleActive(style: string)
