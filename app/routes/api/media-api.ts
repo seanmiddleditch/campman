@@ -42,14 +42,19 @@ export function mediaAPIRoutes(db: Database, config: MediaRoutesConfig)
 
             const filename = req.body['filename']
             const filetype = req.body['filetype']
-            const caption = req.body['caption']
-            const folder = '/' // req.body['folder'] -- eventually allow user folders FIXME
+            const caption = req.body['caption'] || ''
+
+            let folder = req.body['folder'] || '/'
+            if (folder.length === 0 || folder.charAt(0) !== '/')
+                folder = '/' + folder
+            if (folder.charAt(folder.length - 1) !== '/')
+                folder = folder + '/'
 
             const path = folder + filename
 
             const librarySlug = req.library.slug
             const uniq = shortid.generate()
-            const key = `library/${librarySlug}/media/${folder}${uniq}`
+            const key = `library/${librarySlug}/media${folder}${uniq}`
 
             const newMedia = new MediaModel({
                 path,
@@ -80,7 +85,9 @@ export function mediaAPIRoutes(db: Database, config: MediaRoutesConfig)
 
             res.json({
                 signedRequest: signed,
-                url: makeMediaURL(key)
+                url: makeMediaURL(key),
+                caption,
+                path
             })
         }
     }))

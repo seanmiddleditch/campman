@@ -1,5 +1,5 @@
 import {RPCHelper} from './helpers'
-import MediaFile from '../types/media-file'
+import {MediaFile} from '../types/media-file'
 
 export class MediaAPI
 {
@@ -10,17 +10,24 @@ export class MediaAPI
         return this._rpc.post<{signedRequest: string, url: string}>('/api/media/presign', params)
     }
 
-    async upload(data: {file: File, caption: string}) : Promise<URL>
+    async upload(data: {file: File, caption: string}) : Promise<MediaFile>
     {
         const filename = data.file.name
         const filetype = data.file.type
         const filesize = data.file.size
         const {caption} = data
+        const path = '/'
 
         const signed = await this.presign({filename, filetype, filesize, caption})
         const put = await fetch(signed.signedRequest, {method: 'put', mode: 'cors', body: data.file})
 
-        return new URL(signed.url)
+        const {url} = signed
+
+        return {
+            url,
+            path,
+            caption
+        }
     }
 
     async list(path: string = '')

@@ -190,42 +190,44 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
 
     render() {
         return (
-            <div className='draft-editor' hidden={this.state.preview} onClick={ev => this._handleClick(ev)}>
-                {(this.props.editable === undefined || this.props.editable) && (
-                    <div>
-                        <MediaSelector visible={this.state.mediaPopupOpen} onSelect={file => this._handleMedia(file)} onCancel={() => this.setState({mediaPopupOpen: false})}/>
-                        <div className='edit-bar'>
-                            <span className='btn-group' role='group'>
-                                <StyleButton active={this._isInlineStyleActive('BOLD')} onToggle={() => this._handleInlineStyleClicked('BOLD')}>B</StyleButton>
-                                <StyleButton active={this._isInlineStyleActive('ITALIC')} onToggle={() => this._handleInlineStyleClicked('ITALIC')}>I</StyleButton>
-                                <StyleButton active={this._isInlineStyleActive('UNDERLINE')} onToggle={() => this._handleInlineStyleClicked('UNDERLINE')}>U</StyleButton>
-                            </span>
-                            <span className='btn-group ml-sm-2' role='group'>
-                                <StyleButton active={this._isBlockStyleActive('unstyled')} onToggle={() => this._handleBlockStyleClicked('unstyled')}>Normal</StyleButton>
-                                <StyleButton active={this._isBlockStyleActive('header-one')} onToggle={() => this._handleBlockStyleClicked('header-one')}>H1</StyleButton>
-                                <StyleButton active={this._isBlockStyleActive('header-two')} onToggle={() => this._handleBlockStyleClicked('header-two')}>H2</StyleButton>
-                                <StyleButton active={this._isBlockStyleActive('header-three')} onToggle={() => this._handleBlockStyleClicked('header-three')}>H3</StyleButton>
-                            </span>
-                            <span className='btn-group ml-sm-2' role='group'>
-                                <button className='btn btn-secondary' onClick={() => this.setState({mediaPopupOpen: true})}><i className='fa fa-picture-o'></i></button>
-                            </span>
-                            {this.props.buttons && this.props.buttons()}
+            <div>
+                <MediaSelector visible={this.state.mediaPopupOpen} onSelect={file => this._handleMedia(file)} onCancel={() => this.setState({mediaPopupOpen: false})}/>
+                <div className='draft-editor' hidden={this.state.preview} onClick={ev => this._handleClick(ev)}>
+                    {(this.props.editable === undefined || this.props.editable) && (
+                        <div>
+                            <div className='edit-bar'>
+                                <span className='btn-group' role='group'>
+                                    <StyleButton active={this._isInlineStyleActive('BOLD')} onToggle={() => this._handleInlineStyleClicked('BOLD')}>B</StyleButton>
+                                    <StyleButton active={this._isInlineStyleActive('ITALIC')} onToggle={() => this._handleInlineStyleClicked('ITALIC')}>I</StyleButton>
+                                    <StyleButton active={this._isInlineStyleActive('UNDERLINE')} onToggle={() => this._handleInlineStyleClicked('UNDERLINE')}>U</StyleButton>
+                                </span>
+                                <span className='btn-group ml-sm-2' role='group'>
+                                    <StyleButton active={this._isBlockStyleActive('unstyled')} onToggle={() => this._handleBlockStyleClicked('unstyled')}>Normal</StyleButton>
+                                    <StyleButton active={this._isBlockStyleActive('header-one')} onToggle={() => this._handleBlockStyleClicked('header-one')}>H1</StyleButton>
+                                    <StyleButton active={this._isBlockStyleActive('header-two')} onToggle={() => this._handleBlockStyleClicked('header-two')}>H2</StyleButton>
+                                    <StyleButton active={this._isBlockStyleActive('header-three')} onToggle={() => this._handleBlockStyleClicked('header-three')}>H3</StyleButton>
+                                </span>
+                                <span className='btn-group ml-sm-2' role='group'>
+                                    <button className='btn btn-secondary' onClick={() => this.setState({mediaPopupOpen: true})}><i className='fa fa-picture-o'></i></button>
+                                </span>
+                                {this.props.buttons && this.props.buttons()}
+                            </div>
                         </div>
+                    )}
+                    <div className='edit-area'>
+                        <Editor ref='editor'
+                            editorState={this.state.editorState}
+                            onBlur={() => this._flushState()}
+                            handleBeforeInput={(text, s) => this._handleBeforeInput(text, s)}
+                            handleKeyCommand={(c, s) => this._handleKeyCommand(c, s)}
+                            handleReturn={(ev, s) => this._handleReturn(ev, s)}
+                            readOnly={this.props.disabled || this.state.mediaPopupOpen}
+                            onChange={editorState => this._onChange(editorState)}
+                            placeholder='Note body text goes here'
+                            blockRendererFn={this._blockRenderer.bind(this)}
+                            tabIndex={this.props.tabIndex}
+                        />
                     </div>
-                )}
-                <div className='edit-area'>
-                    <Editor ref='editor'
-                        editorState={this.state.editorState}
-                        onBlur={() => this._flushState()}
-                        handleBeforeInput={(text, s) => this._handleBeforeInput(text, s)}
-                        handleKeyCommand={(c, s) => this._handleKeyCommand(c, s)}
-                        handleReturn={(ev, s) => this._handleReturn(ev, s)}
-                        readOnly={this.props.disabled || this.state.mediaPopupOpen}
-                        onChange={editorState => this._onChange(editorState)}
-                        placeholder='Note body text goes here'
-                        blockRendererFn={this._blockRenderer.bind(this)}
-                        tabIndex={this.props.tabIndex}
-                    />
                 </div>
             </div>
         )
