@@ -1,10 +1,11 @@
 export interface Note
 {
-    id?: number
+    readonly id?: number
     slug?: string
     title?: string
     subtitle?: string
     rawbody?: Object
     labels?: string[]
-    visibility?: 'Public'|'Hidden'
+    visibility?: 'Public'|'Hidden',
+    readonly editable?: boolean
 }

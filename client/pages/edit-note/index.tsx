@@ -60,7 +60,12 @@ export class EditNotePage extends React.Component<EditNotePageProps, EditNotePag
     private _fetch()
     {
         api.notes.fetch(this.props.slug)
-            .then(note => this.setState({note}))
+            .then(note => {
+                if (note.editable)
+                    this.setState({note})
+                else
+                    this.setState({failed: true})
+            })
             .catch(err => {
                 if (err.status == 404)
                     this.setState({

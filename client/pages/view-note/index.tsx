@@ -53,7 +53,7 @@ export class ViewNotePage extends React.Component<ViewNotePageProps, ViewNotePag
             .catch(err => {
                 if (err.status == 404)
                     this._onEdit()
-                else if (err.status == 401)
+                else
                     this.setState({failed: true});
             });
     }
@@ -103,7 +103,7 @@ export class ViewNotePage extends React.Component<ViewNotePageProps, ViewNotePag
                     <PageBody>
                         <Subtitle subtitle={note.subtitle}/>
                         <Labels labels={note.labels}/>
-                        <Bar onEdit={() => this._onEdit()} onDelete={() => this._onDelete()}/>
+                        {this.state.note.editable && <Bar onEdit={() => this._onEdit()} onDelete={() => this._onDelete()}/>}
                         <Body rawbody={note.rawbody}/>
                     </PageBody>
                 </Page>

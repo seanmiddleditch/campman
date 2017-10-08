@@ -19,13 +19,26 @@ export function noteAPIRoutes(db: Database)
         else
         {
             const result = await controller.listNotes({libraryID: req.libraryID})
+
             res.json(result.notes.filter(note => checkAccess({
                 target: 'note:view',
                 userID: req.userID,
                 role: req.userRole,
                 ownerID: note.authorID,
                 hidden: note.visibility !== NoteVisibility.Public
-            })).map(note => ({slug: note.slug, title: note.title, subtitle: note.subtitle, visibility: note.visibility, type: note.type})))
+            })).map(note => ({
+                slug: note.slug,
+                title: note.title,
+                subtitle: note.subtitle,
+                visibility: note.visibility,
+                type: note.type,
+                editable: checkAccess({
+                    target: 'note:edit',
+                    userID: req.userID,
+                    role: req.userRole,
+                    ownerID: note.authorID,
+                    hidden: note.visibility !== NoteVisibility.Public
+                })})))
         }
     }))
 
@@ -49,7 +62,14 @@ export function noteAPIRoutes(db: Database)
             else
             {
                 const {slug, title, subtitle, rawbody, labels, visibility, type} = note
-                res.json({slug, title, subtitle, rawbody, labels, visibility, type})
+                const editable = checkAccess({
+                    target: 'note:edit',
+                    userID: req.userID,
+                    role: req.userRole,
+                    ownerID: note.authorID,
+                    hidden: note.visibility !== NoteVisibility.Public
+                })
+                res.json({slug, title, subtitle, rawbody, labels, visibility, type, editable})
             }
         }
     }))
