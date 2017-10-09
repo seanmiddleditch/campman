@@ -5,6 +5,7 @@ import {checkAccess} from '../../auth'
 import {NoteController} from '../../controllers/note-controller'
 import {NoteVisibility} from '../../models'
 import * as slug from '../../util/slug'
+import {draftToHtml} from '../../util/draft-to-html'
 
 export function noteAPIRoutes(db: Database)
 {
@@ -62,6 +63,14 @@ export function noteAPIRoutes(db: Database)
             else
             {
                 const {slug, title, subtitle, rawbody, labels, visibility, type} = note
+
+                const secrets = checkAccess({
+                    target: 'note:view-secret',
+                    userID: req.userID,
+                    role: req.userRole,
+                    ownerID: note.authorID,
+                    hidden: note.visibility !== NoteVisibility.Public
+                })
                 const editable = checkAccess({
                     target: 'note:edit',
                     userID: req.userID,
@@ -69,7 +78,9 @@ export function noteAPIRoutes(db: Database)
                     ownerID: note.authorID,
                     hidden: note.visibility !== NoteVisibility.Public
                 })
-                res.json({slug, title, subtitle, rawbody, labels, visibility, type, editable})
+
+                const body = draftToHtml(rawbody as any, secrets)
+                res.json({slug, title, subtitle, body, rawbody: editable ? rawbody : undefined, labels, visibility, type, editable})
             }
         }
     }))

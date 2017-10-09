@@ -5,6 +5,7 @@ export interface Note
     title?: string
     subtitle?: string
     rawbody?: Object
+    body?: string
     labels?: string[]
     visibility?: 'Public'|'Hidden',
     readonly editable?: boolean

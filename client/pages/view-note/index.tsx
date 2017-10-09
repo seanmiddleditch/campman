@@ -99,12 +99,12 @@ export class ViewNotePage extends React.Component<ViewNotePageProps, ViewNotePag
         else
             return (
                 <Page>
-                    <PageHeader icon='file' title={this.state.note ? this.state.note.title : 'Note'}/>
+                    <PageHeader icon='file' title={note ? note.title : 'Note'}/>
                     <PageBody>
                         <Subtitle subtitle={note.subtitle}/>
                         <Labels labels={note.labels}/>
-                        {this.state.note.editable && <Bar onEdit={() => this._onEdit()} onDelete={() => this._onDelete()}/>}
-                        <Body rawbody={note.rawbody}/>
+                        {note.editable && <Bar onEdit={() => this._onEdit()} onDelete={() => this._onDelete()}/>}
+                        <Body body={note.body}/>
                     </PageBody>
                 </Page>
             )

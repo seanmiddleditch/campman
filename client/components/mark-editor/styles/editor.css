@@ -2,3 +2,7 @@
 .draft-editor .preview { border: 1px solid #ddd; border-top: 0; padding: 4px }
 .draft-editor .edit-bar { padding: 4px }
 .draft-editor .edit-area { margin: 8px }
+
+.draft-editor .secret { padding: 8px; background: #eee; border: 1px solid #ccc; border-bottom: 0 }
+.draft-editor .secret+.secret { border-top: 0 }
+.draft-editor .secret+*:not(.secret) { border-top: 1px solid #ccc }

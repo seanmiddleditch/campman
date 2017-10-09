@@ -1,6 +1,6 @@
 import * as aws from 'aws-sdk'
 import {S3} from 'aws-sdk'
-import {Request, Response, Router} from "express"
+import {Request, Response, Router} from 'express'
 import * as express from 'express'
 import {Database} from 'squell'
 import {wrapper} from '../helpers'

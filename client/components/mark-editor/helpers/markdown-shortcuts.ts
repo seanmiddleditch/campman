@@ -7,6 +7,7 @@ const UNDERLINE_REGEX = /_([^_]*)_$/
 const HEADER1_REGEX = /^#\s*([^\s#].*)$/
 const HEADER2_REGEX = /^##\s*([^\s#].*)$/
 const HEADER3_REGEX = /^###\s*([^\s#].*)$/
+const SECRET_REGEX = /^!!\s*([^\s#].*)$/
 const UNORDERED_LIST_REGEX = /\s*-\s+(\S)$/
 const ORDERED_LIST_REGEX = /\s*\d+[.]\s+(\S)$/
 
@@ -98,5 +99,6 @@ export function applyMarkdownShortcutsOnInput(text: string, editorState: EditorS
         blockStyleBeforeInput(text, editorState, HEADER2_REGEX, 'header-two') ||
         blockStyleBeforeInput(text, editorState, HEADER1_REGEX, 'header-one') ||
         blockStyleBeforeInput(text, editorState, UNORDERED_LIST_REGEX, 'unordered-list-item') ||
-        blockStyleBeforeInput(text, editorState, ORDERED_LIST_REGEX, 'ordered-list-item')
+        blockStyleBeforeInput(text, editorState, ORDERED_LIST_REGEX, 'ordered-list-item') ||
+        blockStyleBeforeInput(text, editorState, SECRET_REGEX, 'secret')
 }

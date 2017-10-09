@@ -2,11 +2,9 @@ import * as React from 'react'
 import * as ReactRouter from 'react-router'
 import * as PropTypes from 'prop-types'
 
-import {MarkEditor} from '../../../components/mark-editor'
-
 export interface BodyProps
 {
-    rawbody: Object
+    body: string
 }
 export class Body extends React.Component<BodyProps>
 {
@@ -17,9 +15,7 @@ export class Body extends React.Component<BodyProps>
     render()
     {
         return (
-            <div className='note-body'>
-                <MarkEditor disabled={true} editable={false} document={this.props.rawbody} onChange={()=>{}}/>
-            </div>
+            <div className='note-body' dangerouslySetInnerHTML={{__html: this.props.body}}></div>
         )
     }
 }

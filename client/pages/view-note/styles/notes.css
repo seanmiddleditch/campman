@@ -4,7 +4,13 @@
 .note-subtitle { font-style: italic; margin-bottom: 4px }
 
 .note-body { margin: 1em 0 1em 0; padding: 2px }
-.note-body *[contenteditable="true"] { white-space: pre-wrap; font-family: monospace }
+.note-body div.secret { padding: 8px; background: #eee; border: 1px solid #ccc; border-bottom: 0 }
+.note-body div.secret+div.secret { border-top: 0 }
+.note-body div.secret+*:not(.secret) { border-top: 1px solid #ccc }
+
+.note-body .BOLD { font-weight: bold }
+.note-body .UNDERLINE { text-decoration: underline }
+.note-body .ITALIC { font-style: italic }
 
 .floating-editbar-container { position: absolute; left: 0; margin-top: 1em; z-index: 1000 }
 .floating-editbar { position: fixed; padding-right: 1em; transform: translateX(-100%); }

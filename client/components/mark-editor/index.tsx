@@ -26,7 +26,7 @@ import {PreviewBar} from './components/preview-bar'
 import {decorators} from './decorators'
 
 import {applyMarkdownShortcutsOnInput} from './helpers/markdown-shortcuts'
-import {blockRenderer, handleReturn} from './helpers/block-utils'
+import {blockRenderer, handleReturn, blockRenderMap} from './helpers/block-utils'
 
 require('./styles/editor.css')
 require('draft-js/dist/Draft.css')
@@ -224,6 +224,7 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
                             readOnly={this.props.disabled || this.state.mediaPopupOpen}
                             onChange={editorState => this._onChange(editorState)}
                             placeholder='Note body text goes here'
+                            blockRenderMap={blockRenderMap}
                             blockRendererFn={this._blockRenderer.bind(this)}
                             tabIndex={this.props.tabIndex}
                         />
