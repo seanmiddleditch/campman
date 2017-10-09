@@ -22,6 +22,7 @@ export function googleAuth(db: Database, publicURL: string, googleClientId: stri
             .findOrCreate({
                 fullName: profile.displayName,
                 email: profile.emails[0].value,
+                nickname: profile.displayName,
                 googleId: profile.id,
                 photoURL: (profile.photos && profile.photos.length && profile.photos[0].value) || ''
             })

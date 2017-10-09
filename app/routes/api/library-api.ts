@@ -53,7 +53,7 @@ export function libraryAPIRoutes(db: squell.Database)
 
     router.put('/api/libraries/:library', wrapper(async (req, res) => {
         const userID = req.user && req.user.id
-        if (checkAccess({target: 'library:create', userID, role: Role.Visitor}))
+        if (!checkAccess({target: 'library:create', userID, role: Role.Visitor}))
         {
             res.status(403).json({message: 'Access denied'})
         }
@@ -90,6 +90,52 @@ export function libraryAPIRoutes(db: squell.Database)
 
             res.status(201).json(library)
         }
+    }))
+
+    router.get('/api/libraries/:library/settings', wrapper(async (req, res) => {
+        const userID = req.user && req.user.id
+        if (!checkAccess({target: 'library:configure', userID, role: req.userRole}))
+        {
+            res.status(403).json({message: 'Access denied'})
+        }
+        else
+        {
+            const library = await db.query(LibraryModel)
+                .where(m => m.slug.eq(req.params['library']))
+                .findOne()
+            if (!library)
+            {
+                res.status(404).json({message: 'Library not found'})
+            }
+            else
+            {
+                res.status(200).json({
+                    slug: library.slug,
+                    title: library.title,
+                    visibility: library.visibility
+                })
+            }
+        }
+
+    }))
+
+    router.post('/api/libraries/:library/settings', wrapper(async (req, res) => {
+        const userID = req.user && req.user.id
+        if (!checkAccess({target: 'library:configure', userID, role: req.userRole}))
+        {
+            res.status(403).json({message: 'Access denied'})
+        }
+        else
+        {
+            const [count, libraries] = await db.query(LibraryModel)
+                .where(m => m.slug.eq(req.params['library']))
+                .update({
+                    title: req.body['title'],
+                    visibility: req.body['visibility']
+                })
+            res.status(200).json({})
+        }
+
     }))
 
     return router

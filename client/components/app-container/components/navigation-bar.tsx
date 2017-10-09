@@ -27,15 +27,16 @@ export const NavigationBar = (props: NavigationBarProps) => (
             {props.library ?
                 (<ul className='navbar-nav mr-auto mt-2 mt-lg-0'>
                     <div className='nav-link disabled'>Adventures</div>
-                    <NavLink className='nav-link' activeClassName='nav-link-active' to={'/notes'} isActive={(m, l) => !!m || l.pathname.startsWith('/n/')}>Notes</NavLink>
-                    <NavLink className='nav-link' activeClassName='nav-link-active' to={'/labels'} isActive={(m, l) => !!m || l.pathname.startsWith('/l/')}>Labels</NavLink>
+                    <NavLink className='nav-link' activeClassName='nav-link-active' to='/notes' isActive={(m, l) => !!m || l.pathname.startsWith('/n/')}>Notes</NavLink>
+                    <NavLink className='nav-link' activeClassName='nav-link-active' to='/labels' isActive={(m, l) => !!m || l.pathname.startsWith('/l/')}>Labels</NavLink>
                     <div className='nav-link disabled'>Maps</div>
                     <div className='nav-link disabled'>Characters</div>
                     <div className='nav-link disabled'>Timeline</div>
-                    <NavLink className='nav-link' activeClassName='nav-link-active' to={'/media'}>Media</NavLink>
+                    <NavLink className='nav-link' activeClassName='nav-link-active' to='/media'>Media</NavLink>
+                    <NavLink className='nav-link' activeClassName='nav-link-active' to='/settings'><i className='fa fa-cog'></i></NavLink>
                 </ul>) :
                 (<ul className='navbar-nav mr-auto mt-2 mt-lg-0'>
-                    <NavLink className='nav-link' activeClassName='nav-link-active' to={'/libraries'}>Libraries</NavLink>
+                    <NavLink className='nav-link' activeClassName='nav-link-active' to='/libraries'>Libraries</NavLink>
                 </ul>)
             }
             <SearchBar className='my-2 my-lg-0'/>

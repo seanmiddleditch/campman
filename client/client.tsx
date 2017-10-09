@@ -15,16 +15,18 @@ import {MyProfilePage} from './pages/my-profile'
 import {ListLabelsPage} from './pages/list-labels'
 import {ListLibrariesPage} from './pages/list-libraries'
 import {ListNotesPage} from './pages/list-notes'
+import {LibraryAdminPage} from './pages/library-admin'
 
 import {Config, User, Library} from './types'
 
-const LibraryRoutes = () => (
+const LibraryRoutes = (props: {library: Library}) => (
     <Switch>
         <Route path='/notes' exact render={p => <ListNotesPage labels={(new URLSearchParams(p.location.search)).get('label')} {...p}/>}/>
         <Route path='/labels' exact>
             <ListLabelsPage/>
         </Route>
         <Route path='/search' exact render={p => <SearchPage {...p} query={(new URLSearchParams(p.location.search)).get('q')}/>}/>
+        <Route path='/settings' exact render={p => <LibraryAdminPage slug={props.library.slug} {...p}/>}/>
         <Route path='/media/:path*' render={p => <MediaBrowserPage path={p.match.params.path} {...p}/>}/>
         <Route path='/n/:slug' exact render={p => <ViewNotePage slug={p.match.params.slug} {...p}/>}/>
         <Route path='/n/:slug/edit' exact render={p => <EditNotePage slug={p.match.params.slug} {...p}/>}/>
@@ -56,7 +58,7 @@ const AppRoutes = (props: {config: Config, user: User}) =>
 const Routes = (props: {config: Config, library: Library, user: User}) => 
     <BrowserRouter>
         <AppContainer user={props.user} config={props.config} library={props.library}>
-            {props.library ? <LibraryRoutes/> : <AppRoutes config={props.config} user={props.user}/>}
+            {props.library ? <LibraryRoutes library={props.library}/> : <AppRoutes config={props.config} user={props.user}/>}
         </AppContainer>
     </BrowserRouter>
 

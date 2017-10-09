@@ -85,16 +85,8 @@ function expandSections(block: DraftBlock, draft: RawDraft)
     const edges: {index: number, style: string, action: 'begin'|'end'}[] = []
 
     block.inlineStyleRanges.forEach(rng => {
-        edges.push({
-            index: rng.offset,
-            style: rng.style,
-            action: 'begin'
-        })
-        edges.push({
-            index: rng.offset + rng.length,
-            style: rng.style,
-            action: 'end'
-        })
+        edges.push({index: rng.offset, style: rng.style, action: 'begin'})
+        edges.push({index: rng.offset + rng.length, style: rng.style, action: 'end'})
     })
 
     edges.sort((a, b) => a.index - b.index)

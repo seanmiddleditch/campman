@@ -19,6 +19,16 @@ export class LibrariesAPI
     {
         return this._rpc.put<Library>('/api/libraries/' + slug, {title});
     }
+
+    fetchSettings({slug}: {slug: string}) : Promise<{title: string, visibility: 'Public'|'Hidden'}>
+    {
+        return this._rpc.get<{title: string, visibility: 'Public'|'Hidden'}>('/api/libraries/' + slug + '/settings')
+    }
+
+    saveSettings({slug, title, visibility}: {slug: string, title: string, visibility: 'Public'|'Hidden'})
+    {
+        return this._rpc.post<{}>('/api/libraries/' + slug + '/settings', {title, visibility})
+    }
 }
 
 export const libraries = new LibrariesAPI()

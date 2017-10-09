@@ -4,6 +4,12 @@ import {NoteModel} from './note-model'
 import {UserModel} from './user-model'
 import {Role} from '../auth/access'
 
+export enum LibraryVisibility
+{
+    Public = 'Public',
+    Hidden = 'Hidden'
+}
+
 @modelsafe.model({name: 'library'})
 export class LibraryModel extends modelsafe.Model
 {
@@ -20,6 +26,9 @@ export class LibraryModel extends modelsafe.Model
     @modelsafe.maxLength(255)
     @modelsafe.minLength(1)
     public title: string
+
+    @modelsafe.attr(modelsafe.ENUM(Object.keys(LibraryVisibility)), {defaultValue: LibraryVisibility.Public})
+    public visibility: LibraryVisibility
 
     @modelsafe.assoc(modelsafe.BELONGS_TO, () => UserModel)
     @squell.assoc({foreignKeyConstraint: true, foreignKey: {allowNull: false}})

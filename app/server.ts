@@ -199,6 +199,7 @@ class Config
     app.use(routes.labelAPIRoutes(db))
     app.use(routes.libraryAPIRoutes(db))
     app.use(routes.mediaAPIRoutes(db, config))
+    app.use(routes.profileAPIRoutes(db))
 
     app.use(async (req, res) => res.render('index', {
         session: JSON.stringify({

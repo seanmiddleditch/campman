@@ -17,6 +17,7 @@ interface AccessConfiguration
     ['label:view']: AccessControls
     ['library:view']: AccessControls
     ['library:create']: AccessControls
+    ['library:configure']: AccessControls
     ['media:upload']: AccessControls
     ['media:list']: AccessControls
     ['note:view']: AccessControls
@@ -36,7 +37,10 @@ export const accessConfiguration : AccessConfiguration = {
         p => !p.hidden
     ],
     'library:create': [
-        p => p.userID !== null
+        p => p.userID !== null,
+    ],
+    'library:configure': [
+        p => p.role === Role.Owner
     ],
     'media:upload': [
         p => p.role !== Role.Visitor
