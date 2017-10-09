@@ -20,6 +20,9 @@ interface LibraryAdminPageState
     status: Status
     title: string
     visibility: 'Public'|'Hidden'
+    members: {id: number, role: string, nickname: string}[]
+    tab: 'Settings'|'Members'
+    inviteEmail: string
 }
 export class LibraryAdminPage extends React.Component<LibraryAdminPageProps, LibraryAdminPageState>
 {
@@ -29,7 +32,10 @@ export class LibraryAdminPage extends React.Component<LibraryAdminPageProps, Lib
         this.state = {
             status: Status.Idle,
             title: 'Test',
-            visibility: 'Hidden'
+            visibility: 'Hidden',
+            tab: 'Settings',
+            members: [],
+            inviteEmail: ''
         }
     }
 
@@ -69,26 +75,81 @@ export class LibraryAdminPage extends React.Component<LibraryAdminPageProps, Lib
         }
     }
 
+    private _handleInviteEmailChanged(ev: React.FormEvent<HTMLInputElement>)
+    {
+        this.setState({inviteEmail: ev.currentTarget.value})
+    }
+
+    private _handleSendInviteClicked(ev: React.MouseEvent<HTMLButtonElement>)
+    {
+
+    }
+
     public render()
     {
         return (
             <Page>
                 <PageHeader icon='cog' title='Library Settings'/>
                 <PageBody>
-                    <div className='form-group mt-sm-2'>
-                        <label htmlFor='title'>Title</label>
-                        <input type='text' className='form-control' name='title' disabled={this.state.status !== Status.Idle} value={this.state.title} onChange={ev => this._handleTitleChanged(ev)}/>
-                    </div>
-                    <div className='form-group mt-sm-2'>
-                        <label htmlFor='visbility'>Visibility</label>
-                        <div className='btn-group form-control'>
-                            {this.state.visibility === 'Public' && <button id='note-btn-visibility' className='btn btn-info' about='Toggle Visibility' disabled={this.state.status !== Status.Idle} onClick={ev => this._handleVisibilityClicked(ev)}>Public</button>}
-                            {this.state.visibility !== 'Public' && <button id='note-btn-visibility' className='btn btn-light' about='Toggle Visibility' disabled={this.state.status !== Status.Idle} onClick={ev => this._handleVisibilityClicked(ev)}>Hidden</button>}
+                    <ul className='nav  nav-tabs'>
+                        <li className='nav-item'>
+                            <a className={this.state.tab === 'Settings' ? 'nav-link active' : 'nav-link'} onClick={() => this.setState({tab: 'Settings'})}>Settings</a>
+                        </li>
+                        <li className='nav-item'>
+                            <a className={this.state.tab === 'Members' ? 'nav-link active' : 'nav-link'} onClick={() => this.setState({tab: 'Members'})}>Members</a>
+                        </li>
+                    </ul>
+                    {this.state.tab === 'Settings' && (
+                        <div>
+                            <div className='form-group mt-sm-2'>
+                                <label htmlFor='title'>Title</label>
+                                <input type='text' className='form-control' name='title' disabled={this.state.status !== Status.Idle} value={this.state.title} onChange={ev => this._handleTitleChanged(ev)}/>
+                            </div>
+                            <div className='form-group mt-sm-2'>
+                                <label htmlFor='visbility'>Visibility</label>
+                                <div className='btn-group form-control'>
+                                    {this.state.visibility === 'Public' && <button id='note-btn-visibility' className='btn btn-info' about='Toggle Visibility' disabled={this.state.status !== Status.Idle} onClick={ev => this._handleVisibilityClicked(ev)}>Public</button>}
+                                    {this.state.visibility !== 'Public' && <button id='note-btn-visibility' className='btn btn-light' about='Toggle Visibility' disabled={this.state.status !== Status.Idle} onClick={ev => this._handleVisibilityClicked(ev)}>Hidden</button>}
+                                </div>
+                            </div>
+                            <div className='btn-group float-right mt-sm-2'>
+                                <button className='btn btn-primary' disabled={this.state.status !== Status.Idle} onClick={ev => this._handleSaveClicked(ev)}>Save</button>
+                            </div>
                         </div>
-                    </div>
-                    <div className='btn-group float-right mt-sm-2'>
-                        <button className='btn btn-primary' disabled={this.state.status !== Status.Idle} onClick={ev => this._handleSaveClicked(ev)}>Save</button>
-                    </div>
+                    )}
+                    {this.state.tab === 'Members' && (
+                        <ul className='list-group'>
+                            {(this.state.members.map(member => (
+                                <li key={member.id} className='list-group-item mt-sm-2'>
+                                    <div className='form-group'>{member.nickname}</div>
+                                    <div className='form-group'>
+                                        <select className='form-control mt-sm-2'>
+                                            <option value='Owner' selected={member.role === 'Owner'}>Owner</option>
+                                            <option value='GameMaster' selected={member.role === 'GameMaster'} disabled={member.role === 'Owner'}>GameMaster</option>
+                                            <option value='Player' selected={member.role === 'Player'} disabled={member.role === 'Owner'}>Player</option>
+                                            <option value='Visitor' selected={member.role === 'Visitor'} disabled={member.role === 'Owner'}>Visitor</option>
+                                        </select>
+                                    </div>
+                                </li>
+                            )))}
+                            <li className='list-group-item mt-sm-2'>
+                                <div className='form-group'>
+                                    <label htmlFor='new-member-email'>Invite New Member</label>
+                                    <input className='form-control' type='text' name='new-member-email' placeholder='email addres' value={this.state.inviteEmail} onChange={ev => this._handleInviteEmailChanged(ev)}/>
+                                </div>
+                                <div className='form-group'>
+                                    <label htmlFor='new-member-role'>New Member Role</label>
+                                    <select className='form-control mt-sm-2' name='new-member-role'>
+                                        <option value='Player'>Player</option>
+                                        <option value='GameMaster'>GameMaster</option>
+                                    </select>
+                                </div>
+                                <div className='form-group float-right'>
+                                    <button className='btn btn-primary' onClick={ev => this._handleSendInviteClicked(ev)}>Send Invite</button>
+                                </div>
+                            </li>
+                        </ul>
+                    )}
                 </PageBody>
             </Page>
         )

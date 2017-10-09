@@ -109,10 +109,23 @@ export function libraryAPIRoutes(db: squell.Database)
             }
             else
             {
+                const members = await db.query(LibraryAccessModel)
+                    .attributes(m => [m.role])
+                    .include(UserModel, m => m.user, q => q.attributes(m => [m.id, m.nickname]))
+                    .where(m => squell.attribute('libraryId').eq(library.id))
+                    .find()
+
+                const mappedMembers = members.map(user => ({
+                    role: user.role,
+                    userID: user.user && user.user.id,
+                    nickname: user.user && user.user.nickname
+                }))
+
                 res.status(200).json({
                     slug: library.slug,
                     title: library.title,
-                    visibility: library.visibility
+                    visibility: library.visibility,
+                    members: mappedMembers
                 })
             }
         }

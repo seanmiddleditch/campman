@@ -22,7 +22,7 @@ export class LibrariesAPI
 
     fetchSettings({slug}: {slug: string}) : Promise<{title: string, visibility: 'Public'|'Hidden'}>
     {
-        return this._rpc.get<{title: string, visibility: 'Public'|'Hidden'}>('/api/libraries/' + slug + '/settings')
+        return this._rpc.get<{title: string, visibility: 'Public'|'Hidden', members: {id: number, role: string, nickname: string}[]}>('/api/libraries/' + slug + '/settings')
     }
 
     saveSettings({slug, title, visibility}: {slug: string, title: string, visibility: 'Public'|'Hidden'})
