@@ -57,6 +57,7 @@
     "foreman": "2.0.0",
     "immutable": "3.8.1",
     "jquery": "3.2.1",
+    "mailgun-js": "0.13.1",
     "modelsafe": "1.0.0-alpha.12",
     "mysql": "2.14.1",
     "passport": "0.4.0",

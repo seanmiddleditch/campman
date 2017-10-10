@@ -17,7 +17,7 @@ import * as routes from './routes'
 import * as models from './models'
 import {googleAuth, User} from './auth'
 
-class Config
+export class Config
 {
     readonly publicURL: URL
     readonly googleClientID: string
@@ -32,6 +32,9 @@ class Config
     readonly awsAccessKey: string
     readonly awsAuthSecret: string
     readonly s3Bucket: string
+    readonly mailgunKey: string
+    readonly mailDomain: string
+    readonly inviteAddress: string
 
     constructor()
     {
@@ -48,6 +51,9 @@ class Config
         this.awsAuthSecret = process.env.AWS_SECRET || ''
         this.s3Bucket = process.env.S3_BUCKET || ''
         this.production = process.env.NODE_ENV === 'production'
+        this.mailgunKey = process.env.MAILGUN_KEY || ''
+        this.mailDomain = process.env.MAIL_DOMAIN || this.publicURL.hostname
+        this.inviteAddress = process.env.INVITE_ADDRESS || 'invite-noreply@' + this.mailDomain
     }
 }
 
@@ -76,7 +82,8 @@ class Config
     db.define(models.NoteModel)
     db.define(models.UserModel)
     db.define(models.MediaModel)
-
+    db.define(models.InviteModel)
+    
     await db.sync()
 
     const app = express()
@@ -197,7 +204,7 @@ class Config
     app.use(routes.authRoutes(db, config))
     app.use(routes.noteAPIRoutes(db))
     app.use(routes.labelAPIRoutes(db))
-    app.use(routes.libraryAPIRoutes(db))
+    app.use(routes.libraryAPIRoutes(db, config))
     app.use(routes.mediaAPIRoutes(db, config))
     app.use(routes.profileAPIRoutes(db))
 

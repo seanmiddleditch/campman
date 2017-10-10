@@ -16,6 +16,7 @@ import {ListLabelsPage} from './pages/list-labels'
 import {ListLibrariesPage} from './pages/list-libraries'
 import {ListNotesPage} from './pages/list-notes'
 import {LibraryAdminPage} from './pages/library-admin'
+import {AcceptInvitationPage} from './pages/accept-invitation'
 
 import {Config, User, Library} from './types'
 
@@ -50,6 +51,7 @@ const AppRoutes = (props: {config: Config, user: User}) =>
         <Route path='/' exact>
             <Redirect to='/libraries'/>
         </Route>
+        <Route path='/invite/:code' exact render={p => <AcceptInvitationPage user={props.user} code={p.match.params.code} {...p}/>}/>
         <Route>
             <NotFoundPage/>
         </Route>

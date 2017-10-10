@@ -17,7 +17,7 @@ export class LibrariesAPI
 
     create({slug, title}: {slug: string, title: string}) : Promise<Library>
     {
-        return this._rpc.put<Library>('/api/libraries/' + slug, {title});
+        return this._rpc.put<Library>(`/api/libraries/${slug}`, {title});
     }
 
     fetchSettings({slug}: {slug: string}) : Promise<{title: string, visibility: 'Public'|'Hidden'}>
@@ -27,7 +27,22 @@ export class LibrariesAPI
 
     saveSettings({slug, title, visibility}: {slug: string, title: string, visibility: 'Public'|'Hidden'})
     {
-        return this._rpc.post<{}>('/api/libraries/' + slug + '/settings', {title, visibility})
+        return this._rpc.post<{}>(`/api/libraries/${slug}/settings`, {title, visibility})
+    }
+
+    updateMemberRole({slug, userID, role}: {slug: string, userID: number, role: 'GameMaster'|'Player'|'Visitor'})
+    {
+        return this._rpc.post<{}>(`/api/libraries/${slug}/members/${userID}`, {role})
+    }
+
+    inviteMember({slug, email}: {slug: string, email: string})
+    {
+        return this._rpc.post<{}>(`/api/libraries/${slug}/members/invite`, {email})
+    }
+
+    acceptInvite({code}: {code: string})
+    {
+        return this._rpc.post<{}>(`/api/invitation/accept/${code}`)
     }
 }
 

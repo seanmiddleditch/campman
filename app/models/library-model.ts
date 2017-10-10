@@ -2,6 +2,7 @@ import * as modelsafe from 'modelsafe'
 import * as squell from 'squell'
 import {NoteModel} from './note-model'
 import {UserModel} from './user-model'
+import {InviteModel} from './invite-model'
 import {Role} from '../auth/access'
 
 export enum LibraryVisibility
@@ -41,27 +42,19 @@ export class LibraryModel extends modelsafe.Model
     @modelsafe.assoc(modelsafe.HAS_MANY, () => LibraryAccessModel)
     public acl: LibraryAccessModel[]
 
-    public static findBySlug(db: squell.Database, slug: string): Promise<LibraryModel|null>
-    {
-        return db.query(LibraryModel).includeAll().where(m => m.slug.eq(slug)).findOne()
-    }
+    @modelsafe.assoc(modelsafe.HAS_MANY, () => InviteModel)
+    public invites: InviteModel[]
 
-    public static async queryAccess(db: squell.Database, librarySlug: string, userID: number): Promise<[LibraryModel|null, Role]>
-    {
-         const rs = await db.query(LibraryAccessModel)
-            .attributes(m => [m.role])
-            .include(LibraryModel, m => m.library, q => q.where(m => m.slug.eq(librarySlug)))
-            .where(m => squell.attribute('userId').eq(userID).or(squell.attribute('userId').eq(null)))
-            .order(m => [[m.role, squell.DESC]])
-            .findOne()
-        return rs ? [rs.library, rs.role || Role.Visitor] : [null, Role.Visitor]
-    }
 }
 
 @modelsafe.model({name: 'library_acl'})
 @squell.model({indexes: [{name: 'library_acl_user', fields: ['libraryId', 'userId'], unique: true}], timestamps: false})
 export class LibraryAccessModel extends modelsafe.Model
 {
+    @modelsafe.attr(modelsafe.INTEGER, {optional: true})
+    @squell.attr({primaryKey: true, autoIncrement: true})
+    public id: number
+
     @modelsafe.assoc(modelsafe.BELONGS_TO, () => LibraryModel)
     @squell.assoc({foreignKeyConstraint: true, foreignKey: {allowNull: false}})
     public library: LibraryModel

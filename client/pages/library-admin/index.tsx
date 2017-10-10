@@ -20,7 +20,7 @@ interface LibraryAdminPageState
     status: Status
     title: string
     visibility: 'Public'|'Hidden'
-    members: {id: number, role: string, nickname: string}[]
+    members: {userID: number, role: string, nickname: string}[]
     tab: 'Settings'|'Members'
     inviteEmail: string
 }
@@ -82,7 +82,12 @@ export class LibraryAdminPage extends React.Component<LibraryAdminPageProps, Lib
 
     private _handleSendInviteClicked(ev: React.MouseEvent<HTMLButtonElement>)
     {
+        api.libraries.inviteMember({slug: this.props.slug, email: this.state.inviteEmail})
+    }
 
+    private _handleMemberRoleChanged(ev: React.FormEvent<HTMLSelectElement>, userID: number)
+    {
+        api.libraries.updateMemberRole({slug: this.props.slug, userID, role: ev.currentTarget.value as any})
     }
 
     public render()
@@ -120,15 +125,16 @@ export class LibraryAdminPage extends React.Component<LibraryAdminPageProps, Lib
                     {this.state.tab === 'Members' && (
                         <ul className='list-group'>
                             {(this.state.members.map(member => (
-                                <li key={member.id} className='list-group-item mt-sm-2'>
+                                <li key={member.userID} className='list-group-item mt-sm-2'>
                                     <div className='form-group'>{member.nickname}</div>
                                     <div className='form-group'>
-                                        <select className='form-control mt-sm-2'>
-                                            <option value='Owner' selected={member.role === 'Owner'}>Owner</option>
-                                            <option value='GameMaster' selected={member.role === 'GameMaster'} disabled={member.role === 'Owner'}>GameMaster</option>
-                                            <option value='Player' selected={member.role === 'Player'} disabled={member.role === 'Owner'}>Player</option>
-                                            <option value='Visitor' selected={member.role === 'Visitor'} disabled={member.role === 'Owner'}>Visitor</option>
-                                        </select>
+                                        {member.role === 'Owner' ? 'Owner' : (
+                                            <select className='form-control mt-sm-2' onChange={ev => this._handleMemberRoleChanged(ev, member.userID)}>
+                                                <option value='GameMaster' selected={member.role === 'GameMaster'}>GameMaster</option>
+                                                <option value='Player' selected={member.role === 'Player'}>Player</option>
+                                                <option value='Visitor' selected={member.role === 'Visitor'}>Visitor</option>
+                                            </select>
+                                        )}
                                     </div>
                                 </li>
                             )))}
@@ -136,13 +142,6 @@ export class LibraryAdminPage extends React.Component<LibraryAdminPageProps, Lib
                                 <div className='form-group'>
                                     <label htmlFor='new-member-email'>Invite New Member</label>
                                     <input className='form-control' type='text' name='new-member-email' placeholder='email addres' value={this.state.inviteEmail} onChange={ev => this._handleInviteEmailChanged(ev)}/>
-                                </div>
-                                <div className='form-group'>
-                                    <label htmlFor='new-member-role'>New Member Role</label>
-                                    <select className='form-control mt-sm-2' name='new-member-role'>
-                                        <option value='Player'>Player</option>
-                                        <option value='GameMaster'>GameMaster</option>
-                                    </select>
                                 </div>
                                 <div className='form-group float-right'>
                                     <button className='btn btn-primary' onClick={ev => this._handleSendInviteClicked(ev)}>Send Invite</button>

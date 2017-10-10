@@ -39,26 +39,6 @@ export function authRoutes(db: Database, config: AuthRoutesConfig)
         }
     }))
 
-    router.get('/auth/session', wrapper(async (req, res) => {
-        if (!req.session)
-        {
-            res.status(401).json({message: 'Not authenticated'})
-        }
-        else
-        {
-            const user = req.user ? req.user as User : null
-            res.json({
-                googleClientId: config.googleClientID,
-                sessionKey: req.session.id,
-                user: !user ? null : {
-                    id: user.id,
-                    fullName: user.fullName,
-                    nickname: user.nickname || user.fullName
-                }
-            })
-        }
-    }))
-
     router.get('/auth/google/callback',
         passport.authenticate('google'),
         (req, res) => {

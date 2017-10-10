@@ -1,20 +1,23 @@
 import {Request, Response, Router} from 'express'
-import {LibraryModel, LibraryAccessModel, UserModel} from '../../models'
+import {LibraryModel, LibraryAccessModel, UserModel, InviteModel} from '../../models'
 import * as squell from 'squell'
 import {checkAccess, Role} from '../../auth/access'
 import {LibraryController} from '../../controllers/library-controller'
+import {Config} from '../../server'
 import {wrapper} from '../helpers'
 import * as slug from '../../util/slug'
+import * as shortid from 'shortid'
+import * as mailgun from 'mailgun-js'
 
-export function libraryAPIRoutes(db: squell.Database)
+
+export function libraryAPIRoutes(db: squell.Database, config: Config)
 {
     const router = Router()
     const controller = new LibraryController(db)
+    const mg = mailgun({apiKey: config.mailgunKey, domain: config.mailDomain})
 
     router.get('/api/libraries', wrapper(async (req, res) => {
-        const userID = req.user && req.user.id
-
-        const result = await controller.listLibraries({userID})
+        const result = await controller.listLibraries({userID: req.userID})
 
         res.json(result.libraries.filter(library => checkAccess({
             target: 'library:view',
@@ -52,8 +55,7 @@ export function libraryAPIRoutes(db: squell.Database)
     }))
 
     router.put('/api/libraries/:library', wrapper(async (req, res) => {
-        const userID = req.user && req.user.id
-        if (!checkAccess({target: 'library:create', userID, role: Role.Visitor}))
+        if (!checkAccess({target: 'library:create', userID: req.userID, role: Role.Visitor}))
         {
             res.status(403).json({message: 'Access denied'})
         }
@@ -68,7 +70,7 @@ export function libraryAPIRoutes(db: squell.Database)
             }
 
             const library = await db.transaction(async (tx) => {
-                const user = await db.query(UserModel).where(m => m.id.eq(userID || 0)).findOne()
+                const user = await db.query(UserModel).where(m => m.id.eq(req.userID)).findOne()
 
                 const newLibrary = new LibraryModel()
                 newLibrary.slug = librarySlug
@@ -93,8 +95,7 @@ export function libraryAPIRoutes(db: squell.Database)
     }))
 
     router.get('/api/libraries/:library/settings', wrapper(async (req, res) => {
-        const userID = req.user && req.user.id
-        if (!checkAccess({target: 'library:configure', userID, role: req.userRole}))
+        if (!checkAccess({target: 'library:configure', userID: req.userID, role: req.userRole}))
         {
             res.status(403).json({message: 'Access denied'})
         }
@@ -133,8 +134,7 @@ export function libraryAPIRoutes(db: squell.Database)
     }))
 
     router.post('/api/libraries/:library/settings', wrapper(async (req, res) => {
-        const userID = req.user && req.user.id
-        if (!checkAccess({target: 'library:configure', userID, role: req.userRole}))
+        if (!checkAccess({target: 'library:configure', userID: req.userID, role: req.userRole}))
         {
             res.status(403).json({message: 'Access denied'})
         }
@@ -148,7 +148,106 @@ export function libraryAPIRoutes(db: squell.Database)
                 })
             res.status(200).json({})
         }
+    }))
 
+    router.post('/api/libraries/:library/members/invite', wrapper(async (req, res) => {
+        if (!checkAccess({target: 'library:invite', userID: req.userID, role: req.userRole}))
+        {
+            res.status(403).json({message: 'Access denied'})
+        }
+        else
+        {
+            const id = shortid.generate()
+            const email = req.body['email']
+            const library = await db.query(LibraryModel)
+                .attributes(m => [m.id, m.title])
+                .where(m => m.id.eq(req.libraryID))
+                .findOne()
+
+            await db.query(InviteModel)
+                .include(LibraryModel, m => m.library)
+                .create(new InviteModel({
+                    id,
+                    email,
+                    library
+                }))
+
+            const result = await new Promise<string>((resolve, reject) => {
+                mg.messages().send({
+                    from: config.inviteAddress,
+                    to: email,
+                    subject: `You Are Invited to ${library.title} at the Eternal Dungeon!`,
+                    text: `You have been invited to ${library.title} by ${req.user.nickname}. Go to ${config.publicURL.toString()}invite/${id} to join! If this message appears to be in error, please ignore it.`
+                }, (err, body) => {
+                    if (err) reject(err)
+                    else resolve(body)
+                })
+            })
+        }
+    }))
+    
+
+    router.post('/api/libraries/:library/members/:userid', wrapper(async (req, res) => {
+        if (!checkAccess({target: 'library:configure', userID: req.userID, role: req.userRole}))
+        {
+            res.status(403).json({message: 'Access denied'})
+        }
+        else
+        {
+            const newRole = req.body['role']
+            if (newRole != Role.Visitor)
+            {
+                await db.query(LibraryAccessModel)
+                    .include(LibraryModel, m => m.library, q => q.where(m => m.slug.eq(req.params['library'])))
+                    .where(m => squell.attribute('userId').eq(req.params['userid']))
+                    .update({
+                        role: req.body['role']
+                    })
+            }
+            else
+            {
+                await db.query(LibraryAccessModel)
+                    .include(LibraryModel, m => m.library, q => q.where(m => m.slug.eq(req.params['library'])))
+                    .where(m => squell.attribute('userId').eq(req.params['userid']))
+                    .destroy()
+            }
+
+            res.status(200).json({})
+        }
+    }))
+
+    router.post('/api/invitation/accept/:code', wrapper(async (req, res) => {
+        const invite = await db.query(InviteModel)
+            .include(LibraryModel, m => m.library)
+            .where(m => m.id.eq(req.params['code']))
+            .findOne()
+
+        if (!invite)
+        {
+            res.status(404).json({message: 'Invalid or expired invitation code'})
+        }
+        else
+        {
+            const user = await db.query(UserModel).where(m => m.id.eq(req.userID)).findOne()
+            const {library} = invite
+
+            await db.transaction(async (tx) => {
+                const newAccess = new LibraryAccessModel()
+                newAccess.library = library
+                newAccess.user = user
+                newAccess.role = Role.Player
+
+                await db.query(LibraryAccessModel)
+                    .includeAll()
+                    .save(newAccess, {transaction: tx})
+
+                await db.query(InviteModel)
+                    .where(m => m.id.eq(invite.id))
+                    .destroy({transaction: tx})
+            })
+
+            res.status(200).json({message: 'Invitation accepted!'})
+        }
     }))
 
     return router
