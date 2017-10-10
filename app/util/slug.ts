@@ -10,5 +10,6 @@ export function isValid(slug: string): boolean
         slug != 'dev' &&
         slug != 'www' &&
         slug != 'api' &&
-        slug != 'staging';
+        slug != 'staging' &&
+        slug != 'mail';
 }
