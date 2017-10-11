@@ -1,53 +1,60 @@
-import {Request, Response, Router} from 'express';
-import * as passport from 'passport';
-import {Database} from 'squell';
-import User from '../auth/user';
-import GoogleAuth from '../auth/google';
-import UserModel from '../models/user';
-import {wrap, success, accessDenied} from './helpers';
+import {Request, Response, Router} from 'express'
+import * as passport from 'passport'
+import {Database} from 'squell'
+import {User} from '../auth'
+import {UserModel} from '../models'
+import {wrapper} from './helpers'
+import {URL} from 'url'
 
 export interface AuthRoutesConfig
 {
-    publicURL: string,
+    publicURL: URL,
     googleClientID: string,
     googleAuthSecret: string,
     sessionSecret: string,
     redisURL: string,
 }
-export default function AuthRoutes(db: Database, config: AuthRoutesConfig)
+export function authRoutes(db: Database, config: AuthRoutesConfig)
 {
-    const router = Router();
+    const router = Router()
 
-    router.post('/auth/logout', wrap(async (req) =>
+    // all auth calls only work on the public URL
+    router.use('/auth', (req, res, next) => {
+        if (req.hostname != config.publicURL.hostname)
+            res.redirect(301, new URL('/auth' + req.path, config.publicURL).toString())
+        else
+            next()
+    })
+
+    router.post('/auth/logout', wrapper(async (req, res) =>
     {
-        if (!req.user) return accessDenied();
-        else if (!req.session) return accessDenied();
-        const session = req.session;
-        return (new Promise(res => session.destroy(res))).then(() => success({}));
-    }));
-
-    router.get('/auth/session', wrap(async (req) => {
-        if (!req.session) return accessDenied();
-
-        const user = req.user ? req.user as User : null;
-        return success({
-            googleClientId: config.googleClientID,
-            sessionKey: req.session.id,
-            user: !user ? null : {
-                id: user.id,
-                fullName: user.fullName,
-                nickname: user.nickname || user.fullName
-            }
-        });
-    }));
+        if (!req.session)
+        {
+            res.status(401).json({message: 'Not authenticated'})
+        }
+        else
+        {
+            const session = req.session;
+            (new Promise(res => session.destroy(res))).then(() => res.json({}))
+        }
+    }))
 
     router.get('/auth/google/callback',
         passport.authenticate('google'),
-        (req, res) => res.render('auth-callback', {layout: null, publicURL: config.publicURL, sessionKey: req.sessionID, user: req.user}));
+        (req, res) => {
+            const returnURL = req.session && req.session.returnURL ? req.session.returnURL : config.publicURL
+            if (req.session)
+                delete req.session.returnURL
+            res.render('auth-callback', {layout: null, returnURL, sessionKey: req.sessionID, user: req.user})
+        })
 
     router.get('/auth/google/login',
-        passport.authenticate('google', {scope: ['email', 'profile', 'https://www.googleapis.com/auth/drive.file']}),
-        (req, res) => res.render('auth-callback', {layout: null, publicURL: config.publicURL, sessionKey: req.sessionID, user: req.user}));
+        (req, res, next) => {
+            if (req.session)
+                 req.session.returnURL = req.headers.referer
+            next()
+        },
+        passport.authenticate('google', {scope: ['email', 'profile']}))
 
-    return router;
+    return router
 }

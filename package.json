@@ -1,15 +1,16 @@
 {
   "name": "campman",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Campaign management software for RPGs",
   "main": "app/dist/server.js",
   "scripts": {
     "start": "node app/dist/server.js",
     "serve": "nf start -x 8080",
-    "build-server": "tsc -p app/tsconfig.json",
+    "build": "tsc -p app/tsconfig.json",
+    "build-dev": "tsc --watch -p app/tsconfig.json",
     "webpack": "webpack --config client/webpack.config.js",
-    "build": "npm run build-server && npm run webpack",
-    "postinstall": "npm run build"
+    "webpack-dev": "webpack -d --watch --config client/webpack.config.js",
+    "postinstall": "npm run build && npm run webpack"
   },
   "engines": {
     "node": "~8.5.0"
@@ -24,11 +25,13 @@
     "@types/aws-sdk": "2.7.0",
     "@types/body-parser": "1.16.5",
     "@types/connect-redis": "0.0.6",
+    "@types/draft-js": "0.10.13",
     "@types/express": "4.0.36",
     "@types/express-handlebars": "0.0.29",
     "@types/express-session": "1.15.3",
+    "@types/immutable": "3.8.7",
     "@types/jquery": "3.2.12",
-    "@types/markdown-it": "0.0.3",
+    "@types/node": "8.0.29",
     "@types/passport": "0.3.4",
     "@types/passport-google-oauth": "1.0.35",
     "@types/prop-types": "15.5.1",
@@ -37,18 +40,24 @@
     "@types/react-router": "4.0.15",
     "@types/react-router-dom": "4.0.7",
     "@types/serve-favicon": "2.2.29",
+    "@types/shortid": "0.0.29",
     "@types/webpack": "3.0.10",
     "@types/webpack-dev-middleware": "1.9.3",
     "awesome-typescript-loader": "3.2.3",
     "aws-sdk": "2.117.0",
     "body-parser": "1.17.2",
     "connect-redis": "3.3.0",
+    "css-loader": "0.28.7",
+    "draft-js": "0.10.2",
     "express": "4.15.4",
     "express-handlebars": "3.0.0",
     "express-session": "1.15.5",
+    "extract-text-webpack-plugin": "3.0.0",
+    "fbjs": "0.8.16",
     "foreman": "2.0.0",
+    "immutable": "3.8.1",
     "jquery": "3.2.1",
-    "markdown-it": "8.4.0",
+    "mailgun-js": "0.13.1",
     "modelsafe": "1.0.0-alpha.12",
     "mysql": "2.14.1",
     "passport": "0.4.0",
@@ -63,13 +72,13 @@
     "reflect-metadata": "0.1.10",
     "sequelize": "4.7.0",
     "serve-favicon": "2.4.4",
+    "shortid": "2.2.8",
     "source-map-loader": "0.2.1",
     "sqlite3": "3.1.8",
     "squell": "1.0.0-alpha.19",
+    "style-loader": "0.18.2",
     "typescript": "2.5.2",
     "webpack": "3.5.5"
   },
-  "devDependencies": {
-    "webpack-dev-middleware": "1.12.0"
-  }
+  "devDependencies": {}
 }

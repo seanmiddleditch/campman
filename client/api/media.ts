@@ -1,37 +1,39 @@
-import {RPCHelper} from './helpers';
-
-export interface ListResults
-{
-    files: string[];
-    folders: string[];
-}
+import {RPCHelper} from './helpers'
+import {MediaFile} from '../types/media-file'
 
 export class MediaAPI
 {
-    private _rpc = new RPCHelper();
+    private _rpc = new RPCHelper()
 
-    presign(params: {filename: string, filetype: string, filesize: number})
+    presign(params: {filename: string, filetype: string, filesize: number, caption: string})
     {
-        return this._rpc.post<{signedRequest: string, putURL: string}>('/api/media/presign', params);
+        return this._rpc.post<{signedRequest: string, url: string}>('/api/media/presign', params)
     }
 
-    async upload(file: File) : Promise<URL>
+    async upload(data: {file: File, caption: string}) : Promise<MediaFile>
     {
-        const filename = file.name;
-        const filetype = file.type;
-        const filesize = file.size;
+        const filename = data.file.name
+        const filetype = data.file.type
+        const filesize = data.file.size
+        const {caption} = data
+        const path = '/'
 
-        const signed = await this.presign({filename, filetype, filesize});
-        const put = await fetch(signed.signedRequest, {method: 'put', mode: 'cors', body: file});
+        const signed = await this.presign({filename, filetype, filesize, caption})
+        const put = await fetch(signed.signedRequest, {method: 'put', mode: 'cors', body: data.file})
 
-        return new URL(signed.putURL);
+        const {url} = signed
+
+        return {
+            url,
+            path,
+            caption
+        }
     }
 
-    async list(path: string = '') : Promise<ListResults>
+    async list(path: string = '')
     {
-        const results = await this._rpc.get<{folders: string[], files: {key: string, url: string}[]}>('/api/media/list/' + path);
-        return {folders: results.folders, files: results.files.filter(f => f.key && f.key !== '').map(f => f.url)};
+        return this._rpc.get<MediaFile[]>('/api/media/list/' + path)
     }
-};
+}
 
-export const media = new MediaAPI();
+export const media = new MediaAPI()

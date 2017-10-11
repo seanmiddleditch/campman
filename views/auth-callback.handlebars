@@ -1,6 +1,6 @@
 <script>
 try {
-    window.opener.postMessage({name:"login", sessionKey:"{{sessionKey}}"}, "{{publicURL}}");
+    window.opener.postMessage({name:"login", sessionKey:"{{sessionKey}}"}, (new URL("{{returnURL}}")).origin);
 } catch(e) {
     console.error(e, e.stack);
 }

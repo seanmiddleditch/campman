@@ -1,44 +1,52 @@
-import {RPCHelper} from './helpers';
+import {RPCHelper} from './helpers'
+import {User} from '../types'
 
-export class UserData
-{
-    id?: number;
-    fullName?: string;
-    nickname?: string;
-};
 export class SessionData
 {
-    sessionKey?: string;
-    user?: UserData;
-};
+    sessionKey?: string
+    user?: User
+}
 
 export class AuthAPI
 {
-    private _rpc = new RPCHelper();
+    private _rpc = new RPCHelper()
+    private _publicURL: string = '/'
+
+    configure(publicURL: string)
+    {
+        this._publicURL = publicURL
+    }
 
     session() : Promise<SessionData>
     {
-        return this._rpc.get<SessionData>('/auth/session');
+        return this._rpc.get<SessionData>('/auth/session')
     }
 
     login()
     {
-        return new Promise<UserData>((resolve, reject) => {
+        return new Promise<User>((resolve, reject) => {
             const handler = (ev: any) => {
-                window.removeEventListener('message', handler);
+                window.removeEventListener('message', handler)
                 this.session()
                     .then(session => session.user ? resolve(session.user) : reject(new Error('Login failed')))
-                    .catch(err => reject(err));
-            };
-            window.addEventListener('message', handler, false);
-            const popup = window.open('/auth/google/login', 'google_login', 'menubar=false,scrollbars=false,location=false,width=400,height=300');
-        });
+                    .catch(err => reject(err))
+            }
+            window.addEventListener('message', handler, false)
+            const loginURL = new URL('/auth/google/login', this._publicURL)
+            const popup = window.open(loginURL.toString(), 'google_login', 'menubar=false,scrollbars=false,location=false,width=400,height=300')
+        })
     }
 
     logout() : Promise<void>
     {
-        return this._rpc.post('/auth/logout');
+        const logoutURL = new URL('/auth/logout', this._publicURL)
+        return this._rpc.post(logoutURL.toString())
     }
-};
 
-export const auth = new AuthAPI();
+    updateProfile({nickname}: {nickname: string}) : Promise<User>
+    {
+        return this._rpc.post<User>('/api/profile', {nickname})
+    }
+}
+
+export const auth = new AuthAPI()
