@@ -1,8 +1,8 @@
-import {LabelModel} from './label-model'
-import {LibraryModel} from './library-model'
-import {UserModel} from './user-model'
-import * as modelsafe from 'modelsafe'
-import * as squell from 'squell'
+import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, ManyToMany, JoinTable, Index, EntityRepository, Repository} from 'typeorm'
+import {Label} from './label-model'
+import {Library} from './library-model'
+import {User} from './user-model'
+import {Role} from '../auth'
 
 export enum NoteVisibility
 {
@@ -10,53 +10,101 @@ export enum NoteVisibility
     Hidden = 'Hidden'
 }
 
-@modelsafe.model({name: 'note'})
-@squell.model({indexes: [{name: 'library_note_unique_slug', fields: ['libraryId', 'slug'], unique: true}], timestamps: true})
-export class NoteModel extends modelsafe.Model
+@Entity()
+@Index(['libraryId', 'slug'])
+export class Note
 {
-    @modelsafe.attr(modelsafe.INTEGER, {optional: true})
-    @squell.attr({primaryKey: true, autoIncrement: true})
+    @PrimaryGeneratedColumn()
     public id: number
 
-    @modelsafe.assoc(modelsafe.BELONGS_TO, () => LibraryModel)
-    @squell.assoc({onDelete: 'CASCADE', foreignKey: {name: 'libraryId', allowNull: false}, foreignKeyConstraint: true})
-    public library: LibraryModel
+    @Column()
+    public libraryId: number
 
-    @modelsafe.assoc(modelsafe.BELONGS_TO, () => UserModel)
-    @squell.assoc({onDelete: 'SET NULL', foreignKey: {name: 'userId', allowNull: true}, foreignKeyConstraint: true})
-    public author: UserModel
+    @ManyToOne(t => Library, l => l.notes)
+    @JoinTable()
+    public library: Library
 
-    @modelsafe.attr(modelsafe.STRING)
-    @modelsafe.minLength(1)
-    @modelsafe.maxLength(32)
+    @Column()
+    public authorId: number
+
+    @ManyToOne(t => User)
+    @JoinTable()
+    public author: User
+
+    @Column()
     public slug: string
 
-    @modelsafe.attr(modelsafe.STRING, {defaultValue: 'page'})
+    @Column({default: 'page'})
     public type: string
 
-    @modelsafe.attr(modelsafe.ENUM(Object.keys(NoteVisibility)), {defaultValue: NoteVisibility.Hidden})
+    @Column({default: NoteVisibility.Public})
     public visibility: NoteVisibility
 
-    @modelsafe.attr(modelsafe.STRING)
-    @modelsafe.maxLength(255)
-    @modelsafe.minLength(1)
+    @Column()
     public title: string
     
-    @modelsafe.attr(modelsafe.STRING)
-    @modelsafe.maxLength(255)
-    @modelsafe.minLength(0)
+    @Column({default: ''})
     public subtitle: string
 
-    @modelsafe.attr(modelsafe.TEXT)
+    @Column({type: 'text', default: ''})
     public rawbody: string
 
-    @modelsafe.assoc(modelsafe.BELONGS_TO_MANY, () => LabelModel)
-    @squell.assoc({through: 'note_label'})
-    public labels: LabelModel[]
+    @ManyToMany(t => Label)
+    @JoinTable()
+    public labels: Label[]
 }
 
-@modelsafe.model({name: 'note_label'})
-@squell.model({timestamps: false})
-class NoteLabel extends modelsafe.Model
+@EntityRepository(Note)
+export class NoteRepository extends Repository<Note>
 {
+    public async listNotes({libraryID}: {libraryID: number})
+    {
+        return this.createQueryBuilder('note')
+            .where('"libraryId"=:libraryID', {libraryID})
+            .getRawMany()
+            .then(results => results.map(row => ({
+                    id: row.note_id as number,
+                    type: row.note_type as string,
+                    slug: row.note_slug as string,
+                    title: row.note_title as string,
+                    subtitle: row.note_subtitle as string,
+                    visibility: row.note_visibility as NoteVisibility,
+                    authorID: row.note_authorId as number
+                })))
+    }
+
+    public async fetchBySlug({slug, libraryID}: {slug: string, libraryID: number})
+    {
+        return this.createQueryBuilder('note')
+            .where('note."slug"=:slug AND "libraryId"=:libraryID', {slug, libraryID})
+            .leftJoinAndSelect('note.labels', 'label')
+            .getRawOne()
+            .then(row => ({
+                id: row.note_id as number,
+                type: row.note_type as string,
+                slug: row.note_slug as string,
+                title: row.note_title as string,
+                subtitle: row.note_subtitle as string,
+                rawbody: row.note_rawbody as string,
+                visibility: row.note_visibility as NoteVisibility,
+                authorID: row.note_authorId as number,
+                labels: row.label_slug as string
+            }))
+    }
+
+    public async updateNote(options: {slug: string, libraryID: number, title?: string, subtitle?: string, rawbody?: string, visibility?: NoteVisibility, labels?: string[]})
+    {
+        const {slug, libraryID, title, subtitle, rawbody, visibility} = options
+        await this.createQueryBuilder('note')
+            .update({
+                title,
+                subtitle,
+                rawbody,
+                visibility
+            })
+            .where('"slug"=:slug AND "libraryId"=:libraryID', {slug, libraryID})
+            .execute()
+        
+        //labels: req.body['labels'],
+    }
 }

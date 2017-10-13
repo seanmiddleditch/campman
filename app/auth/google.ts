@@ -1,12 +1,13 @@
 import {Profile, Strategy} from 'passport'
 import {OAuth2Strategy} from 'passport-google-oauth'
-import {Database} from 'squell'
-import {UserModel} from '../models'
+import {User, UserRepository} from '../models'
 import {URL} from 'url'
-import {User} from './user'
+import {Connection} from 'typeorm'
 
-export function googleAuth(db: Database, publicURL: string, googleClientId: string, googleAuthSecret: string) : Strategy
+export function googleAuth(connection: Connection, publicURL: string, googleClientId: string, googleAuthSecret: string) : Strategy
 {
+    const userRepository = connection.getCustomRepository(UserRepository)
+
     const callbackURL = new URL(publicURL)
     callbackURL.pathname = '/auth/google/callback'
     return new OAuth2Strategy({
@@ -17,16 +18,13 @@ export function googleAuth(db: Database, publicURL: string, googleClientId: stri
         approval_prompt: 'force'
     }, (accessToken: string, refreshToken: string, profile: Profile, callback: (err: Error|null, profile: User|null) => void) => {
         if (!profile.emails) callback(new Error('Email required'), null)
-        else db.query(UserModel)
-            .where(m => m.googleId.eq(profile.id))
-            .findOrCreate({
+        else userRepository.findOrCreateForGoogle({
+                googleId: profile.id,
                 fullName: profile.displayName,
                 email: profile.emails[0].value,
-                nickname: profile.displayName,
-                googleId: profile.id,
                 photoURL: (profile.photos && profile.photos.length && profile.photos[0].value) || ''
             })
-            .then(([user, created]) => callback(null, user))
+            .then(user => callback(null, user))
             .catch(err => callback(err, null))
     })
 }

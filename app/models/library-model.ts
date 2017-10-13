@@ -1,8 +1,8 @@
-import * as modelsafe from 'modelsafe'
-import * as squell from 'squell'
-import {NoteModel} from './note-model'
-import {UserModel} from './user-model'
-import {InviteModel} from './invite-model'
+import {Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, Index, ManyToOne, OneToMany, EntityRepository, JoinColumn, Repository, Connection} from 'typeorm'
+import {Note} from './note-model'
+import {User} from './user-model'
+import {Membership} from './membership-model'
+import {Invitation} from './invite-model'
 import {Role} from '../auth/access'
 
 export enum LibraryVisibility
@@ -11,58 +11,90 @@ export enum LibraryVisibility
     Hidden = 'Hidden'
 }
 
-@modelsafe.model({name: 'library'})
-export class LibraryModel extends modelsafe.Model
+@Entity()
+@Index(['id', 'slug'], {unique: true})
+export class Library
 {
-    @modelsafe.attr(modelsafe.INTEGER, {optional: true})
-    @squell.attr({primaryKey: true, autoIncrement: true})
+    @PrimaryGeneratedColumn()
     public id: number
 
-    @modelsafe.attr(modelsafe.STRING, {unique: true})
-    @modelsafe.minLength(1)
-    @modelsafe.maxLength(32)
+    @Column()
     public slug: string
 
-    @modelsafe.attr(modelsafe.STRING)
-    @modelsafe.maxLength(255)
-    @modelsafe.minLength(1)
+    @Column()
     public title: string
 
-    @modelsafe.attr(modelsafe.ENUM(Object.keys(LibraryVisibility)), {defaultValue: LibraryVisibility.Public})
+    @Column()
     public visibility: LibraryVisibility
 
-    @modelsafe.assoc(modelsafe.BELONGS_TO, () => UserModel)
-    @squell.assoc({foreignKeyConstraint: true, foreignKey: {allowNull: false}})
-    public creator: UserModel
+    @OneToMany(t => Note, n => n.library)
+    public notes: Note[]
 
-    @modelsafe.assoc(modelsafe.HAS_MANY, () => NoteModel)
-    @squell.assoc({})
-    public notes: NoteModel[]
+    @OneToMany(t => Membership, m => m.library)
+    public memberships: Membership[]
 
-    @modelsafe.assoc(modelsafe.HAS_MANY, () => LibraryAccessModel)
-    public acl: LibraryAccessModel[]
-
-    @modelsafe.assoc(modelsafe.HAS_MANY, () => InviteModel)
-    public invites: InviteModel[]
-
+    @OneToMany(t => Invitation, i => i.library)
+    public invitations: Invitation[]
 }
 
-@modelsafe.model({name: 'library_acl'})
-@squell.model({indexes: [{name: 'library_acl_user', fields: ['libraryId', 'userId'], unique: true}], timestamps: false})
-export class LibraryAccessModel extends modelsafe.Model
+@EntityRepository(Library)
+export class LibraryRepository extends Repository<Library>
 {
-    @modelsafe.attr(modelsafe.INTEGER, {optional: true})
-    @squell.attr({primaryKey: true, autoIncrement: true})
-    public id: number
+    public async findAllForUser({userID}: {userID: number})
+    {
+        return this.createQueryBuilder('library')
+            .leftJoinAndMapOne('role', 'library.memberships', 'membership', 'membership.userId=:userID', {userID})
+            .getRawMany()
+            .then(results => results.map(row => ({
+                    id: row.library_id as number,
+                    slug: row.library_slug as string,
+                    title: row.library_title as string,
+                    visibility: row.library_visibility as LibraryVisibility,
+                    role: row.membership_role as Role
+                })))
+    }
 
-    @modelsafe.assoc(modelsafe.BELONGS_TO, () => LibraryModel)
-    @squell.assoc({foreignKeyConstraint: true, foreignKey: {allowNull: false}})
-    public library: LibraryModel
+    public async findBySlug({slug, withMembers}: {slug: string, withMembers?: boolean})
+    {
+        return this.findOne({
+            where: {
+                slug
+            },
+            relations: ['memberships']
+        })
+    }
 
-    @modelsafe.assoc(modelsafe.BELONGS_TO, () => UserModel)
-    @squell.assoc({foreignKeyConstraint: true, foreignKey: {allowNull: true}})
-    public user?: UserModel
+    public static async createLibrary(conn: Connection, {slug, title, creatorID}: {slug: string, title: string, creatorID: number})
+    {
+        return conn.transaction(async (tx) => {
+            const libraries = tx.getCustomRepository(LibraryRepository)
+            const library = libraries.create({
+                slug,
+                title,
+                visibility: LibraryVisibility.Public
+            })
+            await libraries.save(library)
+            
+            const memberships = tx.getRepository(Membership)
+            const member = memberships.create({
+                userId: creatorID,
+                libraryId: library.id,
+                role: Role.Owner
+            })
+            await memberships.save(member)
 
-    @modelsafe.attr(modelsafe.ENUM(['Owner', 'GameMaster', 'Player', 'Visitor']))
-    public role: Role
+            return library
+        })
+    }
+
+    public async updateLibrary({slug, title, visibility}: {slug: string, title?: string, visibility?: LibraryVisibility})
+    {
+        await this.createQueryBuilder('library')
+            .where('"slug"=:slug', {slug})
+            .update({
+                title,
+                visibility
+            })
+            .execute()
+    }
 }

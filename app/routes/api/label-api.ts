@@ -1,23 +1,23 @@
 import {Request, Response, Router} from 'express'
-import {Database} from 'squell'
-import {LabelController} from '../../controllers/label-controller'
 import {wrapper} from '../helpers'
 import {checkAccess} from '../../auth'
+import {LabelRepository} from '../../models'
+import {Connection} from 'typeorm'
 
-export function labelAPIRoutes(db: Database)
+export function labelAPIRoutes(connection: Connection)
 {
     const router = Router()
-    const controller = new LabelController(db)
+    const labelRepository = connection.getCustomRepository(LabelRepository)
 
     router.get('/api/labels', wrapper(async (req, res) => {
-        const result = await controller.listLabels({libraryID: req.libraryID})
-        if (!result.labels)
+        const labels = await labelRepository.findForLibrary({libraryID: req.libraryID})
+        if (!labels)
         {
             res.status(404).json({message: 'Labels not found'})
         }
         else
         {
-            res.json(result.labels.filter(label => checkAccess({
+            res.json(labels.filter(label => checkAccess({
                 target: 'label:view',
                 userID: req.userID,
                 role: req.userRole
@@ -27,17 +27,16 @@ export function labelAPIRoutes(db: Database)
 
     router.get('/api/labels/:label', wrapper(async (req, res) => {
         const labelSlug = req.params.label
-        const result = await controller.fetchLabel({labelSlug, libraryID: req.libraryID})
-        if (!result.label)
+        const label = await labelRepository.findBySlug({slug: labelSlug, libraryID: req.libraryID})
+        if (!label)
         {
             res.status(404).json({message: 'Label not found'})
         }
         else
         {
-            const {label} = result
             res.json({
                 slug: label.slug,
-                notes: result.notes.length
+                notes: 0 // FIXME
             })
         }
     }))

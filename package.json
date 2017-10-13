@@ -34,6 +34,7 @@
     "@types/node": "8.0.29",
     "@types/passport": "0.3.4",
     "@types/passport-google-oauth": "1.0.35",
+    "@types/pg-connection-string": "0.1.1",
     "@types/prop-types": "15.5.1",
     "@types/react": "16.0.5",
     "@types/react-dom": "15.5.4",
@@ -63,6 +64,7 @@
     "passport": "0.4.0",
     "passport-google-oauth": "1.0.0",
     "pg": "6.4.2",
+    "pg-connection-string": "2.0.0",
     "prop-types": "15.5.10",
     "react": "15.6.1",
     "react-dom": "15.6.1",
@@ -77,6 +79,7 @@
     "sqlite3": "3.1.8",
     "squell": "1.0.0-alpha.19",
     "style-loader": "0.18.2",
+    "typeorm": "0.1.0",
     "typescript": "2.5.2",
     "webpack": "3.5.5"
   },

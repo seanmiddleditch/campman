@@ -1,4 +1,4 @@
-import {LibraryModel} from '../models/library-model'
+import {Library} from '../models/library-model'
 import {Role} from '../auth/access'
 
 declare global
@@ -8,7 +8,7 @@ declare global
         export interface Request
         {
             domainSlug: string
-            library?: LibraryModel
+            library?: Library
             libraryID: number
             userID: number
             userRole: Role

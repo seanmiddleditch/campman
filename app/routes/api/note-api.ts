@@ -1,64 +1,53 @@
 import {Request, Response, Router} from 'express'
-import {Database} from 'squell'
-import {wrapper} from '../helpers'
+import {wrapper, ok, fail} from '../helpers'
 import {checkAccess} from '../../auth'
-import {NoteController} from '../../controllers/note-controller'
-import {NoteVisibility} from '../../models'
+import {NoteVisibility, NoteRepository} from '../../models'
 import * as slug from '../../util/slug'
 import {draftToHtml} from '../../util/draft-to-html'
+import {Connection} from 'typeorm'
 
-export function noteAPIRoutes(db: Database)
+export function noteAPIRoutes(conn: Connection)
 {
     const router = Router()
-    const controller = new NoteController(db)
+    const noteRepository = conn.getCustomRepository(NoteRepository)
 
     router.get('/api/notes', wrapper(async (req, res) => {
         if (!req.libraryID)
         {
-            res.status(404).json({message: 'Library not found'})
+            fail(res, 404, 'Library not found')
         }
         else
         {
-            const result = await controller.listNotes({libraryID: req.libraryID})
+            const notes = await noteRepository.listNotes(req)
 
-            res.json(result.notes.filter(note => checkAccess({
+            ok(res, notes.filter(note => checkAccess({
                 target: 'note:view',
                 userID: req.userID,
                 role: req.userRole,
                 ownerID: note.authorID,
                 hidden: note.visibility !== NoteVisibility.Public
             })).map(note => ({
-                slug: note.slug,
-                title: note.title,
-                subtitle: note.subtitle,
-                visibility: note.visibility,
-                type: note.type,
-                editable: checkAccess({
-                    target: 'note:edit',
-                    userID: req.userID,
-                    role: req.userRole,
-                    ownerID: note.authorID,
-                    hidden: note.visibility !== NoteVisibility.Public
-                })})))
+                ...note,
+                editable: checkAccess({target: 'note:edit', userID: req.userID, role: req.userRole, ownerID: note.authorID, hidden: note.visibility !== NoteVisibility.Public})
+            })))
         }
     }))
 
     router.get('/api/notes/:note', wrapper(async (req, res) => {
         if (!req.libraryID)
         {
-            res.status(404).json({message: 'Library not found'})
+            fail(res, 404, 'Library not found')
         }
         else
         {
-            const result = await controller.fetchNote({noteSlug: req.params['note'], libraryID: req.libraryID})
-            const {note} = result
+            const note = await noteRepository.fetchBySlug({slug: req.params['note'], libraryID: req.libraryID})
             if (!note)
             {
-                res.status(404).json({message: 'Note not found'})
+                fail(res, 404, 'Note not found')
             }
             else if (!checkAccess({target: 'note:view', userID: req.userID, role: req.userRole, ownerID: note.authorID, hidden: note.visibility !== NoteVisibility.Public}))
             {
-                res.status(403).json({message: 'Access denied'})
+                fail(res, 403, 'Access denied')
             }
             else
             {
@@ -79,8 +68,8 @@ export function noteAPIRoutes(db: Database)
                     hidden: note.visibility !== NoteVisibility.Public
                 })
 
-                const body = draftToHtml(rawbody as any, secrets)
-                res.json({slug, title, subtitle, body, rawbody: editable ? rawbody : undefined, labels, visibility, type, editable})
+                const body = draftToHtml(rawbody, secrets)
+                ok(res, {slug, title, subtitle, body, rawbody: editable ? rawbody : undefined, labels, visibility, type, editable})
             }
         }
     }))
@@ -88,62 +77,72 @@ export function noteAPIRoutes(db: Database)
     router.post('/api/notes/:note', wrapper(async (req, res) => {
         if (!req.libraryID)
         {
-            res.status(404).json({message: 'Library not found'})
+            fail(res, 404, 'Library not found')
         }
         else
         {
-            const result = await controller.fetchNote({noteSlug: req.params['note'], libraryID: req.libraryID})
-            const {note} = result
+            const note = await noteRepository.fetchBySlug({slug: req.params['note'], libraryID: req.libraryID})
             if (note && !checkAccess({target: 'note:edit', userID: req.userID, role: req.userRole, ownerID: note.authorID, hidden: note.visibility !== NoteVisibility.Public}))
             {
-                res.status(403).json({message: 'Access denied'})
+                fail(res, 403, 'Access denied')
             }
             else if (!note && !checkAccess({target: 'note:create', userID: req.userID, role: req.userRole}))
             {
-                res.status(403).json({message: 'Access denied'})
+                fail(res, 403, 'Access denied')
             }
             else
             {
-                const updatedNote = await controller.updateNote({
-                    noteSlug: req.params['note'],
-                    libraryID: req.libraryID,
-                    noteData: {
-                        title: req.body['title'],
-                        subtitle: req.body['subtitle'],
-                        rawbody: req.body['rawbody'],
-                        labels: req.body['labels'],
-                        visibility: req.body['visibility']
-                    }
+                const slug = req.params['note']
+                const libraryID = req.libraryID
+                const {title, subtitle, visibility, labels} = req.body
+                const rawbody = req.body['rawbody'] ? JSON.stringify(req.body['rawbody']) : ''
+
+                await noteRepository.updateNote({
+                    slug,
+                    libraryID,
+                    title,
+                    subtitle,
+                    rawbody,
+                    labels,
+                    visibility
                 })
 
-                res.json({})
+                ok(res, {
+                    slug,
+                    libraryID,
+                    title: title || note.title,
+                    subtitle: subtitle || note.subtitle,
+                    rawbody: rawbody || note.rawbody,
+                    labels: labels || note.labels,
+                    visibility: visibility || note.visibility
+                })
             }
         }
     }))
 
-    router.delete('/api/notes/:note', wrapper(async (req, res) => {
-        if (!req.libraryID)
-        {
-            res.status(404).json({message: 'Library not found'})
-        }
-        else
-        {
-            const result = await controller.fetchNote({noteSlug: req.params['note'], libraryID: req.libraryID})
-            if (!result.note)
-            {
-                res.status(404).json({message: 'Note not found'})
-            }
-            else if (!checkAccess({target: 'note:delete', userID: req.userID, role: req.userRole, ownerID: result.note.authorID}))
-            {
-                res.status(403).json({message: 'Access denied'})
-            }
-            else
-            {
-                const count = await controller.deleteNote({noteSlug: req.params['note'], libraryID: req.libraryID})
-                res.json({deleted: count.deleted})
-            }
-        }
-    }))
+    // router.delete('/api/notes/:note', wrapper(async (req, res) => {
+    //     if (!req.libraryID)
+    //     {
+    //         res.status(404).json({message: 'Library not found'})
+    //     }
+    //     else
+    //     {
+    //         const result = await controller.fetchNote({noteSlug: req.params['note'], libraryID: req.libraryID})
+    //         if (!result.note)
+    //         {
+    //             res.status(404).json({message: 'Note not found'})
+    //         }
+    //         else if (!checkAccess({target: 'note:delete', userID: req.userID, role: req.userRole, ownerID: result.note.authorID}))
+    //         {
+    //             res.status(403).json({message: 'Access denied'})
+    //         }
+    //         else
+    //         {
+    //             const count = await controller.deleteNote({noteSlug: req.params['note'], libraryID: req.libraryID})
+    //             res.json({deleted: count.deleted})
+    //         }
+    //     }
+    // }))
 
     return router
 }

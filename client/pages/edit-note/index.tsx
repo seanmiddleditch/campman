@@ -14,13 +14,14 @@ require('./styles/notes.css')
 export interface EditNotePageProps
 {
     slug: string
-};
+}
 interface EditNotePageState
 {
     failed: boolean
     saving: boolean
     note?: Note
-};
+    error?: string
+}
 export class EditNotePage extends React.Component<EditNotePageProps, EditNotePageState>
 {
     static contextTypes = { router: PropTypes.object.isRequired }
@@ -40,11 +41,11 @@ export class EditNotePage extends React.Component<EditNotePageProps, EditNotePag
     {
         if (!this.state.saving)
         {
-            this.setState({saving: true});
+            this.setState({saving: true})
 
             api.notes.update(this.props.slug, note)
                 .then(() => this.setState({saving: false, note}))
-                .catch((err: Error) => this.setState({saving: false}));
+                .catch((err: Error) => this.setState({saving: false}))
         }
     }
 
@@ -53,7 +54,7 @@ export class EditNotePage extends React.Component<EditNotePageProps, EditNotePag
         if (confirm('This operation cannot be reversed! Click Cancel to keep this page.'))
         {
             api.notes.delete(this.props.slug)
-                .then(() => this.context.router.history.push('/notes'));
+                .then(() => this.context.router.history.push('/notes'))
         }
     }
 
@@ -62,9 +63,9 @@ export class EditNotePage extends React.Component<EditNotePageProps, EditNotePag
         api.notes.fetch(this.props.slug)
             .then(note => {
                 if (note.editable)
-                    this.setState({note})
+                    this.setState({note, error: undefined})
                 else
-                    this.setState({failed: true})
+                    this.setState({failed: true, error: 'Note not editable'})
             })
             .catch(err => {
                 if (err.status == 404)
@@ -75,10 +76,10 @@ export class EditNotePage extends React.Component<EditNotePageProps, EditNotePag
                             subtitle: '',
                             rawbody: ''
                         }
-                    });
-                else if (err.status == 401)
-                    this.setState({failed: true});
-            });
+                    })
+                else
+                    this.setState({failed: true, error: err.message})
+            })
     }
 
     private _onCancel()
@@ -120,6 +121,9 @@ export class EditNotePage extends React.Component<EditNotePageProps, EditNotePag
             return (
                 <Page>
                     <PageBody>
+                        {this.state.error && (
+                            <div className='alert alert-danger' role='alert'>{this.state.error}</div>
+                        )}
                         <NoteEditor slug={this.props.slug} disabled={this.state.saving} note={this.state.note} onSave={note => this._save(note)} onCancel={() => this._onCancel()}/>
                     </PageBody>
                 </Page>

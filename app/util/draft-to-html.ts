@@ -136,18 +136,26 @@ function renderBasicBlock(block: DraftBlock, draft: RawDraft)
     return renderElement(element, {'class': className}, text)
 }
 
-export function draftToHtml(rawbody: RawDraft, showSecrets: boolean = false)
+export function draftToHtml(rawbody: string, showSecrets: boolean = false)
 {
-    console.log(JSON.stringify(rawbody))
-    const result = rawbody.blocks.map(block => {
-        const blockType = block.type
+    console.log(rawbody)
+    if (rawbody && rawbody.length)
+    {
+        const raw = JSON.parse(rawbody) as RawDraft
+        const result = raw.blocks.map(block => {
+            const blockType = block.type
 
-        if (blockType === 'secret' && !showSecrets)
-            return ''
-        else if (blockType == 'atomic')
-            return renderAtomicBlock(block, rawbody)
-        else
-            return renderBasicBlock(block, rawbody)
-    }).join('')
-    return result
+            if (blockType === 'secret' && !showSecrets)
+                return ''
+            else if (blockType == 'atomic')
+                return renderAtomicBlock(block, raw)
+            else
+                return renderBasicBlock(block, raw)
+        }).join('')
+        return result
+    }
+    else
+    {
+        return '<div/>'
+    }
 }

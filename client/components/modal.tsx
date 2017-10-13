@@ -34,7 +34,7 @@ export class Modal extends React.Component<ModalProps>
 
     componentDidMount()
     {
-        if (this.props.visible)
+        if (this.props.visible === undefined || this.props.visible)
         {
             this.show()
         }

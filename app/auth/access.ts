@@ -1,5 +1,4 @@
-import * as squell from 'squell'
-import {LibraryModel, LibraryAccessModel} from '../models'
+import {Library, Membership} from '../models'
 
 export enum Role
 {
@@ -38,7 +37,7 @@ export const accessConfiguration : AccessConfiguration = {
         p => !p.hidden
     ],
     'library:create': [
-        p => p.userID !== null,
+        p => !!p.userID,
     ],
     'library:configure': [
         p => p.role === Role.Owner
@@ -101,22 +100,4 @@ export function checkAccess(params: AccessParams) : boolean
     }
 
     return false
-}
-
-interface QueryUserRoleParams { userID?: number, libraryID?: number }
-export async function queryUserRole(db: squell.Database, {libraryID, userID} : QueryUserRoleParams)
-{
-    if (userID && libraryID)
-    {
-        const rs = await db.query(LibraryAccessModel)
-            .attributes(m => [m.role])
-            .where(m => squell.attribute('userId').eq(userID))
-            .where(m => squell.attribute('libraryId').eq(libraryID))
-            .findOne()
-        return rs ? rs.role : Role.Visitor
-    }
-    else
-    {
-        return Role.Visitor
-    }
 }
