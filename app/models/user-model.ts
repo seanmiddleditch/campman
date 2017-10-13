@@ -52,4 +52,16 @@ export class UserRepository extends Repository<User>
         await this.save(user)
         return user
     }
+
+    public async updateUser({userID, nickname}: {userID: number, nickname?: string})
+    {
+        await this.createQueryBuilder('user')
+            .update({
+                nickname
+            })
+            .where('"id"=:id', {id: userID})
+            .printSql()
+            .execute()
+
+    }
 }

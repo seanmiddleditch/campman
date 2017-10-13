@@ -4,7 +4,7 @@ import {checkAccess} from '../../auth'
 import {LabelRepository} from '../../models'
 import {Connection} from 'typeorm'
 
-export function labelAPIRoutes(connection: Connection)
+export function labels(connection: Connection)
 {
     const router = Router()
     const labelRepository = connection.getCustomRepository(LabelRepository)

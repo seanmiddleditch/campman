@@ -1,7 +1,7 @@
-import {libraryAPIRoutes} from './library-api'
-import {mediaAPIRoutes} from './media-api'
-import {labelAPIRoutes} from './label-api'
-import {noteAPIRoutes} from './note-api'
+import {libraries} from './library-api'
+import {media} from './media-api'
+import {labels} from './label-api'
+import {notes} from './note-api'
 import {profile} from './profile-api'
 import {settings} from './settings-api'
 import {members} from './members-api'
@@ -13,9 +13,10 @@ import {Config} from '../../config'
 export function api(conn: Connection, config: Config)
 {
     const router = Router()
-    router.use(labelAPIRoutes(conn))
-    router.use(mediaAPIRoutes(conn, config))
-    router.use(noteAPIRoutes(conn))
+    router.use(libraries(conn, config))
+    router.use(labels(conn))
+    router.use(media(conn, config))
+    router.use(notes(conn))
     router.use(profile(conn))
     router.use(settings(conn))
     router.use(members(conn, config))

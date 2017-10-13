@@ -49,11 +49,11 @@ export function members(conn: Connection, config: Config)
         }
         else
         {
-            const id = shortid.generate()
+            const code = shortid.generate()
             const email = req.body['email']
 
             await inviteRepository.createInvitation({
-                id,
+                code,
                 email,
                 libraryID: req.libraryID
             })
@@ -63,7 +63,7 @@ export function members(conn: Connection, config: Config)
                     from: config.inviteAddress,
                     to: email,
                     subject: `You Are Invited to ${library.title} at the Eternal Dungeon!`,
-                    text: `You have been invited to ${library.title} by ${req.user.nickname}. Go to ${config.publicURL.toString()}invite/${id} to join! If this message appears to be in error, please ignore it.`
+                    text: `You have been invited to ${library.title} by ${req.user.nickname}. Go to ${config.publicURL.toString()}invite/${code} to join! If this message appears to be in error, please ignore it.`
                 }, (err, body) => {
                     if (err) reject(err)
                     else resolve(body)
@@ -92,37 +92,29 @@ export function members(conn: Connection, config: Config)
     }))
 
     router.post('/api/invitation/accept/:code', wrapper(async (req, res) => {
-        // const invite = await db.query(Invitation)
-        //     .include(Library, m => m.library)
-        //     .where(m => m.id.eq(req.params['code']))
-        //     .findOne()
+        const code = req.params['code']
 
-        // if (!invite)
-        // {
-        //     res.status(404).json({message: 'Invalid or expired invitation code'})
-        // }
-        // else
-        // {
-        //     const user = await db.query(User).where(m => m.id.eq(req.userID)).findOne()
-        //     const {library} = invite
+        const invite = await inviteRepository.findOneById(code)
 
-        //     await db.transaction(async (tx) => {
-        //         const newAccess = new LibraryAccess()
-        //         newAccess.library = library
-        //         newAccess.user = user
-        //         newAccess.role = Role.Player
+        if (!invite)
+        {
+            fail(res, 404, 'Invalid or expired invitation code')
+        }
+        else
+        {
+            const {library} = invite
 
-        //         await db.query(LibraryAccess)
-        //             .includeAll()
-        //             .save(newAccess, {transaction: tx})
+            const success = await InvitationRepository.acceptInvite(conn, {code, userID: req.userID})
 
-        //         await db.query(Invitation)
-        //             .where(m => m.id.eq(invite.id))
-        //             .destroy({transaction: tx})
-        //     })
-
-        //     res.status(200).json({message: 'Invitation accepted!'})
-        // }
+            if (success)
+            {
+                ok(res, {})
+            }
+            else
+            {
+                fail(res, 400, 'Invalid or expire invitation code')
+            }
+        }
     }))
 
 

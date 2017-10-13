@@ -5,7 +5,7 @@ import {checkAccess, Role} from '../../auth/access'
 import {Config} from '../../config'
 import {wrapper, ok, fail} from '../helpers'
 
-export function libraryAPIRoutes(conn: Connection, config: Config)
+export function libraries(conn: Connection, config: Config)
 {
     const router = Router()
 

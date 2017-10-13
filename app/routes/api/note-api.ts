@@ -6,7 +6,7 @@ import * as slug from '../../util/slug'
 import {draftToHtml} from '../../util/draft-to-html'
 import {Connection} from 'typeorm'
 
-export function noteAPIRoutes(conn: Connection)
+export function notes(conn: Connection)
 {
     const router = Router()
     const noteRepository = conn.getCustomRepository(NoteRepository)

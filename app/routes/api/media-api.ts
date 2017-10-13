@@ -16,7 +16,7 @@ export interface MediaRoutesConfig
     s3Bucket: string,
     awsRegion: string,
 }
-export function mediaAPIRoutes(connection: Connection, config: MediaRoutesConfig)
+export function media(connection: Connection, config: MediaRoutesConfig)
 {
     const router = Router()
 
