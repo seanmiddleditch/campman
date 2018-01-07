@@ -56,9 +56,6 @@ import * as models from './models'
         ]
     })
 
-
-    await connection.synchronize()
-
     const libraryRepository = connection.getCustomRepository(models.LibraryRepository)
     const userRepository = connection.getCustomRepository(models.UserRepository)
     const membershipRepository = connection.getCustomRepository(models.MembershipRepository)
