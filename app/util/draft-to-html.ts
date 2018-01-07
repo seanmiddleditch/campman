@@ -142,7 +142,7 @@ export function draftToHtml(rawbody: string, showSecrets: boolean = false)
     if (rawbody && rawbody.length)
     {
         const raw = JSON.parse(rawbody) as RawDraft
-        const result = raw.blocks.map(block => {
+        const result = raw.blocks ? raw.blocks.map(block => {
             const blockType = block.type
 
             if (blockType === 'secret' && !showSecrets)
@@ -151,7 +151,7 @@ export function draftToHtml(rawbody: string, showSecrets: boolean = false)
                 return renderAtomicBlock(block, raw)
             else
                 return renderBasicBlock(block, raw)
-        }).join('')
+        }).join('') : ''
         return result
     }
     else
