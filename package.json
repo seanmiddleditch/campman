@@ -79,7 +79,7 @@
     "sqlite3": "3.1.8",
     "squell": "1.0.0-alpha.19",
     "style-loader": "0.18.2",
-    "typeorm": "0.1.0",
+    "typeorm": "0.1.9",
     "typescript": "2.5.2",
     "webpack": "3.5.5"
   },
