@@ -2,7 +2,6 @@ import 'reflect-metadata'
 
 import * as express from 'express'
 import * as BodyParser from 'body-parser'
-import {Database} from 'squell'
 import * as path from 'path'
 import * as exphbs   from 'express-handlebars'
 import * as fs from 'fs'
@@ -10,52 +9,14 @@ import * as favicon from 'serve-favicon'
 import * as passport from 'passport'
 import * as session from 'express-session'
 import * as redis from 'connect-redis'
+import * as postgressConnectionStringParser from 'pg-connection-string'
+import {createConnection, Connection} from 'typeorm'
 import {URL} from 'url'
-import {Role, queryUserRole} from './auth'
+import {Role, googleAuth} from './auth'
+import {Config} from './config'
 
 import * as routes from './routes'
 import * as models from './models'
-import {googleAuth, User} from './auth'
-
-export class Config
-{
-    readonly publicURL: URL
-    readonly googleClientID: string
-    readonly googleAuthSecret: string
-    readonly sessionSecret: string
-    readonly port: number
-    readonly redisURL: string
-    readonly databaseURL: string
-    readonly production: boolean
-    readonly webpackDev: boolean
-    readonly awsRegion: string
-    readonly awsAccessKey: string
-    readonly awsAuthSecret: string
-    readonly s3Bucket: string
-    readonly mailgunKey: string
-    readonly mailDomain: string
-    readonly inviteAddress: string
-
-    constructor()
-    {
-        this.publicURL = new URL(process.env.PUBLIC_URL || 'http://localhost:8080')
-        this.port = parseInt(process.env.PORT || '8080', 10)
-        this.googleClientID = process.env.GOOGLE_CLIENT_ID || ''
-        this.googleAuthSecret = process.env.GOOGLE_AUTH_SECRET || ''
-        this.sessionSecret = process.env.CM_SESSION_SECRET || ''
-        this.webpackDev = process.env.CM_WEBPACK_DEV === 'true'
-        this.redisURL = process.env.REDIS_URL || ''
-        this.databaseURL = process.env.DATABASE_URL || ''
-        this.awsRegion = process.env.AWS_REGION || ''
-        this.awsAccessKey = process.env.AWS_ACCESS_KEY || ''
-        this.awsAuthSecret = process.env.AWS_SECRET || ''
-        this.s3Bucket = process.env.S3_BUCKET || ''
-        this.production = process.env.NODE_ENV === 'production'
-        this.mailgunKey = process.env.MAILGUN_KEY || ''
-        this.mailDomain = process.env.MAIL_DOMAIN || this.publicURL.hostname
-        this.inviteAddress = process.env.INVITE_ADDRESS || 'invite-noreply@' + this.mailDomain
-    }
-}
 
 (async () => {
     
@@ -74,17 +35,30 @@ export class Config
         })
     }
 
-    const db = new Database(config.databaseURL, {dialect: 'postgres', dialectOptions: {ssl: true}, define: {timestamps: false}})
     
-    db.define(models.LibraryModel)
-    db.define(models.LibraryAccessModel)
-    db.define(models.LabelModel)
-    db.define(models.NoteModel)
-    db.define(models.UserModel)
-    db.define(models.MediaModel)
-    db.define(models.InviteModel)
-    
-    await db.sync()
+    const connectionOptions = postgressConnectionStringParser.parse(process.env.DATABASE_URL || '')
+    const connection = await createConnection({
+        type: 'postgres',
+        host: connectionOptions.host || 'localhost',
+        port: connectionOptions.port || 5432,
+        username: connectionOptions.user || '',
+        password: connectionOptions.password || '',
+        database: connectionOptions.database || '',
+        ssl: true,
+        entities: [
+            models.Library,
+            models.Membership,
+            models.Label,
+            models.Note,
+            models.User,
+            models.MediaFile,
+            models.Invitation
+        ]
+    })
+
+    const libraryRepository = connection.getCustomRepository(models.LibraryRepository)
+    const userRepository = connection.getCustomRepository(models.UserRepository)
+    const membershipRepository = connection.getCustomRepository(models.MembershipRepository)
 
     const app = express()
     app.engine('handlebars', exphbs({
@@ -101,23 +75,10 @@ export class Config
     app.use(favicon(path.join(staticRoot, 'images', 'favicon.ico')))
     app.use(express.static(staticRoot))
 
-    // development support for webpack
-    // if (!config.production)
-    // {
-    //     console.log('Enabling WebPack development middlware')
-
-    //     const webpackConfig = require(path.join(clientRoot, 'webpack.config.js'))
-    //     const webpackDevMiddleware = require('webpack-dev-middleware')
-    //     const webpack = require('webpack')
-    //     app.use(webpackDevMiddleware(webpack(webpackConfig), {
-    //         publicPath: webpackConfig.output.publicPath
-    //     }))
-    // }
-
     app.use('/dist', express.static(path.join(clientRoot, 'dist')))
 
     // determine which subdomain-slug we're using, if any
-    const domainCache = new Map<string, models.LibraryModel|null>()
+    const domainCache = new Map<string, models.Library|null>()
     app.use(async (req, res, next) => {
         const library = domainCache.get(req.hostname)
 
@@ -137,9 +98,9 @@ export class Config
             {
                 try
                 {
-                    req.library = await db.query(models.LibraryModel).where(m => m.slug.eq(slug)).findOne()
-                    domainCache.set(slug, req.library)
-                    req.libraryID = req.library.id
+                    req.library = await libraryRepository.findBySlug({slug})
+                    domainCache.set(slug, req.library || null)
+                    req.libraryID = req.library ? req.library.id : 0
                 }
                 catch
                 {
@@ -166,9 +127,9 @@ export class Config
     app.use(BodyParser.urlencoded({extended: false}))
     app.use(BodyParser.json())
     
-    passport.use(googleAuth(db, config.publicURL.toString(), config.googleClientID, config.googleAuthSecret))
-    passport.serializeUser((user: models.UserModel, done) => done(null, user))
-    passport.deserializeUser((user: User, done) => done(null, user))
+    passport.use(googleAuth(connection, config.publicURL.toString(), config.googleClientID, config.googleAuthSecret))
+    passport.serializeUser((user: models.User, done) => done(null, user))
+    passport.deserializeUser((user: any, done) => done(null, user))
 
     const RedisStore = redis(session)
     app.use(session({
@@ -194,19 +155,15 @@ export class Config
 
         if (req.userID && req.session && !sessionRole)
         {
-            req.userRole = await queryUserRole(db, req)
+            req.userRole = await membershipRepository.findRoleForUser(req)
             req.session[sessionKey] = req.userRole
         }
 
         next()
     })
 
-    app.use(routes.authRoutes(db, config))
-    app.use(routes.noteAPIRoutes(db))
-    app.use(routes.labelAPIRoutes(db))
-    app.use(routes.libraryAPIRoutes(db, config))
-    app.use(routes.mediaAPIRoutes(db, config))
-    app.use(routes.profileAPIRoutes(db))
+    app.use(routes.authRoutes(connection, config))
+    app.use(routes.api(connection, config))
 
     app.use(async (req, res) => res.render('index', {
         session: JSON.stringify({

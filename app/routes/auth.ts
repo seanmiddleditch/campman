@@ -1,10 +1,9 @@
 import {Request, Response, Router} from 'express'
 import * as passport from 'passport'
-import {Database} from 'squell'
-import {User} from '../auth'
-import {UserModel} from '../models'
+import {User} from '../models'
 import {wrapper} from './helpers'
 import {URL} from 'url'
+import {Connection} from 'typeorm'
 
 export interface AuthRoutesConfig
 {
@@ -14,7 +13,7 @@ export interface AuthRoutesConfig
     sessionSecret: string,
     redisURL: string,
 }
-export function authRoutes(db: Database, config: AuthRoutesConfig)
+export function authRoutes(connection: Connection, config: AuthRoutesConfig)
 {
     const router = Router()
 

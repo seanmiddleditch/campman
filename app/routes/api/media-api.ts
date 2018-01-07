@@ -2,10 +2,10 @@ import * as aws from 'aws-sdk'
 import {S3} from 'aws-sdk'
 import {Request, Response, Router} from 'express'
 import * as express from 'express'
-import {Database} from 'squell'
-import {wrapper} from '../helpers'
-import {LibraryModel, MediaModel} from '../../models'
+import {wrapper, ok, fail} from '../helpers'
+import {Library, MediaFile, MediaFileRepository} from '../../models'
 import {checkAccess} from '../../auth'
+import {Connection} from 'typeorm'
 import * as path from 'path'
 import * as shortid from 'shortid'
 
@@ -16,9 +16,11 @@ export interface MediaRoutesConfig
     s3Bucket: string,
     awsRegion: string,
 }
-export function mediaAPIRoutes(db: Database, config: MediaRoutesConfig)
+export function media(connection: Connection, config: MediaRoutesConfig)
 {
     const router = Router()
+
+    const mediaRepository = connection.getCustomRepository(MediaFileRepository)
 
     aws.config.region = config.awsRegion
     
@@ -31,11 +33,11 @@ export function mediaAPIRoutes(db: Database, config: MediaRoutesConfig)
     router.post('/api/media/presign', wrapper(async (req, res) => {
         if (!req.library)
         {
-            res.status(404).json({message: 'Library not found'})
+            fail(res, 404, 'Library not found')
         }
         else if (!checkAccess({target: 'media:upload', hidden: false, userID: req.userID, role: req.userRole}))
         {
-            res.status(403).json({message: 'Permission denied'})
+            fail(res, 403, 'Permission denied')
         }
         else
         {
@@ -56,17 +58,15 @@ export function mediaAPIRoutes(db: Database, config: MediaRoutesConfig)
             const uniq = shortid.generate()
             const key = `library/${librarySlug}/media${folder}${uniq}`
 
-            const newMedia = new MediaModel({
+            const media = mediaRepository.create({
                 path,
                 s3key: key,
                 caption,
-                library: await db.query(LibraryModel).where(m => m.slug.eq(librarySlug)).findOne(),
+                libraryId: req.libraryID,
                 attribution: '',
                 labels: []
             })
-            const media = await db.query(MediaModel)
-                .include(LibraryModel, m => m.library)
-                .create(newMedia, {associate: true})
+            await mediaRepository.save(media)
 
             const params = {
                 Bucket: config.s3Bucket,
@@ -83,7 +83,7 @@ export function mediaAPIRoutes(db: Database, config: MediaRoutesConfig)
                 })
             })
 
-            res.json({
+            ok(res, {
                 signedRequest: signed,
                 url: makeMediaURL(key),
                 caption,
@@ -95,20 +95,17 @@ export function mediaAPIRoutes(db: Database, config: MediaRoutesConfig)
     router.get('/api/media/list/:pathspec?', wrapper(async (req, res) => {
         if (!req.library)
         {
-            res.status(404).json({message: 'Library not found'})
+            fail(res, 404, 'Library not found')
         }
         else if (!checkAccess({target: 'media:list', hidden: false, userID: req.userID, role: req.userRole}))
         {
-            res.status(403).json({message: 'Permission denied'})
+            fail(res, 403, 'Permission denied')
         }
         else
         {
-            const media = await db.query(MediaModel)
-                .attributes(m => [m.path, m.s3key, m.caption])
-                .include(LibraryModel, q => q.library, m => m.where(m => m.id.eq(req.libraryID)))
-                .find()
+            const media = await mediaRepository.findAllByLibrary({libraryID: req.libraryID})
 
-            res.json(media.map(m => ({path: m.path, url: makeMediaURL(m.s3key), caption: m.caption, attribution: m.attribution})))
+            ok(res, media.map(m => ({path: m.path, url: makeMediaURL(m.s3key), caption: m.caption, attribution: m.attribution})))
         }
     }))
 

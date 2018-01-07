@@ -27,7 +27,7 @@ const LibraryRoutes = (props: {library: Library}) => (
             <ListLabelsPage/>
         </Route>
         <Route path='/search' exact render={p => <SearchPage {...p} query={(new URLSearchParams(p.location.search)).get('q')}/>}/>
-        <Route path='/settings' exact render={p => <LibraryAdminPage slug={props.library.slug} {...p}/>}/>
+        <Route path='/settings' render={p => <LibraryAdminPage slug={props.library.slug} {...p}/>}/>
         <Route path='/media/:path*' render={p => <MediaBrowserPage path={p.match.params.path} {...p}/>}/>
         <Route path='/n/:slug' exact render={p => <ViewNotePage slug={p.match.params.slug} {...p}/>}/>
         <Route path='/n/:slug/edit' exact render={p => <EditNotePage slug={p.match.params.slug} {...p}/>}/>

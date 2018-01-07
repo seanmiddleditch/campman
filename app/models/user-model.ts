@@ -1,34 +1,67 @@
-import {LibraryAccessModel} from './library-model'
-import * as modelsafe from 'modelsafe'
-import * as squell from 'squell'
-import {User} from '../auth/user'
+import {Entity, Column, OneToMany, PrimaryGeneratedColumn, Index, EntityRepository, Repository} from 'typeorm'
+import {Membership} from './membership-model'
 
-@modelsafe.model({name: 'user'})
-@squell.model({indexes: [{name: 'google', fields: ['googleId']}]})
-export class UserModel extends modelsafe.Model implements User
+@Entity()
+export class User
 {
-    @modelsafe.attr(modelsafe.INTEGER)
-    @squell.attr({primaryKey: true, autoIncrement: true})
+    @PrimaryGeneratedColumn()
     public id: number
 
-    @modelsafe.attr(modelsafe.STRING)
-    @modelsafe.minLength(1)
+    @Column()
     public fullName: string
 
-    @modelsafe.attr(modelsafe.STRING, {optional: true})
-    @modelsafe.minLength(1)
-    public nickname?: string
+    @Column()
+    public nickname: string
 
-    @modelsafe.attr(modelsafe.STRING)
-    @modelsafe.minLength(1)
+    @Column()
+    @Index({unique: true})
     public email: string
 
-    @modelsafe.attr(modelsafe.STRING)
+    @Column()
     public photoURL: string
 
-    @modelsafe.assoc(modelsafe.HAS_MANY, () => LibraryAccessModel)
-    public access: LibraryAccessModel[]
+    @OneToMany(t => Membership, m => m.user)
+    public membership: Membership[]
     
-    @modelsafe.attr(modelsafe.STRING, {optional: true})
+    @Column({nullable: true, unique: true})
     public googleId?: string
+}
+
+@EntityRepository(User)
+export class UserRepository extends Repository<User>
+{
+    public async findOrCreateForGoogle(options: {googleId: string, fullName: string, email: string, photoURL: string})
+    {
+        let user = await this.findOne({
+            where: {
+                googleId: options.googleId
+            }
+        })
+
+        if (!user)
+        {
+            user = new User()
+            user.googleId = options.googleId
+            user.nickname = options.fullName
+        }
+
+        user.fullName = options.fullName
+        user.email = options.email
+        user.photoURL = options.photoURL
+
+        await this.save(user)
+        return user
+    }
+
+    public async updateUser({userID, nickname}: {userID: number, nickname?: string})
+    {
+        await this.createQueryBuilder('user')
+            .update({
+                nickname
+            })
+            .where('"id"=:id', {id: userID})
+            .printSql()
+            .execute()
+
+    }
 }

@@ -1,29 +1,28 @@
 import {Request, Response, Router} from 'express'
-import {Database} from 'squell'
-import {UserModel} from '../../models'
-import {wrapper} from '../helpers'
+import {User, UserRepository} from '../../models'
+import {wrapper, ok, fail} from '../helpers'
 import {checkAccess} from '../../auth'
+import {Connection} from 'typeorm'
 
-export function profileAPIRoutes(db: Database)
+export function profile(connection: Connection)
 {
     const router = Router()
+
+    const userRepository = connection.getCustomRepository(UserRepository)
 
     router.post('/api/profile', wrapper(async (req, res) => {
         if (!req.user)
         {
-            res.status(403).json({message: 'Not logged in'})
+            fail(res, 403, 'Not logged in')
         }
         else
         {
-            const [count, users] = await db.query(UserModel)
-                .where(m => m.id.eq(req.userID))
-                .update({
-                    nickname: req.body['nickname'] || req.user.nickname
-                })
-            const updatedUser = users[0]
-            if (req.user)
-                req.user.nickname = updatedUser.nickname
-            res.status(200).json({nickname: updatedUser.nickname})
+            await userRepository.updateUser({
+                userID: req.userID,
+                nickname: req.body.nickname
+            })
+
+            ok(res, {})
         }
     }))
 

@@ -25,6 +25,11 @@ export class LibrariesAPI
         return this._rpc.get<{title: string, visibility: 'Public'|'Hidden', members: {id: number, role: string, nickname: string}[]}>('/api/libraries/' + slug + '/settings')
     }
 
+    fetchMembers({slug}: {slug: string})
+    {
+        return this._rpc.get<{id: number, role: string, nickname: string}[]>('/api/libraries/' + slug + '/members')
+    }
+
     saveSettings({slug, title, visibility}: {slug: string, title: string, visibility: 'Public'|'Hidden'})
     {
         return this._rpc.post<{}>(`/api/libraries/${slug}/settings`, {title, visibility})
@@ -37,6 +42,7 @@ export class LibrariesAPI
 
     inviteMember({slug, email}: {slug: string, email: string})
     {
+        alert(email)
         return this._rpc.post<{}>(`/api/libraries/${slug}/members/invite`, {email})
     }
 

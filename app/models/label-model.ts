@@ -1,49 +1,57 @@
-import {NoteModel} from './note-model'
-import * as modelsafe from 'modelsafe'
-import * as squell from 'squell'
+import {Entity, Column, PrimaryGeneratedColumn, Index, EntityRepository, Repository, ManyToMany} from 'typeorm'
+import {Note, MediaFile} from '.'
 import * as slug from '../util/slug'
 
-@modelsafe.model({name: 'label'})
-export class LabelModel extends modelsafe.Model
+@Entity()
+export class Label
 {
-    @modelsafe.attr(modelsafe.INTEGER, {optional: true})
-    @squell.attr({primaryKey: true, autoIncrement: true})
+    @PrimaryGeneratedColumn()
     public id: number
 
-    @modelsafe.attr(modelsafe.STRING, {unique: true})
-    @modelsafe.minLength(1)
-    @modelsafe.maxLength(32)
+    @Column()
+    @Index({unique: true})
     public slug: string
 
-    @modelsafe.assoc(modelsafe.BELONGS_TO_MANY, () => NoteModel)
-    @squell.assoc({through: 'note_label'})
-    public notes: NoteModel[]
+    @ManyToMany(t => Note, n => n.labels)
+    public notes: Note[]
 
-    public static fromString(input: string|string[]): string[]
+    @ManyToMany(t => MediaFile, m => m.labels)
+    public media: MediaFile[]
+}
+
+@EntityRepository(Label)
+export class LabelRepository extends Repository<Label>
+{
+    public fromString(input: string|string[]): string[]
     {
         if (typeof input === 'string')
             input = input.split(/[\s,]+/)
         return input.map(slug.sanitize).filter(s => s.length)
     }
 
-    public static async reify(db: squell.Database, slugs: string[]) : Promise<LabelModel[]>
+    public reify(slugs: string[]) : Label[]
     {
-        const results = await db.query(LabelModel)
-            .where(l => l.slug.in(slugs))
-            .find()
+        return slugs.map(s => {
+            const l = new Label()
+            l.slug = s
+            return l
+        })
+    }
 
-        const missing = []
-        for (const slug of slugs)
-        {
-            if (!results.find(l => l.slug == slug))
-            {
-                const newLabel = new LabelModel
-                newLabel.slug = slug
-                missing.push(newLabel)
-            }
-        }
-        const created = await db.query(LabelModel).bulkCreate(missing)
+    public findForLibrary(options: {libraryID: number})
+    {
+        return this.createQueryBuilder('label')
+            .leftJoin('note', 'label.notes', 'note.libraryId=:library', {library: options.libraryID})
+            .leftJoin('media', 'label.media', 'media.libraryId=:library', {library: options.libraryID})
+            .getMany()
+    }
 
-        return results.concat(created)
+    public findBySlug(options: {slug: string, libraryID: number})
+    {
+        return this.createQueryBuilder('label')
+            .leftJoin('note', 'label.notes', 'note.libraryId=:library', {library: options.libraryID})
+            .leftJoin('media', 'label.media', 'media.libraryId=:library', {library: options.libraryID})
+            .where('label.slug=:slug', {slug: options.slug})
+            .getOne()
     }
 }

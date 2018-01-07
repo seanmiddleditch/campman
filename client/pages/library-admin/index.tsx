@@ -1,8 +1,12 @@
 import * as React from 'react'
+import {Route, NavLink} from 'react-router-dom'
 
 import {Page, PageHeader, PageBody} from '../../components/page'
 
 import * as api from '../../api'
+
+import {SettingsTab} from './components/settings-tab'
+import {MembersTab} from './components/members-tab'
 
 enum Status
 {
@@ -20,8 +24,7 @@ interface LibraryAdminPageState
     status: Status
     title: string
     visibility: 'Public'|'Hidden'
-    members: {userID: number, role: string, nickname: string}[]
-    tab: 'Settings'|'Members'
+    members: {id: number, role: string, nickname: string}[]
     inviteEmail: string
 }
 export class LibraryAdminPage extends React.Component<LibraryAdminPageProps, LibraryAdminPageState>
@@ -33,7 +36,6 @@ export class LibraryAdminPage extends React.Component<LibraryAdminPageProps, Lib
             status: Status.Idle,
             title: 'Test',
             visibility: 'Hidden',
-            tab: 'Settings',
             members: [],
             inviteEmail: ''
         }
@@ -45,7 +47,13 @@ export class LibraryAdminPage extends React.Component<LibraryAdminPageProps, Lib
         {
             this.setState({status: Status.Fetching})
             api.libraries.fetchSettings({slug: this.props.slug})
-                .then(settings => this.setState({...settings, status: Status.Idle}))
+                .then(settings => {
+                    this.setState(settings)
+                    api.libraries.fetchMembers({slug: this.props.slug})
+                        .then(members => this.setState({members, status: Status.Idle}))
+                        .catch(e => this.setState({status: Status.Idle}))
+                })
+                .catch(e => this.setState({status: Status.Idle}))
         }
     }
 
@@ -54,17 +62,17 @@ export class LibraryAdminPage extends React.Component<LibraryAdminPageProps, Lib
         this._fetch()
     }
 
-    private _handleTitleChanged(ev: React.FormEvent<HTMLInputElement>)
+    private _handleTitleChanged(title: string)
     {
-        this.setState({title: ev.currentTarget.value})
+        this.setState({title})
     }
 
-    private _handleVisibilityClicked(ev: React.MouseEvent<HTMLButtonElement>)
+    private _handleVisibilityClicked(visibility: 'Public'|'Hidden')
     {
-        this.setState({visibility: this.state.visibility === 'Public' ? 'Hidden' : 'Public'})
+        this.setState({visibility})
     }
 
-    private _handleSaveClicked(ev: React.MouseEvent<HTMLButtonElement>)
+    private _handleSaveClicked()
     {
         if (this.state.status === Status.Idle)
         {
@@ -75,14 +83,18 @@ export class LibraryAdminPage extends React.Component<LibraryAdminPageProps, Lib
         }
     }
 
-    private _handleInviteEmailChanged(ev: React.FormEvent<HTMLInputElement>)
+    private _handleInviteEmailChanged(inviteEmail: string)
     {
-        this.setState({inviteEmail: ev.currentTarget.value})
+        this.setState({inviteEmail})
     }
 
-    private _handleSendInviteClicked(ev: React.MouseEvent<HTMLButtonElement>)
+    private _handleSendInviteClicked(email: string)
     {
-        api.libraries.inviteMember({slug: this.props.slug, email: this.state.inviteEmail})
+        alert(email)
+        this.setState({status: Status.Saving})
+        api.libraries.inviteMember({slug: this.props.slug, email})
+            .then(() => this.setState({status: Status.Idle, inviteEmail: ''}))
+            .catch(err => this.setState({status: Status.Idle}))
     }
 
     private _handleMemberRoleChanged(ev: React.FormEvent<HTMLSelectElement>, userID: number)
@@ -98,57 +110,27 @@ export class LibraryAdminPage extends React.Component<LibraryAdminPageProps, Lib
                 <PageBody>
                     <ul className='nav  nav-tabs'>
                         <li className='nav-item'>
-                            <a className={this.state.tab === 'Settings' ? 'nav-link active' : 'nav-link'} onClick={() => this.setState({tab: 'Settings'})}>Settings</a>
+                            <NavLink className='nav-link' activeClassName='active' to='/settings' exact>Settings</NavLink>
                         </li>
                         <li className='nav-item'>
-                            <a className={this.state.tab === 'Members' ? 'nav-link active' : 'nav-link'} onClick={() => this.setState({tab: 'Members'})}>Members</a>
+                            <NavLink className='nav-link' activeClassName='active' to='/settings/members'>Members</NavLink>
                         </li>
                     </ul>
-                    {this.state.tab === 'Settings' && (
-                        <div>
-                            <div className='form-group mt-sm-2'>
-                                <label htmlFor='title'>Title</label>
-                                <input type='text' className='form-control' name='title' disabled={this.state.status !== Status.Idle} value={this.state.title} onChange={ev => this._handleTitleChanged(ev)}/>
-                            </div>
-                            <div className='form-group mt-sm-2'>
-                                <label htmlFor='visbility'>Visibility</label>
-                                <div className='btn-group form-control'>
-                                    {this.state.visibility === 'Public' && <button id='note-btn-visibility' className='btn btn-info' about='Toggle Visibility' disabled={this.state.status !== Status.Idle} onClick={ev => this._handleVisibilityClicked(ev)}>Public</button>}
-                                    {this.state.visibility !== 'Public' && <button id='note-btn-visibility' className='btn btn-light' about='Toggle Visibility' disabled={this.state.status !== Status.Idle} onClick={ev => this._handleVisibilityClicked(ev)}>Hidden</button>}
-                                </div>
-                            </div>
-                            <div className='btn-group float-right mt-sm-2'>
-                                <button className='btn btn-primary' disabled={this.state.status !== Status.Idle} onClick={ev => this._handleSaveClicked(ev)}>Save</button>
-                            </div>
-                        </div>
-                    )}
-                    {this.state.tab === 'Members' && (
-                        <ul className='list-group'>
-                            {(this.state.members.map(member => (
-                                <li key={member.userID} className='list-group-item mt-sm-2'>
-                                    <div className='form-group'>{member.nickname}</div>
-                                    <div className='form-group'>
-                                        {member.role === 'Owner' ? 'Owner' : (
-                                            <select className='form-control mt-sm-2' onChange={ev => this._handleMemberRoleChanged(ev, member.userID)}>
-                                                <option value='GameMaster' selected={member.role === 'GameMaster'}>GameMaster</option>
-                                                <option value='Player' selected={member.role === 'Player'}>Player</option>
-                                                <option value='Visitor' selected={member.role === 'Visitor'}>Visitor</option>
-                                            </select>
-                                        )}
-                                    </div>
-                                </li>
-                            )))}
-                            <li className='list-group-item mt-sm-2'>
-                                <div className='form-group'>
-                                    <label htmlFor='new-member-email'>Invite New Member</label>
-                                    <input className='form-control' type='text' name='new-member-email' placeholder='email addres' value={this.state.inviteEmail} onChange={ev => this._handleInviteEmailChanged(ev)}/>
-                                </div>
-                                <div className='form-group float-right'>
-                                    <button className='btn btn-primary' onClick={ev => this._handleSendInviteClicked(ev)}>Send Invite</button>
-                                </div>
-                            </li>
-                        </ul>
-                    )}
+                    <Route path='/settings' exact render={p => <SettingsTab
+                        disabled={this.state.status !== Status.Idle}
+                        title={this.state.title}
+                        visibility={this.state.visibility}
+                        onTitleChange={title => this._handleTitleChanged(title)}
+                        onVisibilityChanged={vis => this._handleVisibilityClicked(vis)}
+                        onSaveClicked={() => this._handleSaveClicked()}
+                    />}/>
+                    <Route path='/settings/members' render={p => <MembersTab
+                        disabled={this.state.status !== Status.Idle}
+                        members={this.state.members}
+                        inviteEmail={this.state.inviteEmail}
+                        inviteEmailChanged={email => this._handleInviteEmailChanged(email)}
+                        sendInvite={email => this._handleSendInviteClicked(email)}
+                    />}/>
                 </PageBody>
             </Page>
         )

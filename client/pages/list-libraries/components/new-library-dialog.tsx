@@ -8,6 +8,7 @@ export interface NewLibraryDialogProps
     disabled?: boolean
     onClose: () => void
     onCreate: (note: {slug: string, title: string}) => void
+    error?: string
 }
 export class NewLibraryDialog extends React.Component<NewLibraryDialogProps>
 {
@@ -37,6 +38,9 @@ export class NewLibraryDialog extends React.Component<NewLibraryDialogProps>
                     New Library
                 </ModalHeader>
                 <ModalBody>
+                    {this.props.error && (
+                        <div className='alert alert-danger' role='alert'>{this.props.error}</div>
+                    )}
                     <div className='form-group'>
                         <label htmlFor='title'>Title</label>
                         <input className='form-control' ref='title' type='text' disabled={this.props.disabled} placeholder='My Library' onChange={ev => this._handleTitleChanged(ev)}/>

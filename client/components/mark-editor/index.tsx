@@ -63,7 +63,8 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
         const editorState = (() => {
             if (props.document)
             {
-                const content = convertFromRaw(props.document)
+                const body = typeof props.document === 'string' ? JSON.parse(props.document) : props.document
+                const content = convertFromRaw(body)
                 return EditorState.createWithContent(content, decorators)
             }
             return EditorState.createEmpty(decorators)

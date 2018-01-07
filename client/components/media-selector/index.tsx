@@ -18,9 +18,9 @@ interface MediaSelectorState
     media?: MediaFile[]
     search?: string
     searchRegexes?: RegExp[]
-    uploading?: boolean
-    dialogOpen?: boolean
-    fetching?: boolean
+    uploading: boolean
+    dialogOpen: boolean
+    fetching: boolean
 }
 export class MediaSelector extends React.Component<MediaSelectorProps, MediaSelectorState>
 {
@@ -29,7 +29,11 @@ export class MediaSelector extends React.Component<MediaSelectorProps, MediaSele
     constructor(props: MediaSelectorProps)
     {
         super(props)
-        this.state = {}
+        this.state = {
+            dialogOpen: false,
+            fetching: false,
+            uploading: false
+        }
     }
 
     private _fetch(path: string)
