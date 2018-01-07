@@ -138,7 +138,6 @@ function renderBasicBlock(block: DraftBlock, draft: RawDraft)
 
 export function draftToHtml(rawbody: string, showSecrets: boolean = false)
 {
-    console.log(rawbody)
     if (rawbody && rawbody.length)
     {
         const raw = JSON.parse(rawbody) as RawDraft
