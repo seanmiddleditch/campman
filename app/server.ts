@@ -44,6 +44,7 @@ import * as models from './models'
         username: connectionOptions.user || '',
         password: connectionOptions.password || '',
         database: connectionOptions.database || '',
+        migrations: [path.join(__dirname, 'migrations', '*.js')],
         ssl: true,
         entities: [
             models.Library,
@@ -55,6 +56,9 @@ import * as models from './models'
             models.Invitation
         ]
     })
+
+    console.log('Running pending migrations')
+    await connection.runMigrations()
 
     const libraryRepository = connection.getCustomRepository(models.LibraryRepository)
     const userRepository = connection.getCustomRepository(models.UserRepository)

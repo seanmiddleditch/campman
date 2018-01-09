@@ -2,7 +2,7 @@ import {Request, Response, Router} from 'express'
 import {wrapper, ok, fail} from '../helpers'
 import {checkAccess} from '../../auth'
 import {NoteVisibility, NoteRepository} from '../../models'
-import * as slug from '../../util/slug'
+import * as slug from '../../util/slug-utils'
 import {draftToHtml} from '../../util/draft-to-html'
 import {Connection} from 'typeorm'
 
@@ -51,7 +51,7 @@ export function notes(conn: Connection)
             }
             else
             {
-                const {slug, title, subtitle, rawbody, labels, visibility, type} = note
+                const {slug, title, subtitle, rawbody, labels, visibility} = note
 
                 const secrets = checkAccess({
                     target: 'note:view-secret',
@@ -69,7 +69,7 @@ export function notes(conn: Connection)
                 })
 
                 const body = draftToHtml(rawbody, secrets)
-                ok(res, {slug, title, subtitle, body, rawbody: editable ? rawbody : undefined, labels, visibility, type, editable})
+                ok(res, {slug, title, subtitle, body, rawbody: editable ? rawbody : undefined, labels, visibility, editable})
             }
         }
     }))
@@ -77,46 +77,68 @@ export function notes(conn: Connection)
     router.post('/api/notes/:note', wrapper(async (req, res) => {
         if (!req.libraryID)
         {
-            fail(res, 404, 'Library not found')
+            return fail(res, 404, 'Library not found')
+        }
+        
+        const note = await noteRepository.fetchBySlug({slug: req.params['note'], libraryID: req.libraryID})
+
+        const slug = req.params['note']
+        const libraryID = req.libraryID
+        const {title, subtitle, visibility, labels} = req.body
+        const rawbody = req.body['rawbody'] ? JSON.stringify(req.body['rawbody']) : ''
+
+        if (note)
+        {
+            if (!checkAccess({target: 'note:edit', userID: req.userID, role: req.userRole, ownerID: note.authorID, hidden: note.visibility !== NoteVisibility.Public}))
+                return fail(res, 403, 'Access denied')
+
+            await noteRepository.updateNote({
+                slug,
+                libraryID,
+                title,
+                subtitle,
+                rawbody,
+                labels,
+                visibility
+            })
+
+            ok(res, {
+                slug,
+                libraryID,
+                title: title || note.title,
+                subtitle: subtitle || note.subtitle,
+                rawbody: rawbody || note.rawbody,
+                labels: labels || note.labels,
+                visibility: visibility || note.visibility
+            })
+    
         }
         else
         {
-            const note = await noteRepository.fetchBySlug({slug: req.params['note'], libraryID: req.libraryID})
-            if (note && !checkAccess({target: 'note:edit', userID: req.userID, role: req.userRole, ownerID: note.authorID, hidden: note.visibility !== NoteVisibility.Public}))
-            {
+            if (!checkAccess({target: 'note:create', userID: req.userID, role: req.userRole}))
                 fail(res, 403, 'Access denied')
-            }
-            else if (!note && !checkAccess({target: 'note:create', userID: req.userID, role: req.userRole}))
-            {
-                fail(res, 403, 'Access denied')
-            }
-            else
-            {
-                const slug = req.params['note']
-                const libraryID = req.libraryID
-                const {title, subtitle, visibility, labels} = req.body
-                const rawbody = req.body['rawbody'] ? JSON.stringify(req.body['rawbody']) : ''
 
-                await noteRepository.updateNote({
-                    slug,
-                    libraryID,
-                    title,
-                    subtitle,
-                    rawbody,
-                    labels,
-                    visibility
-                })
+            const note = await noteRepository.createNote({
+                slug,
+                authorID: req.userID,
+                libraryID,
+                title,
+                subtitle,
+                rawbody,
+                labels,
+                visibility
+            })
 
-                ok(res, {
-                    slug,
-                    libraryID,
-                    title: title || note.title,
-                    subtitle: subtitle || note.subtitle,
-                    rawbody: rawbody || note.rawbody,
-                    labels: labels || note.labels,
-                    visibility: visibility || note.visibility
-                })
-            }
+            ok(res, {
+                slug,
+                libraryID,
+                title: note.title,
+                subtitle: note.subtitle,
+                rawbody: note.rawbody,
+                labels: note.labels,
+                visibility: note.visibility
+            })
+        
         }
     }))
 

@@ -1,4 +1,4 @@
-import {Entity, Column, ManyToOne, JoinTable, EntityRepository, Repository, Connection} from 'typeorm'
+import {Entity, Column, ManyToOne, JoinColumn, EntityRepository, Repository, Connection} from 'typeorm'
 import {Library} from './library-model'
 import {Membership} from './membership-model'
 import {Role} from '../auth'
@@ -12,11 +12,11 @@ export class Invitation
     @Column()
     public email: string
 
-    @Column()
+    @Column({name: 'library_id'})
     public libraryId: number
 
     @ManyToOne(type => Library, l => l.invitations)
-    @JoinTable()
+    @JoinColumn({name: 'library_id'})
     public library: Library
 }
 
@@ -44,7 +44,7 @@ export class InvitationRepository extends Repository<Invitation>
             await tx.createQueryBuilder(Membership, 'membership')
                 .insert()
                 .values({
-                    userId: userID,
+                    accountId: userID,
                     libraryId: invite.libraryId,
                     role: Role.Player
                 })

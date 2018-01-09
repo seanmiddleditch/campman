@@ -4,6 +4,7 @@ import {Library, LibraryRepository, LibraryVisibility, Membership, User, Invitat
 import {checkAccess, Role} from '../../auth/access'
 import {Config} from '../../config'
 import {wrapper, ok, fail} from '../helpers'
+import * as slugUtil from '../../util/slug-utils'
 
 export function libraries(conn: Connection, config: Config)
 {
@@ -43,10 +44,10 @@ export function libraries(conn: Connection, config: Config)
         }
         else
         {
-            const slug = req.params.library
-            const title = req.body.title
+            const slug = req.params.library as string
+            const title = req.body.title as string
 
-            if (!slug.isValid(slug))
+            if (!slugUtil.isValid(slug))
             {
                 res.status(400).json({message: 'Invalid slug'})
             }

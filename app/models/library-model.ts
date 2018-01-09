@@ -43,7 +43,7 @@ export class LibraryRepository extends Repository<Library>
     public async findAllForUser({userID}: {userID: number})
     {
         return this.createQueryBuilder('library')
-            .leftJoinAndMapOne('role', 'library.memberships', 'membership', 'membership.userId=:userID', {userID})
+            .leftJoinAndMapOne('role', 'library.memberships', 'membership', 'membership.account_id=:userID', {userID})
             .getRawMany()
             .then(results => results.map(row => ({
                     id: row.library_id as number,
@@ -77,7 +77,7 @@ export class LibraryRepository extends Repository<Library>
             
             const memberships = tx.getRepository(Membership)
             const member = memberships.create({
-                userId: creatorID,
+                accountId: creatorID,
                 libraryId: library.id,
                 role: Role.Owner
             })

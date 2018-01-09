@@ -20,7 +20,7 @@ export function googleAuth(connection: Connection, publicURL: string, googleClie
         if (!profile.emails) callback(new Error('Email required'), null)
         else userRepository.findOrCreateForGoogle({
                 googleId: profile.id,
-                fullName: profile.displayName,
+                fullname: profile.displayName,
                 email: profile.emails[0].value,
                 photoURL: (profile.photos && profile.photos.length && profile.photos[0].value) || ''
             })

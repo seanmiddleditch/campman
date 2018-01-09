@@ -1,8 +1,9 @@
-import {Entity, Column, PrimaryColumn, Repository, EntityRepository, ManyToMany, ManyToOne, JoinColumn} from 'typeorm'
+import {Entity, Column, PrimaryColumn, Repository, EntityRepository, ManyToMany, ManyToOne, JoinTable, JoinColumn, Index} from 'typeorm'
 import {Label} from './label-model'
 import {Library} from './library-model'
 
-@Entity()
+@Entity({name: 'media'})
+@Index(['libraryId', 'path'])
 export class MediaFile
 {
     @PrimaryColumn()
@@ -11,10 +12,11 @@ export class MediaFile
     @Column()
     public s3key: string
 
-    @PrimaryColumn()
+    @PrimaryColumn({name: 'library_id'})
     public libraryId: number
 
     @ManyToOne(t => Library)
+    @JoinColumn({name: 'library_id'})
     public library: Library
 
     @Column()
@@ -24,7 +26,7 @@ export class MediaFile
     public attribution: string
 
     @ManyToMany(t => Label)
-    @JoinColumn()
+    @JoinTable({name: 'media_labels', joinColumn: {name: 'media_id'}, inverseJoinColumn: {name: 'label_id'}})
     public labels: Label[]
 }
 

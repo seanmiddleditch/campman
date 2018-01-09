@@ -6,18 +6,18 @@ import {Role} from '../auth'
 @Entity()
 export class Membership
 {
-    @PrimaryColumn()
+    @PrimaryColumn({name: 'library_id'})
     public libraryId: number
 
     @ManyToOne(t => Library, l => l.memberships)
-    @JoinColumn()
+    @JoinColumn({name: 'library_id'})
     public library: Library
 
-    @PrimaryColumn()
-    public userId: number
+    @PrimaryColumn({name: 'account_id'})
+    public accountId: number
 
     @ManyToOne(t => User, u => u.membership)
-    @JoinColumn()
+    @JoinColumn({name: 'account_id'})
     public user: User
 
     @Column()
@@ -31,7 +31,7 @@ export class MembershipRepository extends Repository<Membership>
     {
         const rs = await this.findOne({
             where: {
-                userId: options.userID,
+                accountId: options.userID,
                 libraryId: options.libraryID
             }
         })
@@ -53,7 +53,7 @@ export class MembershipRepository extends Repository<Membership>
     {
         await this.createQueryBuilder('membership')
             .update({
-                userId: params.userID,
+                accountId: params.userID,
                 libraryId: params.libraryID,
                 role: params.role
             })

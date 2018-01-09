@@ -1,4 +1,4 @@
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, ManyToMany, JoinTable, Index, EntityRepository, Repository} from 'typeorm'
+import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, ManyToMany, JoinTable, JoinColumn, Index, EntityRepository, Repository} from 'typeorm'
 import {Label} from './label-model'
 import {Library} from './library-model'
 import {User} from './user-model'
@@ -17,25 +17,22 @@ export class Note
     @PrimaryGeneratedColumn()
     public id: number
 
-    @Column()
+    @Column({name: 'library_id'})
     public libraryId: number
 
     @ManyToOne(t => Library, l => l.notes)
-    @JoinTable()
+    @JoinColumn({name: 'library_id'})
     public library: Library
 
-    @Column()
+    @Column({name: 'author_id'})
     public authorId: number
 
     @ManyToOne(t => User)
-    @JoinTable()
+    @JoinColumn({name: 'author_id'})
     public author: User
 
     @Column()
     public slug: string
-
-    @Column({default: 'page'})
-    public type: string
 
     @Column({default: NoteVisibility.Public})
     public visibility: NoteVisibility
@@ -50,7 +47,7 @@ export class Note
     public rawbody: string
 
     @ManyToMany(t => Label)
-    @JoinTable()
+    @JoinTable({name: 'note_labels', joinColumn: {name: 'label_id'}, inverseJoinColumn: {name: 'note_id'}})
     public labels: Label[]
 }
 
@@ -60,11 +57,10 @@ export class NoteRepository extends Repository<Note>
     public async listNotes({libraryID}: {libraryID: number})
     {
         return this.createQueryBuilder('note')
-            .where('"libraryId"=:libraryID', {libraryID})
+            .where('"library_id"=:libraryID', {libraryID})
             .getRawMany()
             .then(results => results.map(row => ({
                     id: row.note_id as number,
-                    type: row.note_type as string,
                     slug: row.note_slug as string,
                     title: row.note_title as string,
                     subtitle: row.note_subtitle as string,
@@ -76,12 +72,11 @@ export class NoteRepository extends Repository<Note>
     public async fetchBySlug({slug, libraryID}: {slug: string, libraryID: number})
     {
         return this.createQueryBuilder('note')
-            .where('note."slug"=:slug AND "libraryId"=:libraryID', {slug, libraryID})
+            .where('note."slug"=:slug AND "library_id"=:libraryID', {slug, libraryID})
             .leftJoinAndSelect('note.labels', 'label')
             .getRawOne()
-            .then(row => ({
+            .then(row => row && ({
                 id: row.note_id as number,
-                type: row.note_type as string,
                 slug: row.note_slug as string,
                 title: row.note_title as string,
                 subtitle: row.note_subtitle as string,
@@ -102,8 +97,26 @@ export class NoteRepository extends Repository<Note>
                 rawbody,
                 visibility
             })
-            .where('"slug"=:slug AND "libraryId"=:libraryID', {slug, libraryID})
+            .where('"slug"=:slug AND "library_id"=:libraryID', {slug, libraryID})
             .execute()
+        
+        //labels: req.body['labels'],
+    }
+
+    public async createNote(options: {slug: string, authorID: number, libraryID: number, title?: string, subtitle?: string, rawbody?: string, visibility?: NoteVisibility, labels?: string[]})
+    {
+        const {slug, authorID, libraryID, title, subtitle, rawbody, visibility} = options
+        const note = await this.create({
+            libraryId: libraryID,
+            authorId: authorID,
+            slug,
+            title,
+            subtitle,
+            rawbody,
+            visibility
+        })
+        await this.save(note)
+        return note
         
         //labels: req.body['labels'],
     }

@@ -3,7 +3,7 @@ import {Request, Response, Router} from 'express'
 import {Library, LibraryRepository, LibraryVisibility, Membership, User, Invitation} from '../../models'
 import {checkAccess, Role} from '../../auth/access'
 import {wrapper, ok, fail} from '../helpers'
-import * as slug from '../../util/slug'
+import * as slug from '../../util/slug-utils'
 
 export function settings(conn: Connection)
 {

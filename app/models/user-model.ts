@@ -1,14 +1,14 @@
 import {Entity, Column, OneToMany, PrimaryGeneratedColumn, Index, EntityRepository, Repository} from 'typeorm'
 import {Membership} from './membership-model'
 
-@Entity()
+@Entity({name: 'account'})
 export class User
 {
     @PrimaryGeneratedColumn()
     public id: number
 
     @Column()
-    public fullName: string
+    public fullname: string
 
     @Column()
     public nickname: string
@@ -17,20 +17,20 @@ export class User
     @Index({unique: true})
     public email: string
 
-    @Column()
+    @Column({name: 'photo_url'})
     public photoURL: string
 
     @OneToMany(t => Membership, m => m.user)
     public membership: Membership[]
     
-    @Column({nullable: true, unique: true})
+    @Column({nullable: true, unique: true, name: 'google_id'})
     public googleId?: string
 }
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User>
 {
-    public async findOrCreateForGoogle(options: {googleId: string, fullName: string, email: string, photoURL: string})
+    public async findOrCreateForGoogle(options: {googleId: string, fullname: string, email: string, photoURL: string})
     {
         let user = await this.findOne({
             where: {
@@ -42,10 +42,10 @@ export class UserRepository extends Repository<User>
         {
             user = new User()
             user.googleId = options.googleId
-            user.nickname = options.fullName
+            user.nickname = options.fullname
         }
 
-        user.fullName = options.fullName
+        user.fullname = options.fullname
         user.email = options.email
         user.photoURL = options.photoURL
 

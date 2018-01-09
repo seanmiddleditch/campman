@@ -1,6 +1,6 @@
 import {Entity, Column, PrimaryGeneratedColumn, Index, EntityRepository, Repository, ManyToMany} from 'typeorm'
 import {Note, MediaFile} from '.'
-import * as slug from '../util/slug'
+import * as slug from '../util/slug-utils'
 
 @Entity()
 export class Label
@@ -41,16 +41,16 @@ export class LabelRepository extends Repository<Label>
     public findForLibrary(options: {libraryID: number})
     {
         return this.createQueryBuilder('label')
-            .leftJoin('note', 'label.notes', 'note.libraryId=:library', {library: options.libraryID})
-            .leftJoin('media', 'label.media', 'media.libraryId=:library', {library: options.libraryID})
+            .leftJoin('note', 'label.notes', '"label.notes".library_id=:library', {library: options.libraryID})
+            .leftJoin('media', 'label.media', '"label.media".library_id=:library', {library: options.libraryID})
             .getMany()
     }
 
     public findBySlug(options: {slug: string, libraryID: number})
     {
         return this.createQueryBuilder('label')
-            .leftJoin('note', 'label.notes', 'note.libraryId=:library', {library: options.libraryID})
-            .leftJoin('media', 'label.media', 'media.libraryId=:library', {library: options.libraryID})
+            .leftJoin('note', 'label.notes', '"label.notes".library_id=:library', {library: options.libraryID})
+            .leftJoin('media', 'label.media', '"label.media".library_id=:library', {library: options.libraryID})
             .where('label.slug=:slug', {slug: options.slug})
             .getOne()
     }

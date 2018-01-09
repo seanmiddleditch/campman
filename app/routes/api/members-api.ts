@@ -4,7 +4,7 @@ import {Library, LibraryRepository, LibraryVisibility, Membership, MembershipRep
 import {checkAccess, Role} from '../../auth/access'
 import {Config} from '../../config'
 import {wrapper, ok, fail} from '../helpers'
-import * as slug from '../../util/slug'
+import * as slug from '../../util/slug-utils'
 import * as shortid from 'shortid'
 import * as mailgun from 'mailgun-js'
 
