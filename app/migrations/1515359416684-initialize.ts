@@ -100,11 +100,21 @@ export class initialize1515359416684 implements MigrationInterface {
             CONSTRAINT invitation_id PRIMARY KEY(id),
             CONSTRAINT membership_ref_library FOREIGN KEY(library_id) REFERENCES library(id) ON DELETE CASCADE 
         )`)
-
-
     }
 
     public async down(queryRunner: QueryRunner): Promise<any> {
+        console.log('Dropping all tables')
+        await queryRunner.query(`DROP TYPE visibility`)
+        await queryRunner.query(`DROP TYPE accessrole`)
+        await queryRunner.query(`DROP TABLE account`)
+        await queryRunner.query(`DROP TABLE library`)
+        await queryRunner.query(`DROP TABLE note`)
+        await queryRunner.query(`DROP TABLE label`)
+        await queryRunner.query(`DROP TABLE note_labels`)
+        await queryRunner.query(`DROP TABLE membership`)
+        await queryRunner.query(`DROP TABLE media`)
+        await queryRunner.query(`DROP TABLE media_labels`)
+        await queryRunner.query(`DROP TABLE invitation`)
     }
 
 }

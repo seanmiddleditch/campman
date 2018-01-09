@@ -20,6 +20,7 @@ interface AccessConfiguration
     ['library:invite']: AccessControls
     ['media:upload']: AccessControls
     ['media:list']: AccessControls
+    ['maps:list']: AccessControls
     ['note:view']: AccessControls
     ['note:view-secret']: AccessControls
     ['note:create']: AccessControls
@@ -49,6 +50,9 @@ export const accessConfiguration : AccessConfiguration = {
         p => p.role !== Role.Visitor
     ],
     'media:list': [
+        p => !p.hidden
+    ],
+    'maps:list': [
         p => !p.hidden
     ],
     'note:view': [

@@ -53,6 +53,7 @@ import * as models from './models'
             models.Note,
             models.User,
             models.MediaFile,
+            models.Map,
             models.Invitation
         ]
     })

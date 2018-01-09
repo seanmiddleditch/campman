@@ -5,6 +5,7 @@ import {notes} from './note-api'
 import {profile} from './profile-api'
 import {settings} from './settings-api'
 import {members} from './members-api'
+import {maps} from './maps-api'
 
 import {Request, Response, NextFunction, Router} from 'express'
 import {Connection} from 'typeorm'
@@ -20,5 +21,6 @@ export function api(conn: Connection, config: Config)
     router.use(profile(conn))
     router.use(settings(conn))
     router.use(members(conn, config))
+    router.use(maps(conn))
     return router
 }
