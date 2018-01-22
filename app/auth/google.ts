@@ -1,6 +1,6 @@
 import {Profile, Strategy} from 'passport'
 import {OAuth2Strategy} from 'passport-google-oauth'
-import {User, UserRepository} from '../models'
+import {AccountModel, UserRepository} from '../models'
 import {URL} from 'url'
 import {Connection} from 'typeorm'
 
@@ -16,7 +16,7 @@ export function googleAuth(connection: Connection, publicURL: string, googleClie
         callbackURL: callbackURL.toString(),
         accessType: 'offline',
         approval_prompt: 'force'
-    }, (accessToken: string, refreshToken: string, profile: Profile, callback: (err: Error|null, profile: User|null) => void) => {
+    }, (accessToken: string, refreshToken: string, profile: Profile, callback: (err: Error|null, profile: AccountModel|null) => void) => {
         if (!profile.emails) callback(new Error('Email required'), null)
         else userRepository.findOrCreateForGoogle({
                 googleId: profile.id,

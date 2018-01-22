@@ -3,6 +3,6 @@ import * as React from 'react'
 export function SecretBlock(props: {children: any})
 {
     return (
-        <div className='secret'>{props.children}</div>
+        <blockquote className='alert alert-dark'>{props.children}</blockquote>
     )
 }

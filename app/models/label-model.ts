@@ -1,9 +1,9 @@
 import {Entity, Column, PrimaryGeneratedColumn, Index, EntityRepository, Repository, ManyToMany} from 'typeorm'
-import {Note, MediaFile} from '.'
+import {NoteModel, MediaModel} from '.'
 import * as slug from '../util/slug-utils'
 
-@Entity()
-export class Label
+@Entity({name: 'label'})
+export class LabelModel
 {
     @PrimaryGeneratedColumn()
     public id: number
@@ -12,15 +12,12 @@ export class Label
     @Index({unique: true})
     public slug: string
 
-    @ManyToMany(t => Note, n => n.labels)
-    public notes: Note[]
-
-    @ManyToMany(t => MediaFile, m => m.labels)
-    public media: MediaFile[]
+    // @ManyToMany(t => MediaModel, m => m.labels)
+    // public media: MediaModel[]
 }
 
-@EntityRepository(Label)
-export class LabelRepository extends Repository<Label>
+@EntityRepository(LabelModel)
+export class LabelRepository extends Repository<LabelModel>
 {
     public fromString(input: string|string[]): string[]
     {
@@ -29,10 +26,10 @@ export class LabelRepository extends Repository<Label>
         return input.map(slug.sanitize).filter(s => s.length)
     }
 
-    public reify(slugs: string[]) : Label[]
+    public reify(slugs: string[]) : LabelModel[]
     {
         return slugs.map(s => {
-            const l = new Label()
+            const l = new LabelModel()
             l.slug = s
             return l
         })

@@ -1,4 +1,4 @@
-import {Library, Membership} from '../models'
+import {LibraryModel, MembershipModel} from '../models'
 
 export enum Role
 {
@@ -20,6 +20,7 @@ interface AccessConfiguration
     ['library:invite']: AccessControls
     ['media:upload']: AccessControls
     ['media:list']: AccessControls
+    ['media:delete']: AccessControls
     ['maps:list']: AccessControls
     ['note:view']: AccessControls
     ['note:view-secret']: AccessControls
@@ -47,6 +48,9 @@ export const accessConfiguration : AccessConfiguration = {
         p => p.role === Role.Owner
     ],
     'media:upload': [
+        p => p.role !== Role.Visitor
+    ],
+    'media:delete': [
         p => p.role !== Role.Visitor
     ],
     'media:list': [

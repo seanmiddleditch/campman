@@ -1,0 +1,13 @@
+{{>layouts/page title='Labels' page_icon='tags'}}
+
+{{#*inline "content"}}
+<div class='list-group'>
+{{#each labels}}
+    <div class='list-group-item'>
+        <div class='list-item-name'><i class='fa fa-tag'></i> {{this.title}}</div>
+    </div>
+{{else}}
+    <div class='list-group-item'>No results</div>
+{{/each}}
+</div>
+{{/inline}}

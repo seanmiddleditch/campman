@@ -1,14 +1,15 @@
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const webpack = require('webpack')
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
 module.exports = {
-    entry: __dirname + '/client.tsx',
+    entry: __dirname + '/client.ts',
     output: {
         filename: 'bundle.js',
         path: __dirname + '/dist',
-        publicPath: '/dist/'
+        publicPath: '/dist/',
+        libraryTarget: 'window'
     },
-
-    devtool: 'source-map',
 
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json'],
@@ -47,8 +48,6 @@ module.exports = {
     externals: {
         'react': 'React',
         'react-dom': 'ReactDOM',
-        'react-router': 'ReactRouter',
-        'react-router-dom': 'ReactRouterDOM',
         'jquery': '$'
     },
 
@@ -56,6 +55,13 @@ module.exports = {
         new ExtractTextPlugin({
             filename: "style.css",
             allChunks: true
+        }),
+        new UglifyJsPlugin({
+            parallel: true,
+            sourceMap: true
+        }),
+        new webpack.SourceMapDevToolPlugin({
+            filename: '[name].js.map'
         })
     ]
-};
+}

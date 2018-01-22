@@ -9,13 +9,13 @@ import * as favicon from 'serve-favicon'
 import * as passport from 'passport'
 import * as session from 'express-session'
 import * as redis from 'connect-redis'
-import * as postgressConnectionStringParser from 'pg-connection-string'
-import {createConnection, Connection} from 'typeorm'
+import {Connection} from 'typeorm'
 import {URL} from 'url'
 import {Role, googleAuth} from './auth'
-import {Config} from './config'
+import {Config, config} from './config'
+import {connectToDatabase} from './db'
 
-import * as routes from './routes'
+import {routes} from './routes'
 import * as models from './models'
 
 (async () => {
@@ -25,8 +25,6 @@ import * as models from './models'
     const clientRoot = path.join(root, 'client')
     const viewsRoot = path.join(root, 'views')
 
-    const config = new Config()
-
     if (!config.production)
     {
         process.on('unhandledRejection', (err: Error) => {
@@ -35,31 +33,7 @@ import * as models from './models'
         })
     }
 
-    
-    const connectionOptions = postgressConnectionStringParser.parse(process.env.DATABASE_URL || '')
-    const connection = await createConnection({
-        type: 'postgres',
-        host: connectionOptions.host || 'localhost',
-        port: connectionOptions.port || 5432,
-        username: connectionOptions.user || '',
-        password: connectionOptions.password || '',
-        database: connectionOptions.database || '',
-        migrations: [path.join(__dirname, 'migrations', '*.js')],
-        ssl: true,
-        entities: [
-            models.Library,
-            models.Membership,
-            models.Label,
-            models.Note,
-            models.User,
-            models.MediaFile,
-            models.Map,
-            models.Invitation
-        ]
-    })
-
-    console.log('Running pending migrations')
-    await connection.runMigrations()
+    const connection = await connectToDatabase(config.databaseURL)
 
     const libraryRepository = connection.getCustomRepository(models.LibraryRepository)
     const userRepository = connection.getCustomRepository(models.UserRepository)
@@ -67,12 +41,13 @@ import * as models from './models'
 
     const app = express()
     app.engine('handlebars', exphbs({
-        defaultLayout: 'main',
         partialsDir: path.join(viewsRoot, 'partials'),
-        layoutsDir: path.join(viewsRoot, 'layouts')
+        layoutsDir: path.join(viewsRoot, 'partials', 'layouts')
     }))
+    app.locals.config = config
     app.set('view engine', 'handlebars')
-    app.set('views', viewsRoot)
+    app.set('views', path.join(viewsRoot, 'pages'))
+    app.set('view cache', config.production)
 
     app.set('subdomain offset', (config.publicURL.hostname.match(/[.]/g) || []).length + 1)
 
@@ -80,10 +55,13 @@ import * as models from './models'
     app.use(favicon(path.join(staticRoot, 'images', 'favicon.ico')))
     app.use(express.static(staticRoot))
 
-    app.use('/dist', express.static(path.join(clientRoot, 'dist')))
+    app.use('/css/style.css', express.static(path.join(clientRoot, 'dist', 'style.css')))
+    app.use('/js/bundle.js', express.static(path.join(clientRoot, 'dist', 'bundle.js')))
+    if (!config.production)
+        app.use('/js/main.js.map', express.static(path.join(clientRoot, 'dist', 'main.js.map')))
 
     // determine which subdomain-slug we're using, if any
-    const domainCache = new Map<string, models.Library|null>()
+    const domainCache = new Map<string, models.LibraryModel|null>()
     app.use(async (req, res, next) => {
         const library = domainCache.get(req.hostname)
 
@@ -104,8 +82,16 @@ import * as models from './models'
                 try
                 {
                     req.library = await libraryRepository.findBySlug({slug})
+                    if (!req.library)
+                    {
+                        res.status(404)
+                        return res.render('not-found')
+                        //return res.redirect(new URL(req.path, config.publicURL).toString())
+                    }
+
                     domainCache.set(slug, req.library || null)
                     req.libraryID = req.library ? req.library.id : 0
+                    res.locals.library = req.library
                 }
                 catch
                 {
@@ -133,13 +119,14 @@ import * as models from './models'
     app.use(BodyParser.json())
     
     passport.use(googleAuth(connection, config.publicURL.toString(), config.googleClientID, config.googleAuthSecret))
-    passport.serializeUser((user: models.User, done) => done(null, user))
+    passport.serializeUser((user: models.AccountModel, done) => done(null, user))
     passport.deserializeUser((user: any, done) => done(null, user))
 
     const RedisStore = redis(session)
     app.use(session({
         secret: config.sessionSecret,
         resave: false,
+        unset: 'destroy',
         saveUninitialized: false,
         store: new RedisStore({url: config.redisURL}),
         cookie: {
@@ -157,6 +144,7 @@ import * as models from './models'
 
         req.userID = req.user ? req.user.id : 0
         req.userRole = sessionRole || Role.Visitor
+        res.locals.account = req.user
 
         if (req.userID && req.session && !sessionRole)
         {
@@ -167,10 +155,9 @@ import * as models from './models'
         next()
     })
 
-    app.use(routes.authRoutes(connection, config))
-    app.use(routes.api(connection, config))
+    app.use(routes())
 
-    app.use(async (req, res) => res.render('index', {
+    app.use(async (req, res) => res.render('react', {
         session: JSON.stringify({
             config: {
                 publicURL: config.publicURL

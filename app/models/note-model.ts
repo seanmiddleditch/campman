@@ -1,7 +1,7 @@
 import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, ManyToMany, JoinTable, JoinColumn, Index, EntityRepository, Repository} from 'typeorm'
-import {Label} from './label-model'
-import {Library} from './library-model'
-import {User} from './user-model'
+import {LabelModel} from './label-model'
+import {LibraryModel} from './library-model'
+import {AccountModel} from './account-model'
 import {Role} from '../auth'
 
 export enum NoteVisibility
@@ -10,9 +10,9 @@ export enum NoteVisibility
     Hidden = 'Hidden'
 }
 
-@Entity()
+@Entity({name: 'note'})
 @Index(['libraryId', 'slug'])
-export class Note
+export class NoteModel
 {
     @PrimaryGeneratedColumn()
     public id: number
@@ -20,16 +20,16 @@ export class Note
     @Column({name: 'library_id'})
     public libraryId: number
 
-    @ManyToOne(t => Library, l => l.notes)
+    @ManyToOne(t => LibraryModel, l => l.notes)
     @JoinColumn({name: 'library_id'})
-    public library: Library
+    public library: LibraryModel
 
     @Column({name: 'author_id'})
     public authorId: number
 
-    @ManyToOne(t => User)
+    @ManyToOne(t => AccountModel)
     @JoinColumn({name: 'author_id'})
-    public author: User
+    public author: AccountModel
 
     @Column()
     public slug: string
@@ -39,22 +39,19 @@ export class Note
 
     @Column()
     public title: string
-    
-    @Column({default: ''})
-    public subtitle: string
 
     @Column({type: 'text', default: ''})
     public rawbody: string
 
-    @ManyToMany(t => Label)
+    @ManyToMany(t => LabelModel)
     @JoinTable({name: 'note_labels', joinColumn: {name: 'label_id'}, inverseJoinColumn: {name: 'note_id'}})
-    public labels: Label[]
+    public labels: LabelModel[]
 }
 
-@EntityRepository(Note)
-export class NoteRepository extends Repository<Note>
+@EntityRepository(NoteModel)
+export class NoteRepository extends Repository<NoteModel>
 {
-    public async listNotes({libraryID}: {libraryID: number})
+    public async findNotesForLibrary({libraryID}: {libraryID: number})
     {
         return this.createQueryBuilder('note')
             .where('"library_id"=:libraryID', {libraryID})
@@ -63,7 +60,6 @@ export class NoteRepository extends Repository<Note>
                     id: row.note_id as number,
                     slug: row.note_slug as string,
                     title: row.note_title as string,
-                    subtitle: row.note_subtitle as string,
                     visibility: row.note_visibility as NoteVisibility,
                     authorID: row.note_authorId as number
                 })))
@@ -79,7 +75,6 @@ export class NoteRepository extends Repository<Note>
                 id: row.note_id as number,
                 slug: row.note_slug as string,
                 title: row.note_title as string,
-                subtitle: row.note_subtitle as string,
                 rawbody: row.note_rawbody as string,
                 visibility: row.note_visibility as NoteVisibility,
                 authorID: row.note_authorId as number,
@@ -87,13 +82,12 @@ export class NoteRepository extends Repository<Note>
             }))
     }
 
-    public async updateNote(options: {slug: string, libraryID: number, title?: string, subtitle?: string, rawbody?: string, visibility?: NoteVisibility, labels?: string[]})
+    public async updateNote(options: {slug: string, libraryID: number, title?: string, rawbody?: string, visibility?: NoteVisibility, labels?: string[]})
     {
-        const {slug, libraryID, title, subtitle, rawbody, visibility} = options
+        const {slug, libraryID, title, rawbody, visibility} = options
         await this.createQueryBuilder('note')
             .update({
                 title,
-                subtitle,
                 rawbody,
                 visibility
             })
@@ -103,15 +97,14 @@ export class NoteRepository extends Repository<Note>
         //labels: req.body['labels'],
     }
 
-    public async createNote(options: {slug: string, authorID: number, libraryID: number, title?: string, subtitle?: string, rawbody?: string, visibility?: NoteVisibility, labels?: string[]})
+    public async createNote(options: {slug: string, authorID: number, libraryID: number, title?: string, rawbody?: string, visibility?: NoteVisibility, labels?: string[]})
     {
-        const {slug, authorID, libraryID, title, subtitle, rawbody, visibility} = options
+        const {slug, authorID, libraryID, title, rawbody, visibility} = options
         const note = await this.create({
             libraryId: libraryID,
             authorId: authorID,
             slug,
             title,
-            subtitle,
             rawbody,
             visibility
         })

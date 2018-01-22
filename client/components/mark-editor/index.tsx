@@ -1,6 +1,6 @@
 import * as React from 'react'
+import * as ReactDOM from 'react-dom'
 import * as PropTypes from 'prop-types'
-import * as ReactRouter from 'react-router'
 import {
     Editor,
     EditorState,
@@ -16,9 +16,7 @@ import {
     convertFromRaw
 } from 'draft-js'
 
-import {MediaFile} from '../../types/media-file'
-
-import {MediaSelector} from '../media-selector'
+import {MediaSelectDialog} from '../media-select-dialog'
 
 import {StyleButton} from './components/style-button'
 import {PreviewBar} from './components/preview-bar'
@@ -27,9 +25,6 @@ import {decorators} from './decorators'
 
 import {applyMarkdownShortcutsOnInput} from './helpers/markdown-shortcuts'
 import {blockRenderer, handleReturn, blockRenderMap} from './helpers/block-utils'
-
-require('./styles/editor.css')
-require('draft-js/dist/Draft.css')
 
 interface MarkEditorProps
 {
@@ -48,10 +43,6 @@ interface MarkEditorState
 }
 export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState>
 {
-    static contextTypes = { router: PropTypes.object.isRequired }
-    
-    context: ReactRouter.RouterChildContext<MarkEditorProps>
-
     refs: {
         editor: HTMLElement
     }
@@ -148,7 +139,26 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
         this._onChange(RichUtils.toggleBlockType(this.state.editorState, style));
     }
 
-    private _handleMedia(file: MediaFile)
+    private _handleClick(ev: React.MouseEvent<HTMLElement>)
+    {
+        if (!this.props.disabled && !this.state.mediaPopupOpen)
+        {
+            this.refs.editor.focus()
+            ev.preventDefault()
+        }
+    }
+
+    private _handleOpenMediaSelector()
+    {
+        this.setState({mediaPopupOpen: true})
+    }
+
+    private _handleCancelMediaSelector()
+    {
+        this.setState({mediaPopupOpen: false})
+    }
+    
+    private _handleInsertMedia(media: {url: string, caption?: string, path: string})
     {
         this.setState({mediaPopupOpen: false})
 
@@ -156,7 +166,7 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
         const contentState = editorState.getCurrentContent()
         const selection = editorState.getSelection()
 
-        const contentStateWithEntity = contentState.createEntity('image', 'IMMUTABLE', {url: file.url})
+        const contentStateWithEntity = contentState.createEntity('image', 'IMMUTABLE', {url: media.url})
         const entityKey = contentStateWithEntity.getLastCreatedEntityKey()
         const editorStateWithBlock = AtomicBlockUtils.insertAtomicBlock(
             editorState,
@@ -168,15 +178,6 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
             editorState.getCurrentContent().getSelectionAfter()
         )
         this.setState({editorState: editorStateWithSelection})
-    }
-
-    private _handleClick(ev: React.MouseEvent<HTMLElement>)
-    {
-        if (!this.props.disabled && !this.state.mediaPopupOpen)
-        {
-            this.refs.editor.focus()
-            ev.preventDefault()
-        }
     }
 
     private _isInlineStyleActive(style: string)
@@ -192,24 +193,25 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
     render() {
         return (
             <div>
-                <MediaSelector visible={this.state.mediaPopupOpen} onSelect={file => this._handleMedia(file)} onCancel={() => this.setState({mediaPopupOpen: false})}/>
+                <MediaSelectDialog visible={this.state.mediaPopupOpen} path='/' onSelect={file => this._handleInsertMedia(file)} onCancel={() => this._handleCancelMediaSelector()}/>
                 <div className='draft-editor' hidden={this.state.preview} onClick={ev => this._handleClick(ev)}>
                     {(this.props.editable === undefined || this.props.editable) && (
                         <div>
                             <div className='edit-bar'>
                                 <span className='btn-group' role='group'>
-                                    <StyleButton active={this._isInlineStyleActive('BOLD')} onToggle={() => this._handleInlineStyleClicked('BOLD')}>B</StyleButton>
-                                    <StyleButton active={this._isInlineStyleActive('ITALIC')} onToggle={() => this._handleInlineStyleClicked('ITALIC')}>I</StyleButton>
-                                    <StyleButton active={this._isInlineStyleActive('UNDERLINE')} onToggle={() => this._handleInlineStyleClicked('UNDERLINE')}>U</StyleButton>
+                                    <StyleButton active={this._isInlineStyleActive('BOLD')} onToggle={() => this._handleInlineStyleClicked('BOLD')}><i className='fa fa-bold'></i></StyleButton>
+                                    <StyleButton active={this._isInlineStyleActive('ITALIC')} onToggle={() => this._handleInlineStyleClicked('ITALIC')}><i className='fa fa-italic'></i></StyleButton>
+                                    <StyleButton active={this._isInlineStyleActive('UNDERLINE')} onToggle={() => this._handleInlineStyleClicked('UNDERLINE')}><i className='fa fa-underline'></i></StyleButton>
                                 </span>
                                 <span className='btn-group ml-sm-2' role='group'>
                                     <StyleButton active={this._isBlockStyleActive('unstyled')} onToggle={() => this._handleBlockStyleClicked('unstyled')}>Normal</StyleButton>
                                     <StyleButton active={this._isBlockStyleActive('header-one')} onToggle={() => this._handleBlockStyleClicked('header-one')}>H1</StyleButton>
                                     <StyleButton active={this._isBlockStyleActive('header-two')} onToggle={() => this._handleBlockStyleClicked('header-two')}>H2</StyleButton>
                                     <StyleButton active={this._isBlockStyleActive('header-three')} onToggle={() => this._handleBlockStyleClicked('header-three')}>H3</StyleButton>
+                                    <StyleButton active={this._isBlockStyleActive('secret')} onToggle={() => this._handleBlockStyleClicked('secret')}><i className='fa fa-eye-slash'></i></StyleButton>
                                 </span>
                                 <span className='btn-group ml-sm-2' role='group'>
-                                    <button className='btn btn-secondary' onClick={() => this.setState({mediaPopupOpen: true})}><i className='fa fa-picture-o'></i></button>
+                                    <StyleButton active={!!this.state.mediaPopupOpen} onToggle={() => this._handleOpenMediaSelector()}><i className='fa fa-picture-o'></i></StyleButton>
                                 </span>
                                 {this.props.buttons && this.props.buttons()}
                             </div>
@@ -234,4 +236,10 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
             </div>
         )
     }
+}
+
+export function CreateMarkEditor(document: any, onChange: (doc: any) => void, target: HTMLDivElement, buttons: () => any = undefined) {
+    const onCancel = ()=>{ReactDOM.unmountComponentAtNode(target)}
+    const onUpload = ()=>{document.location.reload(true)}
+    ReactDOM.render(React.createElement(MarkEditor, {document, onChange, buttons}), target)
 }

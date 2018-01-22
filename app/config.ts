@@ -40,3 +40,6 @@ export class Config
         this.inviteAddress = process.env.INVITE_ADDRESS || 'invite-noreply@' + this.mailDomain
     }
 }
+
+const config = new Config()
+export {config}

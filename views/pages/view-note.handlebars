@@ -1,0 +1,9 @@
+{{>layouts/page title=note.title page_icon='file-o'}}
+
+{{#*inline "content"}}
+{{#if note.editable}}
+<a href='/n/{{note.slug}}/edit'><button class='btn btn-primary'>Edit</button></a>
+{{/if}}
+<div><i class='fa fa-tags'></i> {{#if note.labels}}{{note.labels}}{{else}}no labels{{/if}}</div>
+<div>{{{note.body}}}</div>
+{{/inline}}

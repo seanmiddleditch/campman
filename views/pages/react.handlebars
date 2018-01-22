@@ -1,0 +1,11 @@
+{{#>layouts/essential title='Home'}}
+
+{{#*inline "body"}}
+<div id="content"/>
+<script>
+    window.CM_SESSION = {{{session}}};
+</script>
+<script src="/dist/bundle.js" defer></script>
+{{/inline}}
+
+{{/layouts/essential}}

@@ -1,0 +1,84 @@
+{{>layouts/page title=note.title}}
+
+{{#*inline "page_header"}}
+<h1><i class='fa fa-file-o'></i> Editing {{note.title}}</h1>
+{{/inline}}
+
+{{#*inline "content"}}
+<form id='note-form' method='post' action='/n/{{note.slug}}'>
+    <div class='input-group mb-1'>
+        <div class='input-group-prepend'>
+            <span class='input-group-text'>Title</span>
+        </div>
+        <input type='text' class='form-control' id='note-title' name='title' value='{{note.title}}' placeholder='Optional subtitle'/>
+    </div>
+    <div class='input-group mb-1'>
+        <div class='input-group-prepend'>
+            <span class='input-group-text'><i class='fa fa-tag'></i></span>
+        </div>
+        <input type='text' class='form-control' name='labels' value='{{note.labels}}' placeholder='Comma-separated labels'/>
+    </div>
+    {{#if note.slug}}{{else}}
+    <div class='input-group mb-1'>
+        <input type='text' class='form-control' id='note-slug' placeholder='slug'/>
+    </div>
+    {{/if}}
+    <div class='form-group'>
+        <div id='body-editor'></div>
+    </div>
+    <textarea style='display: none' name='rawbody' id='rawbody'>{{note.rawbody}}</textarea>
+    <input type='text' style='display: none' name='visibility' id='visibility' value='{{note.visibility}}'/>
+</form>
+<script defer>
+    const form = document.getElementById('note-form')
+    const title = document.getElementById('note-title')
+    const slugInput = document.getElementById('note-slug')
+    const visibility = document.getElementById('visibility')
+    const bodyInput = document.getElementById('rawbody')
+    const editorDiv = document.getElementById('body-editor')
+
+    if (slugInput) {
+        slugInput.onchange = ev => {
+            const slug = ev.target.value || ev.target.placeholder
+            form.action = `/n/${slug}`
+        }
+        title.onkeyup = ev => {
+            const title = ev.target.value
+            const slug = title.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/ +/g, ' ').trim().replace(/ /g, '-')
+            slugInput.placeholder = slug
+            form.action = `/n/${slug}`
+        }
+    }
+
+    class VisMenu extends React.Component {
+        constructor(props) {
+            super(props)
+            this.state = {current: visibility.value}
+        }
+        _handleClick(ev, state) {
+            ev.preventDefault()
+            visibility.value = state
+            this.setState({current: state})
+        }
+        render() {
+            return React.createElement('div', {className: 'dropdown-menu'},
+                React.createElement('a', {className: 'dropdown-item ' + (this.state.current == 'Public' ? 'active' : ''), onClick: ev  => this._handleClick(ev, 'Public')}, 'Party Public'),
+                React.createElement('a', {className: 'dropdown-item ' + (this.state.current == 'Hidden' ? 'active' : ''), onClick: ev  => this._handleClick(ev, 'Hidden')}, 'GM Secret')
+            )
+        }
+    }
+
+    CreateMarkEditor(bodyInput.value ? JSON.parse(bodyInput.value) : null, doc => bodyInput.value = JSON.stringify(doc), editorDiv, () =>
+        React.createElement('div', {className: 'btn-group ml-sm-2 float-right', role: 'group'},
+            React.createElement('button', {className: 'btn btn-primary', onClick: () => form.submit()},
+                React.createElement('span', {},
+                    React.createElement('i', {className: 'fa fa-floppy-o'}, null),
+                    ' Save Changes'
+                )
+            ),
+            React.createElement('button', {className: 'btn btn-primary dropdown-toggle dropdown-toggle-split', 'data-toggle': 'dropdown', onClick: ev => $(ev.target).dropdown('toggle') }, null),
+            React.createElement(VisMenu, {}, null)
+        )
+    )
+</script>
+{{/inline}}

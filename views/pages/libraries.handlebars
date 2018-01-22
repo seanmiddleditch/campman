@@ -1,0 +1,19 @@
+{{>layouts/page title='Libraries'}}
+
+{{#*inline "content"}}
+<div class='list-group'>
+{{#each libraries}}
+    <a href='{{this.publicURL}}' class='list-group-item'>
+        <div class='list-item-name'><i class='fa fa-file'></i> {{this.title}}</div>
+        <div class='list-item-details'>{{this.publicURL}}</div>
+    </a>
+{{else}}
+    <div class='list-group-item'>No libraries found</div>
+{{/each}}
+    <div class='list-group-item'>
+        <button class='btn btn-default'>
+            <i class='fa fa-plus'></i> New Library
+        </button>
+    </div>
+</div>
+{{/inline}}

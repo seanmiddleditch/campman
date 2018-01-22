@@ -1,31 +1,31 @@
 import {Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, Index, ManyToOne, OneToMany, EntityRepository, JoinColumn, Repository, Connection} from 'typeorm'
-import {Library} from './library-model'
-import {User} from './user-model'
+import {LibraryModel} from './library-model'
+import {AccountModel} from './account-model'
 import {Role} from '../auth'
 
-@Entity()
-export class Membership
+@Entity({name: 'membership'})
+export class MembershipModel
 {
     @PrimaryColumn({name: 'library_id'})
     public libraryId: number
 
-    @ManyToOne(t => Library, l => l.memberships)
+    @ManyToOne(t => LibraryModel, l => l.memberships)
     @JoinColumn({name: 'library_id'})
-    public library: Library
+    public library: LibraryModel
 
     @PrimaryColumn({name: 'account_id'})
     public accountId: number
 
-    @ManyToOne(t => User, u => u.membership)
+    @ManyToOne(t => AccountModel, u => u.membership)
     @JoinColumn({name: 'account_id'})
-    public user: User
+    public user: AccountModel
 
     @Column()
     public role: Role
 }
 
-@EntityRepository(Membership)
-export class MembershipRepository extends Repository<Membership>
+@EntityRepository(MembershipModel)
+export class MembershipRepository extends Repository<MembershipModel>
 {
     public async findRoleForUser(options: {userID: number, libraryID: number})
     {

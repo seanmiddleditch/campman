@@ -1,21 +1,13 @@
-import {Request, Response, Router} from 'express'
+import {Request, Response} from 'express'
 import * as passport from 'passport'
-import {User} from '../models'
-import {wrapper} from './helpers'
+import {AccountModel} from '../models'
 import {URL} from 'url'
-import {Connection} from 'typeorm'
+import {config} from '../config'
+import PromiseRouter = require('express-promise-router')
 
-export interface AuthRoutesConfig
+export function auth()
 {
-    publicURL: URL,
-    googleClientID: string,
-    googleAuthSecret: string,
-    sessionSecret: string,
-    redisURL: string,
-}
-export function authRoutes(connection: Connection, config: AuthRoutesConfig)
-{
-    const router = Router()
+    const router = PromiseRouter()
 
     // all auth calls only work on the public URL
     router.use('/auth', (req, res, next) => {
@@ -25,7 +17,7 @@ export function authRoutes(connection: Connection, config: AuthRoutesConfig)
             next()
     })
 
-    router.post('/auth/logout', wrapper(async (req, res) =>
+    router.use('/auth/logout', async (req, res) =>
     {
         if (!req.session)
         {
@@ -34,17 +26,17 @@ export function authRoutes(connection: Connection, config: AuthRoutesConfig)
         else
         {
             const session = req.session;
-            (new Promise(res => session.destroy(res))).then(() => res.json({}))
+            (new Promise(cb => session.destroy(cb))).then(() => res.json({}))
         }
-    }))
+    })
 
     router.get('/auth/google/callback',
         passport.authenticate('google'),
         (req, res) => {
-            const returnURL = req.session && req.session.returnURL ? req.session.returnURL : config.publicURL
+            const origin = new URL(req.session && req.session.returnURL ? req.session.returnURL : config.publicURL).origin
             if (req.session)
                 delete req.session.returnURL
-            res.render('auth-callback', {layout: null, returnURL, sessionKey: req.sessionID, user: req.user})
+            res.render('google-auth-callback', {origin})
         })
 
     router.get('/auth/google/login',

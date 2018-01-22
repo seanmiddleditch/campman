@@ -1,0 +1,37 @@
+{{>layouts/page title='Media' page_icon='files-o'}}
+
+{{#*inline "head"}}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ekko-lightbox/5.3.0/ekko-lightbox.css" integrity="sha256-HAaDW5o2+LelybUhfuk0Zh2Vdk8Y2W2UeKmbaXhalfA=" crossorigin="anonymous" />
+{{/inline}}
+
+{{#*inline "scripts"}}
+<script>
+function DeleteMedia(ev, path) {
+    ev.preventDefault()
+    const media = new MediaAPI()
+    media.delete(path)
+        .then(() => window.location.reload(true))
+        .catch(err => alert(err))
+}
+</script>
+{{/inline}}
+
+{{#*inline "content"}}
+{{#if canUpload}}
+<button class='btn btn-primary' onClick='ShowMediaUploadDialog()'><i class='fa fa-upload'></i> Upload</button>
+{{/if}}
+<div class='clearfix'>
+{{#each media}}
+    <div class='card float-left m-2' style='width: 12rem; height: 16rem'>
+        <div style='height: 140px; overflow: hidden'><img src='{{this.thumb_url}}' class='card-img-top' alt='{{this.caption}}'/></div>
+        <div class='card-body'>
+            <h5 class='card-title'>{{#if this.caption}}{{this.caption}}{{else}}{{this.path}}{{/if}}</h5>
+            <a href='{{this.url}}' class='card-link'><i class='fa fa-expand'></i> Enlarge</a>
+            <button class='btn btn-danger' onClick='DeleteMedia(event, "{{this.path}}")'>Delete</button>
+        </div>
+    </div>
+{{else}}
+    <div class='alert alert-warning'>No results</div>
+{{/each}}
+</div>
+{{/inline}}

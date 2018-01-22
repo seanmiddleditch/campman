@@ -1,8 +1,8 @@
 import {Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, Index, ManyToOne, OneToMany, EntityRepository, JoinColumn, Repository, Connection} from 'typeorm'
-import {Note} from './note-model'
-import {User} from './user-model'
-import {Membership} from './membership-model'
-import {Invitation} from './invite-model'
+import {NoteModel} from './note-model'
+import {AccountModel} from './account-model'
+import {MembershipModel} from './membership-model'
+import {InvitationModel} from './invitation-model'
 import {Role} from '../auth/access'
 
 export enum LibraryVisibility
@@ -11,9 +11,9 @@ export enum LibraryVisibility
     Hidden = 'Hidden'
 }
 
-@Entity()
+@Entity({name: 'library'})
 @Index(['id', 'slug'], {unique: true})
-export class Library
+export class LibraryModel
 {
     @PrimaryGeneratedColumn()
     public id: number
@@ -27,18 +27,18 @@ export class Library
     @Column()
     public visibility: LibraryVisibility
 
-    @OneToMany(t => Note, n => n.library)
-    public notes: Note[]
+    @OneToMany(t => NoteModel, n => n.library)
+    public notes: NoteModel[]
 
-    @OneToMany(t => Membership, m => m.library)
-    public memberships: Membership[]
+    @OneToMany(t => MembershipModel, m => m.library)
+    public memberships: MembershipModel[]
 
-    @OneToMany(t => Invitation, i => i.library)
-    public invitations: Invitation[]
+    @OneToMany(t => InvitationModel, i => i.library)
+    public invitations: InvitationModel[]
 }
 
-@EntityRepository(Library)
-export class LibraryRepository extends Repository<Library>
+@EntityRepository(LibraryModel)
+export class LibraryRepository extends Repository<LibraryModel>
 {
     public async findAllForUser({userID}: {userID: number})
     {
@@ -75,7 +75,7 @@ export class LibraryRepository extends Repository<Library>
             })
             await libraries.save(library)
             
-            const memberships = tx.getRepository(Membership)
+            const memberships = tx.getRepository(MembershipModel)
             const member = memberships.create({
                 accountId: creatorID,
                 libraryId: library.id,

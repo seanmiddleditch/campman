@@ -1,9 +1,9 @@
 import {Entity, Column, ManyToOne, PrimaryGeneratedColumn, JoinColumn, EntityRepository, Repository} from 'typeorm'
-import {MediaFile} from './media-model'
-import {Library} from './library-model'
+import {MediaModel} from './media-model'
+import {LibraryModel} from './library-model'
 
-@Entity()
-export class Map
+@Entity({name: 'map'})
+export class MapModel
 {
     @PrimaryGeneratedColumn()
     public id: number
@@ -11,9 +11,9 @@ export class Map
     @Column({name: 'library_id'})
     public libraryId: number;
 
-    @ManyToOne(t => Library)
+    @ManyToOne(t => LibraryModel)
     @JoinColumn({name: 'library_id'})
-    public library: Library;
+    public library: LibraryModel;
 
     @Column()
     public title: string
@@ -21,13 +21,13 @@ export class Map
     @Column({name: 'media_id'})
     public mediaId: number;
 
-    @ManyToOne(t => MediaFile)
+    @ManyToOne(t => MediaModel)
     @JoinColumn({name: 'media_id'})
-    public media?: MediaFile
+    public media?: MediaModel
 }
 
-@EntityRepository(Map)
-export class MapRepository extends Repository<Map>
+@EntityRepository(MapModel)
+export class MapRepository extends Repository<MapModel>
 {
     public async findAllByLibrary({libraryID}: {libraryID: number})
     {

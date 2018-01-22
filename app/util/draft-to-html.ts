@@ -45,7 +45,7 @@ const elementMap: ElementsConfig = {
     'header-one': {element: 'h1'},
     'header-two': {element: 'h2'},
     'header-three': {element: 'h3'},
-    'secret': {element: 'div', className: 'secret'}
+    'secret': {element: 'div', className: 'alert alert-dark'}
 }
 
 function htmlEscape(text: string)
