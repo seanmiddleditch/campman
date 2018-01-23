@@ -6,10 +6,12 @@
   "scripts": {
     "start": "node app/dist/server.js",
     "serve": "nf start -x 8080",
+    "clean": "rimraf \"app/dist/*\" \"client/dist/*\"",
     "build": "tsc -p app/tsconfig.json",
     "build-dev": "tsc --watch -p app/tsconfig.json",
     "webpack": "webpack --config client/webpack.config.js",
     "webpack-dev": "webpack --watch --config client/webpack.config.js",
+    "preinstall": "npm run clean",
     "postinstall": "npm run build && npm run webpack",
     "migrations": "typeorm migrations:run"
   },
@@ -97,6 +99,5 @@
     "webpack": "3.5.5",
     "@types/express-promise-router": "2.0.0"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }

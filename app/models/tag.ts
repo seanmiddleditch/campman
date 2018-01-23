@@ -12,11 +12,11 @@ export class TagModel
     @Index({unique: true})
     public slug: string
 
-    @ManyToMany(t => PageModel, m => m.tags)
-    public pages: PageModel[]
+    // @ManyToMany(t => PageModel, m => m.tags)
+    // public pages: PageModel[]
 
-    @ManyToMany(t => MediaModel, m => m.tags)
-    public media: MediaModel[]
+    // @ManyToMany(t => MediaModel, m => m.tags)
+    // public media: MediaModel[]
 }
 
 @EntityRepository(TagModel)
