@@ -118,7 +118,8 @@ export class MediaAPI
         const result = await fetch(`/media${path}`, {
             method: 'GET',
             mode: 'same-origin',
-            credentials: 'include'
+            credentials: 'include',
+            headers: new Headers({'Accept': 'application/json'}),
         })
         if (!result.ok)
             throw new Error(result.statusText)
