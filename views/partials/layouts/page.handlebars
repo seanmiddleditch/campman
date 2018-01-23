@@ -3,13 +3,14 @@
 {{#*inline "body"}}
 
 <nav class='navbar sticky-top navbar-expand-lg navbar-light bg-light'>
-    {{#if library}}
-    <div class='navbar-brand'><a href='/'>{{library.title}}</a></div>
+    {{#if campaign}}
+    <div class='navbar-brand'><a href='{{config.publicURL}}'><i class='fa fa-home'></i></a></div>
+    <div class='navbar-brand'><a href='/'>{{campaign.title}}</a></div>
     <div class='collapse navbar-collapse' id='navbarTogglerDemo03'>
         <ul class='navbar-nav mr-auto mt-2 mt-lg-0'>
             <div class='nav-link disabled'>Adventures</div>
-            <div class='nav-link'><a href='/notes'>Notes</a></div>
-            <div class='nav-link'><a href='/labels'>Labels</a></div>
+            <div class='nav-link'><a href='/wiki'>Wiki</a></div>
+            <div class='nav-link'><a href='/tags'>Tags</a></div>
             <div class='nav-link disabled'>Maps</div>
             <div class='nav-link disabled'>Characters</div>
             <div class='nav-link disabled'>Timeline</div>
@@ -18,10 +19,10 @@
         </ul>
     </div>
     {{else}}
-    <div class='navbar-brand'><a href='/'>Campaign Manager</div>
+    <div class='navbar-brand'><a href='{{config.publicURL}}'><i class='fa fa-home'></i> Campaign Manager</a></div>
     <div class='collapse navbar-collapse' id='navbarTogglerDemo03'>
         <ul class='navbar-nav mr-auto mt-2 mt-lg-0'>
-            <div class='nav-link'><a href='/libraries'>Libraries</a></div>
+            <div class='nav-link'><a href='/campaigns'>Campaigns</a></div>
         </ul>
     </div>
     {{/if}}
@@ -34,26 +35,26 @@
         </span>
     </form>
     <ul class='navbar-nav ml-2 ml-lg-2 mt-2 mt-lg-0'>
-        {{#if account}}
+        {{#if profile}}
         <div class='btn-group' role='group'>
             <button class='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
-                <span class='navigation-bar-profile'>
-                    <span class='navigation-bar-profile-name'>{{account.nickname}}</span>
-                    {{#if user.photoURL}}
-                    <img class='navigation-bar-profile-photo profile-photo' src='{{account.photoURL}}'/>
-                    {{else}}
-                    <i class='navigation-bar-profile-photo fa fa-user-circle-o'></i>
-                    {{/if}}
-                </span>
+                <span>{{profile.nickname}}</span>
+                {{#if profile.photoURL}}
+                <img style='width: 24px; height: 24px' src='{{profile.photoURL}}'/>
+                {{else}}
+                <i class='navigation-bar-profile-photo fa fa-user-circle-o'></i>
+                {{/if}}
             </button>
             <div class='dropdown-menu'>
-                <a class='dropdown-item' href='{{config.publicURL}}libraries'>Libraries</a>
+                <a class='dropdown-item' href='{{config.publicURL}}campaigns'>Campaigns</a>
                 <a class='dropdown-item' href='{{config.publicURL}}profile'>Profile</a>
                 <a class='dropdown-item' id='nav-logout-btn'>Logout</a>
             </div>
         </div>
         {{else}}
-        <button class='btn btn-signin-google' id='nav-login-btn'><img src='/images/google-signin/normal.png' alt='Sign-in (Google+)'/></button>
+        <button class='btn btn-signin-google p-0 m-0' id='nav-login-btn'>
+            <img src='/images/google-signin/normal.png' alt='Sign-in (Google+)'/>
+        </button>
         {{/if}}
         <script defer>
             $(() => {

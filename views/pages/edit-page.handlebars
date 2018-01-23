@@ -1,38 +1,38 @@
-{{>layouts/page title=note.title}}
+{{>layouts/page title=page.title}}
 
 {{#*inline "page_header"}}
-<h1><i class='fa fa-file-o'></i> Editing {{note.title}}</h1>
+<h1><i class='fa fa-file-o'></i> Editing {{page.title}}</h1>
 {{/inline}}
 
 {{#*inline "content"}}
-<form id='note-form' method='post' action='/n/{{note.slug}}'>
+<form id='page-form' method='post' action='/n/{{page.slug}}'>
     <div class='input-group mb-1'>
         <div class='input-group-prepend'>
             <span class='input-group-text'>Title</span>
         </div>
-        <input type='text' class='form-control' id='note-title' name='title' value='{{note.title}}' placeholder='Optional subtitle'/>
+        <input type='text' class='form-control' id='page-title' name='title' value='{{page.title}}' placeholder='Optional subtitle'/>
     </div>
     <div class='input-group mb-1'>
         <div class='input-group-prepend'>
             <span class='input-group-text'><i class='fa fa-tag'></i></span>
         </div>
-        <input type='text' class='form-control' name='labels' value='{{note.labels}}' placeholder='Comma-separated labels'/>
+        <input type='text' class='form-control' name='labels' value='{{page.labels}}' placeholder='Comma-separated labels'/>
     </div>
-    {{#if note.slug}}{{else}}
+    {{#if page.slug}}{{else}}
     <div class='input-group mb-1'>
-        <input type='text' class='form-control' id='note-slug' placeholder='slug'/>
+        <input type='text' class='form-control' id='page-slug' placeholder='slug'/>
     </div>
     {{/if}}
     <div class='form-group'>
         <div id='body-editor'></div>
     </div>
-    <textarea style='display: none' name='rawbody' id='rawbody'>{{note.rawbody}}</textarea>
-    <input type='text' style='display: none' name='visibility' id='visibility' value='{{note.visibility}}'/>
+    <textarea style='display: none' name='rawbody' id='rawbody'>{{page.rawbody}}</textarea>
+    <input type='text' style='display: none' name='visibility' id='visibility' value='{{page.visibility}}'/>
 </form>
 <script defer>
-    const form = document.getElementById('note-form')
-    const title = document.getElementById('note-title')
-    const slugInput = document.getElementById('note-slug')
+    const form = document.getElementById('page-form')
+    const title = document.getElementById('page-title')
+    const slugInput = document.getElementById('page-slug')
     const visibility = document.getElementById('visibility')
     const bodyInput = document.getElementById('rawbody')
     const editorDiv = document.getElementById('body-editor')

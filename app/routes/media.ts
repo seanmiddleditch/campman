@@ -2,7 +2,7 @@ import {S3, AWSError} from 'aws-sdk'
 import {Request, Response} from 'express'
 import PromiseRouter = require('express-promise-router')
 import * as express from 'express'
-import {LibraryModel, MediaModel, MediaStorageModel, MediaFileRepository} from '../models'
+import {CampaignModel, MediaModel, MediaStorageModel, MediaFileRepository} from '../models'
 import {checkAccess} from '../auth'
 import {connection} from '../db'
 import {config} from '../config'
@@ -27,12 +27,12 @@ export function media()
     s3.config.secretAccessKey = config.awsAuthSecret
 
     router.put('/media/:pathspec?', async (req, res, next) => {
-        if (!req.library)
+        if (!req.campaign)
         {
             return next()
         }
         
-        if (!checkAccess({target: 'media:upload', hidden: false, userID: req.userID, role: req.userRole}))
+        if (!checkAccess({target: 'media:upload', hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
             res.status(403)
             return res.json({status: 'access denied'})
@@ -69,7 +69,7 @@ export function media()
         if (mime.getType(extension) !== contentType)
             return res.json({status: 'Incorrect file extension provided'})
 
-        const librarySlug = req.library.slug
+        const librarySlug = req.campaign.slug
         const s3key = `media/${contentHexMD5}${extension}`
         const thumbS3key = `media/thumbs/${contentHexMD5}.png`
 
@@ -102,7 +102,7 @@ export function media()
             path: filePath,
             caption,
             storageId: storage.id,
-            libraryId: req.libraryID,
+            campaignId: req.campaign.id,
             attribution: ''
         })
 
@@ -177,12 +177,12 @@ export function media()
     })
 
     router.post('/media/:pathspec?', async (req, res, next) => {
-        if (!req.library)
+        if (!req.campaign)
         {
             return next()
         }
         
-        if (!checkAccess({target: 'media:upload', hidden: false, userID: req.userID, role: req.userRole}))
+        if (!checkAccess({target: 'media:upload', hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
             res.status(403)
             return res.json({status: 'access denied'})
@@ -227,19 +227,19 @@ export function media()
     })
 
     router.delete('/media/:pathspec?', async (req, res, next) => {
-        if (!req.library)
+        if (!req.campaign)
         {
             return next()
         }
 
-        if (!checkAccess({target: 'media:delete', hidden: false, userID: req.userID, role: req.userRole}))
+        if (!checkAccess({target: 'media:delete', hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
             res.status(403)
             return res.json({status: 'access denied'})
         }
 
         const path = '/' + req.params['pathspec'] as string
-        const media = await mediaRepository.findByPath({libraryID: req.libraryID, path})
+        const media = await mediaRepository.findByPath({campaignId: req.campaign.id, path})
         if (!media)
         {
             res.status(404)
@@ -252,20 +252,20 @@ export function media()
     })
 
     router.get('/media/:pathspec?', async (req, res, next) => {
-        if (!req.library)
+        if (!req.campaign)
         {
             return next()
         }
 
-        if (!checkAccess({target: 'media:list', hidden: false, userID: req.userID, role: req.userRole}))
+        if (!checkAccess({target: 'media:list', hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
             res.status(403)
             return res.json({status: 'access denied'})
         }
 
-        const canUpload = checkAccess({target: 'media:upload', hidden: false, userID: req.userID, role: req.userRole});
+        const canUpload = checkAccess({target: 'media:upload', hidden: false, profileId: req.profileId, role: req.campaignRole});
 
-        const media = await mediaRepository.findAllByLibrary({libraryID: req.libraryID})
+        const media = await mediaRepository.findByCampaign({campaignId: req.campaign.id})
 
         if (req.accepts('text/html'))
         {

@@ -1,6 +1,6 @@
 import {Request, Response} from 'express'
 import * as passport from 'passport'
-import {AccountModel} from '../models'
+import {ProfileModel} from '../models'
 import {URL} from 'url'
 import {config} from '../config'
 import PromiseRouter = require('express-promise-router')

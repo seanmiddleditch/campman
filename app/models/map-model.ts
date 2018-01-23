@@ -1,6 +1,6 @@
 import {Entity, Column, ManyToOne, PrimaryGeneratedColumn, JoinColumn, EntityRepository, Repository} from 'typeorm'
-import {MediaModel} from './media-model'
-import {LibraryModel} from './library-model'
+import {MediaModel} from './media'
+import {CampaignModel} from './campaign'
 
 @Entity({name: 'map'})
 export class MapModel
@@ -9,11 +9,11 @@ export class MapModel
     public id: number
 
     @Column({name: 'library_id'})
-    public libraryId: number;
+    public campaignId: number;
 
-    @ManyToOne(t => LibraryModel)
+    @ManyToOne(t => CampaignModel)
     @JoinColumn({name: 'library_id'})
-    public library: LibraryModel;
+    public campaign: CampaignModel;
 
     @Column()
     public title: string
@@ -29,7 +29,7 @@ export class MapModel
 @EntityRepository(MapModel)
 export class MapRepository extends Repository<MapModel>
 {
-    public async findAllByLibrary({libraryID}: {libraryID: number})
+    public async findByCampaign({campaignId}: {campaignId: number})
     {
         return this.find({
             select: [
@@ -38,7 +38,7 @@ export class MapRepository extends Repository<MapModel>
                 'media'
             ],
             where: {
-                libraryId: libraryID
+                campaignId: campaignId
             }
         })
     }

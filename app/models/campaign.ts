@@ -1,11 +1,11 @@
 import {Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, Index, ManyToOne, OneToMany, EntityRepository, JoinColumn, Repository, Connection} from 'typeorm'
-import {NoteModel} from './note-model'
-import {AccountModel} from './account-model'
+import {PageModel} from './page'
+import {ProfileModel} from './profile'
 import {MembershipModel} from './membership-model'
 import {InvitationModel} from './invitation-model'
-import {Role} from '../auth/access'
+import {CampaignRole} from '../auth/access'
 
-export enum LibraryVisibility
+export enum CampaignVisibility
 {
     Public = 'Public',
     Hidden = 'Hidden'
@@ -13,7 +13,7 @@ export enum LibraryVisibility
 
 @Entity({name: 'library'})
 @Index(['id', 'slug'], {unique: true})
-export class LibraryModel
+export class CampaignModel
 {
     @PrimaryGeneratedColumn()
     public id: number
@@ -25,32 +25,32 @@ export class LibraryModel
     public title: string
 
     @Column()
-    public visibility: LibraryVisibility
+    public visibility: CampaignVisibility
 
-    @OneToMany(t => NoteModel, n => n.library)
-    public notes: NoteModel[]
+    @OneToMany(t => PageModel, n => n.campaign)
+    public pages: PageModel[]
 
-    @OneToMany(t => MembershipModel, m => m.library)
+    @OneToMany(t => MembershipModel, m => m.campaign)
     public memberships: MembershipModel[]
 
-    @OneToMany(t => InvitationModel, i => i.library)
+    @OneToMany(t => InvitationModel, i => i.campaign)
     public invitations: InvitationModel[]
 }
 
-@EntityRepository(LibraryModel)
-export class LibraryRepository extends Repository<LibraryModel>
+@EntityRepository(CampaignModel)
+export class CampaignRepository extends Repository<CampaignModel>
 {
-    public async findAllForUser({userID}: {userID: number})
+    public async findAllForProfile({profileId}: {profileId: number})
     {
         return this.createQueryBuilder('library')
-            .leftJoinAndMapOne('role', 'library.memberships', 'membership', 'membership.account_id=:userID', {userID})
+            .leftJoinAndMapOne('role', 'library.memberships', 'membership', 'membership.account_id=:profileId', {profileId})
             .getRawMany()
             .then(results => results.map(row => ({
                     id: row.library_id as number,
                     slug: row.library_slug as string,
                     title: row.library_title as string,
-                    visibility: row.library_visibility as LibraryVisibility,
-                    role: row.membership_role as Role
+                    visibility: row.library_visibility as CampaignVisibility,
+                    role: row.membership_role as CampaignRole
                 })))
     }
 
@@ -64,30 +64,30 @@ export class LibraryRepository extends Repository<LibraryModel>
         })
     }
 
-    public static async createLibrary(conn: Connection, {slug, title, creatorID}: {slug: string, title: string, creatorID: number})
+    public static async createNewCampaign(conn: Connection, {slug, title, creatorID}: {slug: string, title: string, creatorID: number})
     {
         return conn.transaction(async (tx) => {
-            const libraries = tx.getCustomRepository(LibraryRepository)
-            const library = libraries.create({
+            const campaignRepo = tx.getCustomRepository(CampaignRepository)
+            const campaign = campaignRepo.create({
                 slug,
                 title,
-                visibility: LibraryVisibility.Public
+                visibility: CampaignVisibility.Public
             })
-            await libraries.save(library)
+            await campaignRepo.save(campaign)
             
             const memberships = tx.getRepository(MembershipModel)
             const member = memberships.create({
-                accountId: creatorID,
-                libraryId: library.id,
-                role: Role.Owner
+                profileId: creatorID,
+                campaignId: campaign.id,
+                role: CampaignRole.Owner
             })
             await memberships.save(member)
 
-            return library
+            return campaign
         })
     }
 
-    public async updateLibrary({slug, title, visibility}: {slug: string, title?: string, visibility?: LibraryVisibility})
+    public async updateCampaign({slug, title, visibility}: {slug: string, title?: string, visibility?: CampaignVisibility})
     {
         await this.createQueryBuilder('library')
             .where('"slug"=:slug', {slug})

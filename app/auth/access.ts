@@ -1,6 +1,6 @@
-import {LibraryModel, MembershipModel} from '../models'
+import {CampaignModel, MembershipModel} from '../models'
 
-export enum Role
+export enum CampaignRole
 {
     Owner = 'Owner',
     GameMaster = 'GameMaster',
@@ -13,45 +13,45 @@ type AccessControls = AccessCondition[]
 
 interface AccessConfiguration
 {
-    ['label:view']: AccessControls
-    ['library:view']: AccessControls
-    ['library:create']: AccessControls
-    ['library:configure']: AccessControls
-    ['library:invite']: AccessControls
+    ['tag:view']: AccessControls
+    ['campaign:view']: AccessControls
+    ['campaign:create']: AccessControls
+    ['campaign:configure']: AccessControls
+    ['campaign:invite']: AccessControls
     ['media:upload']: AccessControls
     ['media:list']: AccessControls
     ['media:delete']: AccessControls
     ['maps:list']: AccessControls
-    ['note:view']: AccessControls
-    ['note:view-secret']: AccessControls
-    ['note:create']: AccessControls
-    ['note:edit']: AccessControls
-    ['note:delete']: AccessControls
+    ['page:view']: AccessControls
+    ['page:view-secret']: AccessControls
+    ['page:create']: AccessControls
+    ['page:edit']: AccessControls
+    ['page:delete']: AccessControls
 }
 
 export const accessConfiguration : AccessConfiguration = {
-    'label:view': [
-        p => p.role !== Role.Visitor
+    'tag:view': [
+        p => p.role !== CampaignRole.Visitor
     ],
-    'library:view': [
-        p => p.ownerID === p.userID,
-        p => p.role !== Role.Visitor,
+    'campaign:view': [
+        p => p.ownerID === p.profileId,
+        p => p.role !== CampaignRole.Visitor,
         p => !p.hidden
     ],
-    'library:create': [
-        p => !!p.userID,
+    'campaign:create': [
+        p => !!p.profileId,
     ],
-    'library:configure': [
-        p => p.role === Role.Owner
+    'campaign:configure': [
+        p => p.role === CampaignRole.Owner
     ],
-    'library:invite': [
-        p => p.role === Role.Owner
+    'campaign:invite': [
+        p => p.role === CampaignRole.Owner
     ],
     'media:upload': [
-        p => p.role !== Role.Visitor
+        p => p.role !== CampaignRole.Visitor
     ],
     'media:delete': [
-        p => p.role !== Role.Visitor
+        p => p.role !== CampaignRole.Visitor
     ],
     'media:list': [
         p => !p.hidden
@@ -59,28 +59,28 @@ export const accessConfiguration : AccessConfiguration = {
     'maps:list': [
         p => !p.hidden
     ],
-    'note:view': [
-        p => p.ownerID === p.userID,
-        p => p.role === Role.Owner,
-        p => p.role === Role.GameMaster,
+    'page:view': [
+        p => p.ownerID === p.profileId,
+        p => p.role === CampaignRole.Owner,
+        p => p.role === CampaignRole.GameMaster,
         p => !p.hidden
     ],
-    'note:view-secret': [
-        p => p.role === Role.Owner,
-        p => p.role === Role.GameMaster
+    'page:view-secret': [
+        p => p.role === CampaignRole.Owner,
+        p => p.role === CampaignRole.GameMaster
     ],
-    'note:create': [
-        p => p.role === Role.Owner,
-        p => p.role === Role.GameMaster,
+    'page:create': [
+        p => p.role === CampaignRole.Owner,
+        p => p.role === CampaignRole.GameMaster,
     ],
-    'note:edit': [
-        p => p.ownerID === p.userID,
-        p => p.role === Role.Owner,
-        p => p.role === Role.GameMaster,
+    'page:edit': [
+        p => p.ownerID === p.profileId,
+        p => p.role === CampaignRole.Owner,
+        p => p.role === CampaignRole.GameMaster,
     ],
-    'note:delete': [
-        p => p.ownerID === p.userID,
-        p => p.role === Role.Owner,
+    'page:delete': [
+        p => p.ownerID === p.profileId,
+        p => p.role === CampaignRole.Owner,
     ]
 }
 
@@ -89,10 +89,10 @@ export type AccessTargets = keyof AccessConfiguration
 export interface AccessParams
 {
     target: AccessTargets
-    userID?: number
+    profileId?: number
     ownerID?: number
     hidden?: boolean
-    role: Role
+    role: CampaignRole
 }
 
 export function checkAccess(params: AccessParams) : boolean

@@ -1,0 +1,9 @@
+{{>layouts/page title=page.title page_icon='file-o'}}
+
+{{#*inline "content"}}
+{{#if page.editable}}
+<a href='/n/{{page.slug}}/edit'><button class='btn btn-primary'>Edit</button></a>
+{{/if}}
+<div><i class='fa fa-tags'></i> {{#if page.labels}}{{page.labels}}{{else}}<span class='text-muted'>no tags</span>{{/if}}</div>
+<div>{{{page.body}}}</div>
+{{/inline}}

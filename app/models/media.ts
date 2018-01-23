@@ -1,6 +1,6 @@
 import {Entity, Column, PrimaryGeneratedColumn, PrimaryColumn, Repository, EntityRepository, ManyToMany, OneToMany, ManyToOne, JoinTable, JoinColumn, Index} from 'typeorm'
-import {LabelModel} from './label-model'
-import {LibraryModel} from './library-model'
+import {TagModel} from './tag'
+import {CampaignModel} from './campaign'
 
 type MediaState = 'Ready' | 'Pending' | 'Deleted'
 
@@ -23,12 +23,12 @@ export class MediaStorageModel
     @Column({type: 'enum', enum: ['Ready', 'Pending', 'Deleted']})
     public state: MediaState
 
-    @OneToMany(t => MediaModel, m => m.library)
+    @OneToMany(t => MediaModel, m => m.campaign)
     public media: MediaModel[]
 }
 
 @Entity({name: 'media'})
-@Index(['libraryId', 'path'])
+@Index(['campaignId', 'path'])
 export class MediaModel
 {
     @PrimaryGeneratedColumn()
@@ -45,11 +45,11 @@ export class MediaModel
     public storage: MediaStorageModel
 
     @PrimaryColumn({name: 'library_id'})
-    public libraryId: number
+    public campaignId: number
 
-    @ManyToOne(t => LibraryModel)
+    @ManyToOne(t => CampaignModel)
     @JoinColumn({name: 'library_id'})
-    public library: LibraryModel
+    public campaign: CampaignModel
 
     @Column()
     public caption: string
@@ -57,19 +57,19 @@ export class MediaModel
     @Column()
     public attribution: string
 
-    // @ManyToMany(t => LabelModel)
-    // @JoinTable({name: 'media_labels', joinColumn: {name: 'media_id'}, inverseJoinColumn: {name: 'label_id'}})
-    // public labels: LabelModel[]
+    @ManyToMany(t => TagModel)
+    @JoinTable({name: 'media_labels', joinColumn: {name: 'label_id'}, inverseJoinColumn: {name: 'media_id'}})
+    public tags: TagModel[]
 }
 
 @EntityRepository(MediaModel)
 export class MediaFileRepository extends Repository<MediaModel>
 {
-    public async findAllByLibrary({libraryID}: {libraryID: number}) : Promise<{id: number, s3key: string, thumb_s3key: string, path: string, caption?: string, attribution?: string}[]>
+    public async findByCampaign({campaignId}: {campaignId: number}) : Promise<{id: number, s3key: string, thumb_s3key: string, path: string, caption?: string, attribution?: string}[]>
     {
         return this.createQueryBuilder('media')
             .innerJoinAndSelect('media_storage', 'storage', 'storage.id=media.storage_id')
-            .where('media.library_id=:library_id', {library_id: libraryID})
+            .where('media.library_id=:library_id', {library_id: campaignId})
             .select([
                 'path',
                 'caption',
@@ -81,11 +81,11 @@ export class MediaFileRepository extends Repository<MediaModel>
             .getRawMany()
     }
 
-    public async findByPath({libraryID, path}: {libraryID: number, path: string}) : Promise<{id: number, s3key: string, thumb_s3key: string, path: string, caption?: string, attribution?: string, state: MediaState}|undefined>
+    public async findByPath({campaignId, path}: {campaignId: number, path: string}) : Promise<{id: number, s3key: string, thumb_s3key: string, path: string, caption?: string, attribution?: string, state: MediaState}|undefined>
     {
         return this.createQueryBuilder('media')
             .innerJoinAndSelect('media_storage', 'storage', 'storage.id=media.storage_id')
-            .where('media.library_id=:library_id AND media.path=:path', {library_id: libraryID, path})
+            .where('media.library_id=:library_id AND media.path=:path', {library_id: campaignId, path})
             .select([
                 'path',
                 'caption',

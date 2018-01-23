@@ -1,7 +1,7 @@
 import {Entity, Column, ManyToOne, JoinColumn, EntityRepository, Repository, Connection} from 'typeorm'
-import {LibraryModel} from './library-model'
+import {CampaignModel} from './campaign'
 import {MembershipModel} from './membership-model'
-import {Role} from '../auth'
+import {CampaignRole} from '../auth'
 
 @Entity({name: 'invitation'})
 export class InvitationModel
@@ -13,26 +13,26 @@ export class InvitationModel
     public email: string
 
     @Column({name: 'library_id'})
-    public libraryId: number
+    public campaignId: number
 
-    @ManyToOne(type => LibraryModel, l => l.invitations)
+    @ManyToOne(type => CampaignModel, l => l.invitations)
     @JoinColumn({name: 'library_id'})
-    public library: LibraryModel
+    public campaign: CampaignModel
 }
 
 @EntityRepository(InvitationModel)
 export class InvitationRepository extends Repository<InvitationModel>
 {
-    public async createInvitation(params: {code: string, email: string, libraryID: number})
+    public async createInvitation(params: {code: string, email: string, campaignId: number})
     {
         await this.create({
             id: params.code,
             email: params.email,
-            libraryId: params.libraryID
+            campaignId: params.campaignId
         })
     }
 
-    public static async acceptInvite(conn: Connection, {code, userID}: {code: string, userID: number})
+    public static async acceptInvite(conn: Connection, {code, profileId}: {code: string, profileId: number})
     {
         return conn.transaction(async (tx) => {
             const invite = await tx.getCustomRepository(InvitationRepository).findOneById(code)
@@ -44,9 +44,9 @@ export class InvitationRepository extends Repository<InvitationModel>
             await tx.createQueryBuilder(MembershipModel, 'membership')
                 .insert()
                 .values({
-                    accountId: userID,
-                    libraryId: invite.libraryId,
-                    role: Role.Player
+                    profileId: profileId,
+                    campaignId: invite.campaignId,
+                    role: CampaignRole.Player
                 })
                 .execute()
 

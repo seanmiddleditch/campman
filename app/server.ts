@@ -11,7 +11,7 @@ import * as session from 'express-session'
 import * as redis from 'connect-redis'
 import {Connection} from 'typeorm'
 import {URL} from 'url'
-import {Role, googleAuth} from './auth'
+import {CampaignRole, googleAuth} from './auth'
 import {Config, config} from './config'
 import {connectToDatabase} from './db'
 
@@ -35,8 +35,8 @@ import * as models from './models'
 
     const connection = await connectToDatabase(config.databaseURL)
 
-    const libraryRepository = connection.getCustomRepository(models.LibraryRepository)
-    const userRepository = connection.getCustomRepository(models.UserRepository)
+    const campaignRepository = connection.getCustomRepository(models.CampaignRepository)
+    const userRepository = connection.getCustomRepository(models.ProfileRepository)
     const membershipRepository = connection.getCustomRepository(models.MembershipRepository)
 
     const app = express()
@@ -51,7 +51,7 @@ import * as models from './models'
 
     app.set('subdomain offset', (config.publicURL.hostname.match(/[.]/g) || []).length + 1)
 
-    // static assets first, before library checks or other work
+    // static assets first, before campaign checks or other work
     app.use(favicon(path.join(staticRoot, 'images', 'favicon.ico')))
     app.use(express.static(staticRoot))
 
@@ -61,13 +61,11 @@ import * as models from './models'
         app.use('/js/main.js.map', express.static(path.join(clientRoot, 'dist', 'main.js.map')))
 
     // determine which subdomain-slug we're using, if any
-    const domainCache = new Map<string, models.LibraryModel|null>()
+    const domainCache = new Map<string, models.CampaignModel|null>()
     app.use(async (req, res, next) => {
-        const library = domainCache.get(req.hostname)
+        const campaign = domainCache.get(req.hostname)
 
-        req.libraryID = 0
-
-        if (library === undefined)
+        if (campaign === undefined)
         {
             const protocol = req.secure ? 'https' : 'http'
             const slug = req.subdomains.length ? req.subdomains[req.subdomains.length - 1] : null
@@ -81,28 +79,28 @@ import * as models from './models'
             {
                 try
                 {
-                    req.library = await libraryRepository.findBySlug({slug})
-                    if (!req.library)
+                    req.campaign = await campaignRepository.findBySlug({slug})
+                    if (!req.campaign)
                     {
                         res.status(404)
                         return res.render('not-found')
                         //return res.redirect(new URL(req.path, config.publicURL).toString())
                     }
 
-                    domainCache.set(slug, req.library || null)
-                    req.libraryID = req.library ? req.library.id : 0
-                    res.locals.library = req.library
+                    domainCache.set(req.hostname, req.campaign || null)
+                    req.campaign.id = req.campaign ? req.campaign.id : 0
+                    res.locals.campaign = req.campaign
                 }
                 catch
                 {
-                    domainCache.set(slug, null)
+                    domainCache.set(req.hostname, null)
                 }
             }
         }
-        else if (library !== null)
+        else if (campaign !== null)
         {
-            req.library = library
-            req.libraryID = req.library.id
+            req.campaign = campaign
+            res.locals.campaign = campaign
         }
 
         next()
@@ -119,7 +117,7 @@ import * as models from './models'
     app.use(BodyParser.json())
     
     passport.use(googleAuth(connection, config.publicURL.toString(), config.googleClientID, config.googleAuthSecret))
-    passport.serializeUser((user: models.AccountModel, done) => done(null, user))
+    passport.serializeUser((user: models.ProfileModel, done) => done(null, user))
     passport.deserializeUser((user: any, done) => done(null, user))
 
     const RedisStore = redis(session)
@@ -137,19 +135,19 @@ import * as models from './models'
     app.use(passport.initialize())
     app.use(passport.session())
 
-    // set user information
+    // set profile information
     app.use(async (req, res, next) => {
-        const sessionKey = `library[${req.libraryID}].role`
+        const sessionKey = req.campaign ? `campaign[${req.campaign.id}].role` : 'Visitor'
         const sessionRole = req.session && req.session[sessionKey]
 
-        req.userID = req.user ? req.user.id : 0
-        req.userRole = sessionRole || Role.Visitor
-        res.locals.account = req.user
+        req.profileId = req.user ? req.user.id : 0
+        req.campaignRole = sessionRole || CampaignRole.Visitor
+        res.locals.profile = req.user
 
-        if (req.userID && req.session && !sessionRole)
+        if (req.profileId && req.session && !sessionRole)
         {
-            req.userRole = await membershipRepository.findRoleForUser(req)
-            req.session[sessionKey] = req.userRole
+            req.campaignRole = await membershipRepository.findRoleForProfile(req.user)
+            req.session[sessionKey] = req.campaignRole
         }
 
         next()
@@ -163,7 +161,7 @@ import * as models from './models'
                 publicURL: config.publicURL
             },
             user: req.user || {},
-            library: req.library
+            campaign: req.campaign
         })
     }))
 

@@ -1,18 +1,18 @@
-{{>layouts/page title='Libraries'}}
+{{>layouts/page title='Campaigns'}}
 
 {{#*inline "content"}}
 <div class='list-group'>
-{{#each libraries}}
+{{#each campaigns}}
     <a href='{{this.publicURL}}' class='list-group-item'>
         <div class='list-item-name'><i class='fa fa-file'></i> {{this.title}}</div>
         <div class='list-item-details'>{{this.publicURL}}</div>
     </a>
 {{else}}
-    <div class='list-group-item'>No libraries found</div>
+    <div class='list-group-item'>No campaigns found</div>
 {{/each}}
     <div class='list-group-item'>
         <button class='btn btn-default'>
-            <i class='fa fa-plus'></i> New Library
+            <i class='fa fa-plus'></i> New Campaign
         </button>
     </div>
 </div>

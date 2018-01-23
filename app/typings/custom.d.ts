@@ -1,5 +1,5 @@
-import {LibraryModel} from '../models/library-model'
-import {Role} from '../auth/access'
+import {CampaignModel} from '../models/campaign'
+import {CampaignRole} from '../auth/access'
 
 declare global
 {
@@ -8,10 +8,9 @@ declare global
         export interface Request
         {
             domainSlug: string
-            library?: LibraryModel
-            libraryID: number
-            userID: number
-            userRole: Role
+            campaign?: CampaignModel
+            profileId: number
+            campaignRole: CampaignRole
         }
     }
 }
