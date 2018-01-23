@@ -6,6 +6,7 @@ import {config} from '../config'
 import {URL} from 'url'
 import {checkAccess} from '../auth'
 import {draftToHtml} from '../util/draft-to-html'
+import * as slugUtils from '../util/slug-utils'
 
 export function wiki() {
     const router = PromiseRouter()
@@ -27,11 +28,11 @@ export function wiki() {
                 target: 'page:view',
                 profileId: req.profileId,
                 role: req.campaignRole,
-                ownerID: page.authorID,
+                ownerId: page.authorId,
                 hidden: page.visibility !== PageVisibility.Public
             })).map(page => ({
                 ...page,
-                editable: checkAccess({target: 'page:edit', profileId: req.profileId, role: req.campaignRole, ownerID: page.authorID, hidden: page.visibility !== PageVisibility.Public})
+                editable: checkAccess({target: 'page:edit', profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public})
             })),
             canCreate
         })
@@ -67,7 +68,7 @@ export function wiki() {
             return res.render('not-found')
         }
 
-        if (!checkAccess({target: 'page:edit', profileId: req.profileId, role: req.campaignRole, ownerID: page.authorID, hidden: page.visibility !== PageVisibility.Public}))
+        if (!checkAccess({target: 'page:edit', profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public}))
         {
             res.status(403)
             return res.render('access-denied')
@@ -94,7 +95,7 @@ export function wiki() {
             return res.render('not-found')
         }
 
-        if (!checkAccess({target: 'page:view', profileId: req.profileId, role: req.campaignRole, ownerID: page.authorID, hidden: page.visibility !== PageVisibility.Public}))
+        if (!checkAccess({target: 'page:view', profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public}))
         {
             res.status(403)
             return res.render('access-denied')
@@ -106,14 +107,14 @@ export function wiki() {
             target: 'page:view-secret',
             profileId: req.profileId,
             role: req.campaignRole,
-            ownerID: page.authorID,
+            ownerId: page.authorId,
             hidden: page.visibility !== PageVisibility.Public
         })
         const editable = checkAccess({
             target: 'page:edit',
             profileId: req.profileId,
             role: req.campaignRole,
-            ownerID: page.authorID,
+            ownerId: page.authorId,
             hidden: page.visibility !== PageVisibility.Public
         })
 
@@ -124,18 +125,23 @@ export function wiki() {
         })
     })
 
-    router.post('/w/:page', async (req, res, next) => {
+    router.post('/wiki', async (req, res, next) => {
         if (!req.campaign)
         {
             return next()
         }
         
-        const page = await pageRepository.fetchBySlug({slug: req.params['page'], campaignId: req.campaign.id})
+        const title = req.body['title'] as string|undefined
+        let slug = req.body['slug'] as string|undefined
+        if (!slug && title)
+            slug = slugUtils.sanitize(title)
+
+        if (!slug)
+            return res.status(400).json({status: 'Missing slug'})
+        const page = await pageRepository.fetchBySlug({slug, campaignId: req.campaign.id})
 
         const campaignId = req.campaign.id
 
-        const slug = req.params['page'] as string
-        const title = req.body['title'] as string|undefined
         const visibility = req.body['visibility'] as PageVisibility|undefined
         
         const rawbody = req.body['rawbody']
@@ -144,7 +150,7 @@ export function wiki() {
 
         if (page)
         {
-            if (!checkAccess({target: 'page:edit', profileId: req.profileId, role: req.campaignRole, ownerID: page.authorID, hidden: page.visibility !== PageVisibility.Public}))
+            if (!checkAccess({target: 'page:edit', profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public}))
             {
                 res.status(403)
                 return res.json({status: 'access denied'})

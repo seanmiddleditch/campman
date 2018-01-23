@@ -34,7 +34,7 @@ export const accessConfiguration : AccessConfiguration = {
         p => p.role !== CampaignRole.Visitor
     ],
     'campaign:view': [
-        p => p.ownerID === p.profileId,
+        p => p.ownerId === p.profileId,
         p => p.role !== CampaignRole.Visitor,
         p => !p.hidden
     ],
@@ -60,7 +60,7 @@ export const accessConfiguration : AccessConfiguration = {
         p => !p.hidden
     ],
     'page:view': [
-        p => p.ownerID === p.profileId,
+        p => p.ownerId === p.profileId,
         p => p.role === CampaignRole.Owner,
         p => p.role === CampaignRole.GameMaster,
         p => !p.hidden
@@ -74,12 +74,12 @@ export const accessConfiguration : AccessConfiguration = {
         p => p.role === CampaignRole.GameMaster,
     ],
     'page:edit': [
-        p => p.ownerID === p.profileId,
+        p => p.ownerId === p.profileId,
         p => p.role === CampaignRole.Owner,
         p => p.role === CampaignRole.GameMaster,
     ],
     'page:delete': [
-        p => p.ownerID === p.profileId,
+        p => p.ownerId === p.profileId,
         p => p.role === CampaignRole.Owner,
     ]
 }
@@ -90,7 +90,7 @@ export interface AccessParams
 {
     target: AccessTargets
     profileId?: number
-    ownerID?: number
+    ownerId?: number
     hidden?: boolean
     role: CampaignRole
 }

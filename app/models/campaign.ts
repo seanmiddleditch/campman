@@ -1,5 +1,5 @@
 import {Entity, Column, PrimaryColumn, PrimaryGeneratedColumn, Index, ManyToOne, OneToMany, EntityRepository, JoinColumn, Repository, Connection} from 'typeorm'
-import {PageModel} from './page'
+import {PageModel, PageRepository, PageVisibility} from './page'
 import {ProfileModel} from './profile'
 import {MembershipModel} from './membership-model'
 import {InvitationModel} from './invitation-model'
@@ -64,7 +64,7 @@ export class CampaignRepository extends Repository<CampaignModel>
         })
     }
 
-    public static async createNewCampaign(conn: Connection, {slug, title, creatorID}: {slug: string, title: string, creatorID: number})
+    public static async createNewCampaign(conn: Connection, {slug, title, profileId}: {slug: string, title: string, profileId: number})
     {
         return conn.transaction(async (tx) => {
             const campaignRepo = tx.getCustomRepository(CampaignRepository)
@@ -77,11 +77,22 @@ export class CampaignRepository extends Repository<CampaignModel>
             
             const memberships = tx.getRepository(MembershipModel)
             const member = memberships.create({
-                profileId: creatorID,
+                profileId,
                 campaignId: campaign.id,
                 role: CampaignRole.Owner
             })
             await memberships.save(member)
+
+            const pageRepository = tx.getCustomRepository(PageRepository)
+            const homePage = pageRepository.create({
+                title: 'Home',
+                slug: 'home',
+                visibility: PageVisibility.Public,
+                campaignId: campaign.id,
+                authorId: profileId,
+                rawbody: '{"entityMap":{},"blocks":[{"key":"4kmc9","text":"Welcome to your new Campaign!","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}]}'
+            })
+            await pageRepository.save(homePage)
 
             return campaign
         })

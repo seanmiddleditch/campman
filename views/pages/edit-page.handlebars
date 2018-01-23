@@ -5,25 +5,34 @@
 {{/inline}}
 
 {{#*inline "content"}}
-<form id='page-form' method='post' action='/n/{{page.slug}}'>
-    <div class='input-group mb-1'>
-        <div class='input-group-prepend'>
-            <span class='input-group-text'>Title</span>
+<form id='page-form' method='post' action='/wiki'>
+    <div class='form-group mb-2'>
+        <div class='input-group'>
+            <input type='text' class='form-control' id='page-title' name='title' value='{{page.title}}' placeholder='Page Title'/>
         </div>
-        <input type='text' class='form-control' id='page-title' name='title' value='{{page.title}}' placeholder='Optional subtitle'/>
     </div>
-    <div class='input-group mb-1'>
-        <div class='input-group-prepend'>
-            <span class='input-group-text'><i class='fa fa-tag'></i></span>
+    <div class='form-group mb-2'>
+        <div class='input-group'>
+            <div class='input-group-prepend'>
+                <span class='input-group-text'><i class='fa fa-tag'></i></span>
+            </div>
+            <input type='text' class='form-control' name='labels' value='{{page.labels}}' placeholder='Comma-separated labels'/>
         </div>
-        <input type='text' class='form-control' name='labels' value='{{page.labels}}' placeholder='Comma-separated labels'/>
     </div>
-    {{#if page.slug}}{{else}}
-    <div class='input-group mb-1'>
-        <input type='text' class='form-control' id='page-slug' placeholder='slug'/>
+    {{#if page.slug}}
+    <input type='hidden' name='slug' value='{{page.slug}}'/>
+    {{else}}
+    <div class='form-group mb-2'>
+        <div class='input-group'>
+            <div class='input-group-prepend'>
+                <span class='input-group-text'>/w/</span>
+            </div>
+            <input type='text' class='form-control' id='page-slug' name='slug' placeholder='Unique slug'/>
+        </div>
+        <small class='form-text text-muted'>May only contain letters, numbers, and dashes.</small>
     </div>
     {{/if}}
-    <div class='form-group'>
+    <div class='form-group mb-2'>
         <div id='body-editor'></div>
     </div>
     <textarea style='display: none' name='rawbody' id='rawbody'>{{page.rawbody}}</textarea>
@@ -38,15 +47,10 @@
     const editorDiv = document.getElementById('body-editor')
 
     if (slugInput) {
-        slugInput.onchange = ev => {
-            const slug = ev.target.value || ev.target.placeholder
-            form.action = `/n/${slug}`
-        }
         title.onkeyup = ev => {
             const title = ev.target.value
             const slug = title.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/ +/g, ' ').trim().replace(/ /g, '-')
             slugInput.placeholder = slug
-            form.action = `/n/${slug}`
         }
     }
 

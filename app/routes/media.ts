@@ -219,9 +219,10 @@ export function media()
         }
         catch (error)
         {
-            if (error.name instanceof AWSError)
-                return res.json({status: 'Object not available'})
-            else
+            // -- can't get this to work; AWSError is always undefined no matter how I try to import
+            // if (error.name instanceof AWSError)
+            //     return res.json({status: 'Object not available'})
+            // else
                 throw error
         }
     })

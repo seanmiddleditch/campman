@@ -61,7 +61,7 @@ export class PageRepository extends Repository<PageModel>
                     slug: row.note_slug as string,
                     title: row.note_title as string,
                     visibility: row.note_visibility as PageVisibility,
-                    authorID: row.note_authorId as number
+                    authorId: row.note_author_id as number
                 })))
     }
 
@@ -77,7 +77,7 @@ export class PageRepository extends Repository<PageModel>
                 title: row.note_title as string,
                 rawbody: row.note_rawbody as string,
                 visibility: row.note_visibility as PageVisibility,
-                authorID: row.note_authorId as number,
+                authorId: row.note_author_id as number,
                 tags: row.tag_slug as string
             }))
     }

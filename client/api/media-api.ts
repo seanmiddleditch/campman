@@ -22,7 +22,7 @@ export class MediaAPI
     async presign({contentType, contentSize, contentMD5, path, caption, fileHead, thumbnailBase64}: MediaAPIPresignParams) : Promise<MediaAPIPresignResult>
     {
         const response = await fetch(`/media${path}`, {
-            method: 'POST',
+            method: 'PUT',
             headers: new Headers({'Content-Type': 'application/json'}),
             mode: 'same-origin',
             credentials: 'include',

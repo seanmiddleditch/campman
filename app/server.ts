@@ -44,7 +44,9 @@ import * as models from './models'
         partialsDir: path.join(viewsRoot, 'partials'),
         layoutsDir: path.join(viewsRoot, 'partials', 'layouts')
     }))
-    app.locals.config = config
+    app.locals.config = {
+        publicURL: config.publicURL
+    }
     app.set('view engine', 'handlebars')
     app.set('views', path.join(viewsRoot, 'pages'))
     app.set('view cache', config.production)
@@ -144,9 +146,9 @@ import * as models from './models'
         req.campaignRole = sessionRole || CampaignRole.Visitor
         res.locals.profile = req.user
 
-        if (req.profileId && req.session && !sessionRole)
+        if (req.profileId && req.session && !sessionRole && req.campaign)
         {
-            req.campaignRole = await membershipRepository.findRoleForProfile(req.user)
+            req.campaignRole = await membershipRepository.findRoleForProfile({profileId: req.profileId, campaignId: req.campaign.id})
             req.session[sessionKey] = req.campaignRole
         }
 

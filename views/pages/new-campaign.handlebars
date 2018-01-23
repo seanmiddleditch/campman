@@ -1,0 +1,40 @@
+{{>layouts/page title='Start New Campaign'}}
+
+{{#*inline "content"}}
+<form id='campaign-form' action='/campaigns' method='post'>
+    <div class='form-group mb-2'>
+        <label for='campaign-title'>Name of Your Campaign</label>
+        <input type='text' class='form-control' id='campaign-title' name='title' value='{{campaign.title}}' placeholder='My Campaign'/>
+        {{#if errors.title}}<small class='form-text text-danger'>{{errors.title}}</small>{{/if}}
+        <small class='form-text text-muted'>A short and descriptive name for your new campaign.</small>
+    </div>
+    <div class='form-group mb-2'>
+        <label for='campaign-slug'>Website Address</label>
+        <div class='input-group'>
+            <div class='input-group-prepend'>
+                <span class='input-group-text'>{{config.publicURL.protocol}}//</span>
+            </div>
+            <input type='text' class='form-control' id='campaign-slug' name='slug' value='{{campaign.slug}}' placeholder='my-campaign'/>
+            <div class='input-group-append'>
+                <span class='input-group-text'>.{{config.publicURL.hostname}}</span>
+            </div>
+        </div>
+        {{#if errors.slug}}<small class='form-text text-danger'>{{errors.slug}}</small>{{/if}}
+        <small class='form-text text-muted'>The unique web address your new campaign can be found at. May only contain letters, numbers, and dashes.</small>
+    </div>
+    <div class='form-group'>
+        <input type='submit' class='btn btn-primary' value='Get Started'/>
+    </div>
+</form>
+<script defer>
+    const form = document.getElementById('campaign-form')
+    const title = document.getElementById('campaign-title')
+    const slugInput = document.getElementById('campaign-slug')
+
+    title.onkeyup = ev => {
+        const title = ev.target.value
+        const slug = title.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/ +/g, ' ').trim().replace(/ /g, '-')
+        slugInput.placeholder = slug
+    }
+</script>
+{{/inline}}
