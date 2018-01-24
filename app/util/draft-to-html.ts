@@ -1,4 +1,6 @@
 
+import * as slugUtils from './slug-utils'
+
 interface DraftBlockEntityRange
 {
     offset: number
@@ -64,7 +66,7 @@ function renderEntity(entity: any, children?: string)
     switch (entity.type)
     {
         case 'wiki-link':
-            const href = htmlEscape(entity.data.target)
+            const href = htmlEscape(slugUtils.sanitize(entity.data.target))
             return `<a href="/w/${href}">${children}</a>`
         default:
             return children
