@@ -1,6 +1,6 @@
 export function sanitize(slug: string) : string
 {
-    return slug.replace(/[^a-zA-Z0-9-]+/g, ' ').trim().substring(0, 32).trim().toLowerCase().replace(' ', '-')
+    return slug.replace(/[^a-zA-Z0-9-]+/g, ' ').trim().substring(0, 32).trim().toLowerCase().replace(/ /g, '-')
 }
 
 export function isValid(slug: string): boolean

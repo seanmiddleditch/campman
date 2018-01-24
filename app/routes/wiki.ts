@@ -165,7 +165,10 @@ export function wiki() {
                 visibility: visibility || page.visibility
             })
 
-            res.redirect(`/w/${page.slug}`)
+            if (req.accepts('application/json'))
+                res.json({status: 'success', location: `/w/${page.slug}`})
+            else
+                res.redirect(`/w/${page.slug}`)
             // return res.json({
             //     status: 'success',
             //     body: {
@@ -197,7 +200,10 @@ export function wiki() {
                 visibility: visibility || PageVisibility.Public
             })
 
-            res.redirect(`/w/${page.slug}`)
+            if (req.accepts('application/json'))
+                res.json({status: 'success', location: `/w/${page.slug}`})
+            else
+                res.redirect(`/w/${page.slug}`)
             // res.json({
             //     status: 'success',
             //     body: {

@@ -4,84 +4,14 @@
 {{/inline}}
 
 {{#*inline "content"}}
-<form id='page-form' method='post' action='/wiki'>
-    <div class='form-group mb-2'>
-        <div class='input-group'>
-            <input type='text' class='form-control' id='page-title' name='title' value='{{page.title}}' placeholder='Page Title'/>
-        </div>
-    </div>
-    <div class='form-group mb-2'>
-        <div class='input-group'>
-            <div class='input-group-prepend'>
-                <span class='input-group-text'><i class='fa fa-tag'></i></span>
-            </div>
-            <input type='text' class='form-control' name='labels' value='{{page.labels}}' placeholder='Comma-separated labels'/>
-        </div>
-    </div>
-    {{#if page.slug}}
-    <input type='hidden' name='slug' value='{{page.slug}}'/>
-    {{else}}
-    <div class='form-group mb-2'>
-        <div class='input-group'>
-            <div class='input-group-prepend'>
-                <span class='input-group-text'>/w/</span>
-            </div>
-            <input type='text' class='form-control' id='page-slug' name='slug' placeholder='Unique slug'/>
-        </div>
-        <small class='form-text text-muted'>May only contain letters, numbers, and dashes.</small>
-    </div>
-    {{/if}}
-    <div class='form-group mb-2'>
-        <div id='body-editor'></div>
-    </div>
-    <textarea style='display: none' name='rawbody' id='rawbody'>{{page.rawbody}}</textarea>
-    <input type='text' style='display: none' name='visibility' id='visibility' value='{{page.visibility}}'/>
-</form>
+<div id='page-editor'></div>
 <script defer>
-    const form = document.getElementById('page-form')
-    const title = document.getElementById('page-title')
-    const slugInput = document.getElementById('page-slug')
-    const visibility = document.getElementById('visibility')
-    const bodyInput = document.getElementById('rawbody')
-    const editorDiv = document.getElementById('body-editor')
-
-    if (slugInput) {
-        title.onkeyup = ev => {
-            const title = ev.target.value
-            const slug = title.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/ +/g, ' ').trim().replace(/ /g, '-')
-            slugInput.placeholder = slug
-        }
-    }
-
-    class VisMenu extends React.Component {
-        constructor(props) {
-            super(props)
-            this.state = {current: visibility.value}
-        }
-        _handleClick(ev, state) {
-            ev.preventDefault()
-            visibility.value = state
-            this.setState({current: state})
-        }
-        render() {
-            return React.createElement('div', {className: 'dropdown-menu'},
-                React.createElement('a', {className: 'dropdown-item ' + (this.state.current == 'Public' ? 'active' : ''), onClick: ev  => this._handleClick(ev, 'Public')}, 'Party Public'),
-                React.createElement('a', {className: 'dropdown-item ' + (this.state.current == 'Hidden' ? 'active' : ''), onClick: ev  => this._handleClick(ev, 'Hidden')}, 'GM Secret')
-            )
-        }
-    }
-
-    CreateMarkEditor(bodyInput.value ? JSON.parse(bodyInput.value) : null, doc => bodyInput.value = JSON.stringify(doc), editorDiv, () =>
-        React.createElement('div', {className: 'btn-group ml-sm-2 float-right', role: 'group'},
-            React.createElement('button', {className: 'btn btn-primary', onClick: () => form.submit()},
-                React.createElement('span', {},
-                    React.createElement('i', {className: 'fa fa-floppy-o'}, null),
-                    ' Save Changes'
-                )
-            ),
-            React.createElement('button', {className: 'btn btn-primary dropdown-toggle dropdown-toggle-split', 'data-toggle': 'dropdown', onClick: ev => $(ev.target).dropdown('toggle') }, null),
-            React.createElement(VisMenu, {}, null)
-        )
-    )
+    ReactDOM.render(React.createElement(WikiPageEditor, {
+        title: '{{page.title}}',
+        tags: '{{page.labels}}',
+        visibility: '{{page.visibility}}',
+        {{#if page.slug}}slug: '{{page.slug}}',{{/if}}
+        {{#if page.rawbody}}body: {{{page.rawbody}}}{{else}}body: null{{/if}}
+    }, null), document.getElementById('page-editor'))
 </script>
 {{/inline}}

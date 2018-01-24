@@ -224,7 +224,6 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
                             handleReturn={(ev, s) => this._handleReturn(ev, s)}
                             readOnly={this.props.disabled || this.state.mediaPopupOpen}
                             onChange={editorState => this._onChange(editorState)}
-                            placeholder='Note body text goes here'
                             blockRenderMap={blockRenderMap}
                             blockRendererFn={this._blockRenderer.bind(this)}
                             tabIndex={this.props.tabIndex}
