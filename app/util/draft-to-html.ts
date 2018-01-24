@@ -50,13 +50,25 @@ const elementMap: ElementsConfig = {
 
 function htmlEscape(text: string)
 {
-    return text.replace('&', '&nbsp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot')
+    return text.replace(/[&]/g, '&nbsp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot').replace(/'/g, '&#39;')
 }
 
 function renderElement(tag: string, props: any, children?: string)
 {
     const propsText = Object.keys(props).filter(key => props[key] !== undefined).map(key => key + '="' + htmlEscape(props[key]) + '"').join(' ')
     return `<${tag} ${propsText}>${children||''}</${tag}>`
+}
+
+function renderEntity(entity: any, children?: string)
+{
+    switch (entity.type)
+    {
+        case 'wiki-link':
+            const href = htmlEscape(entity.data.target)
+            return `<a href="/w/${href}">${children}</a>`
+        default:
+            return children
+    }
 }
 
 function renderAtomicBlock(block: DraftBlock, draft: RawDraft)
@@ -82,17 +94,22 @@ function renderAtomicBlock(block: DraftBlock, draft: RawDraft)
 
 function expandSections(block: DraftBlock, draft: RawDraft)
 {
-    const edges: {index: number, style: string, action: 'begin'|'end'}[] = []
+    const edges: {index: number, style: string|undefined, entity: any|undefined, action: 'begin'|'end'}[] = []
 
     block.inlineStyleRanges.forEach(rng => {
-        edges.push({index: rng.offset, style: rng.style, action: 'begin'})
-        edges.push({index: rng.offset + rng.length, style: rng.style, action: 'end'})
+        edges.push({index: rng.offset, style: rng.style, action: 'begin', entity: undefined})
+        edges.push({index: rng.offset + rng.length, style: rng.style, action: 'end', entity: undefined})
+    })
+    block.entityRanges.forEach(ent => {
+        edges.push({index: ent.offset, entity: draft.entityMap[ent.key], action: 'begin', style: undefined})
+        edges.push({index: ent.offset + ent.length, entity: draft.entityMap[ent.key], action: 'end', style: undefined})
     })
 
     edges.sort((a, b) => a.index - b.index)
 
     const styles = new Set<string>()
-    const chunks: {styles: Set<string>, text: string}[] = []
+    const chunks: {styles: Set<string>, entity: any|undefined, text: string}[] = []
+    let entity: any|undefined = undefined
     let lastOffset = 0
 
     for (const edge of edges)
@@ -101,27 +118,44 @@ function expandSections(block: DraftBlock, draft: RawDraft)
 
         if (index !== lastOffset)
         {
-            chunks.push({styles: new Set(styles), text: block.text.slice(lastOffset, index)})
+            chunks.push({styles: new Set(styles), entity, text: block.text.slice(lastOffset, index)})
             lastOffset = index
         }
 
         if (action === 'begin')
-            styles.add(style)
+        {
+            if (style)
+                styles.add(style)
+            else
+                entity = edge.entity
+        }
         else
-            styles.delete(style)
+        {
+            if (style)
+                styles.delete(style)
+            else if (entity === edge.entity)
+                    entity = undefined
+        }
     }
 
     if (lastOffset < block.text.length)
     {
-        chunks.push({styles, text: block.text.slice(lastOffset)})
+        chunks.push({styles, entity, text: block.text.slice(lastOffset)})
     }
 
     return chunks
 }
 
-function renderSections(sections: {styles: Set<string>, text: string}[])
+function renderSections(sections: {styles: Set<string>, entity: any|undefined, text: string}[])
 {
-    return sections.map(sec => sec.styles.size !== 0 ? renderElement('span', {'class': Array.from(sec.styles.keys()).join(' ')}, htmlEscape(sec.text)) : htmlEscape(sec.text)).join('')
+    return sections.map(sec => {
+        if (sec.styles.size !== 0)
+            return renderElement('span', {'class': Array.from(sec.styles.keys()).join(' ')}, htmlEscape(sec.text))
+        else if (sec.entity)
+            return renderEntity(sec.entity, htmlEscape(sec.text))
+        else
+            return htmlEscape(sec.text)
+    }).join('')
 }
 
 function renderBasicBlock(block: DraftBlock, draft: RawDraft)

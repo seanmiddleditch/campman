@@ -2,7 +2,7 @@
 
 {{#*inline "body"}}
 
-<nav class='navbar sticky-top navbar-expand-lg navbar-light bg-light'>
+<nav class='navbar sticky-top navbar-expand-lg navbar-light bg-light' style='height: 60px'>
     {{#if campaign}}
     <div class='navbar-brand'><a href='{{config.publicURL}}'><i class='fa fa-home'></i></a></div>
     <div class='navbar-brand'><a href='/'>{{campaign.title}}</a></div>
@@ -65,7 +65,7 @@
         </script>
     </ul>
 </nav>
-<main role='main' class='container'>
+<main role='main' class='container mt-2'>
     <div class='page-header'>
         {{#>page_header}}
         <h1>{{#if page_icon}}<i class='fa fa-{{page_icon}}'></i> {{/if}}{{title}}</h1>

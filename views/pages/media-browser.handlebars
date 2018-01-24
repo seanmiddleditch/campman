@@ -9,9 +9,10 @@
 function DeleteMedia(ev, path) {
     ev.preventDefault()
     const media = new MediaAPI()
-    media.delete(path)
-        .then(() => window.location.reload(true))
-        .catch(err => alert(err))
+    if (confirm('Are you sure you want to delete this file?'))
+        media.delete(path)
+            .then(() => window.location.reload(true))
+            .catch(err => alert(err))
 }
 </script>
 {{/inline}}
@@ -23,11 +24,12 @@ function DeleteMedia(ev, path) {
 <div class='clearfix'>
 {{#each media}}
     <div class='card float-left m-2' style='width: 12rem; height: 16rem'>
-        <div style='height: 140px; overflow: hidden'><img src='{{this.thumb_url}}' class='card-img-top' alt='{{this.caption}}'/></div>
+        <div style='height: 140px; overflow: hidden'><a href='{{this.url}}'><img src='{{this.thumb_url}}' class='card-img-top' alt='{{this.caption}}'/></a></div>
         <div class='card-body'>
             <h5 class='card-title'>{{#if this.caption}}{{this.caption}}{{else}}{{this.path}}{{/if}}</h5>
-            <a href='{{this.url}}' class='card-link'><i class='fa fa-expand'></i> Enlarge</a>
-            <button class='btn btn-danger' onClick='DeleteMedia(event, "{{this.path}}")'>Delete</button>
+            <a href='{{this.url}}' class='btn btn-link'><i class='fa fa-search-plus'></i></a>
+            <button disabled class='btn btn-link'><i class='fa fa-pencil'></i></button>
+            {{#if ../canDelete}}<button class='btn btn-link pull-right' onClick='DeleteMedia(event, "{{this.path}}")'><i class='fa fa-trash-o'></i></button>{{/if}}
         </div>
     </div>
 {{else}}

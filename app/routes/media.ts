@@ -265,6 +265,7 @@ export function media()
         }
 
         const canUpload = checkAccess({target: 'media:upload', hidden: false, profileId: req.profileId, role: req.campaignRole});
+        const canDelete = checkAccess({target: 'media:delete', hidden: false, profileId: req.profileId, role: req.campaignRole});
 
         const media = await mediaRepository.findByCampaign({campaignId: req.campaign.id})
 
@@ -278,7 +279,8 @@ export function media()
                     caption: m.caption,
                     attribution: m.attribution
                 })),
-                canUpload
+                canUpload,
+                canDelete
             })
         }
         else if (req.accepts('application/json'))
