@@ -79,6 +79,9 @@ import * as models from './models'
             }
             else if (slug)
             {
+                if (slug === 'www')
+                    return res.redirect(new URL(req.path, config.publicURL).toString())
+                    
                 try
                 {
                     req.campaign = await campaignRepository.findBySlug({slug})
