@@ -1,7 +1,7 @@
 import {Request, Response} from 'express'
-import {checkAccess} from '../auth'
-import {TagRepository} from '../models'
-import {connection} from '../db'
+import {checkAccess} from '../../auth'
+import {TagRepository} from '../../models'
+import {connection} from '../../db'
 import PromiseRouter = require('express-promise-router')
 
 export function tags()

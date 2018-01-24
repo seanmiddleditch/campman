@@ -1,12 +1,11 @@
 import PromiseRouter = require('express-promise-router')
-import {PageModel, PageRepository, PageVisibility} from '../models/page'
-import {TagRepository} from '../models/tag'
-import {connection} from '../db'
-import {config} from '../config'
+import {PageModel, PageRepository, PageVisibility, TagRepository} from '../../models'
+import {connection} from '../../db'
+import {config} from '../../config'
 import {URL} from 'url'
-import {checkAccess} from '../auth'
-import {draftToHtml} from '../util/draft-to-html'
-import * as slugUtils from '../util/slug-utils'
+import {checkAccess} from '../../auth'
+import {draftToHtml} from '../../util/draft-to-html'
+import * as slugUtils from '../../util/slug-utils'
 
 export function wiki() {
     const router = PromiseRouter()

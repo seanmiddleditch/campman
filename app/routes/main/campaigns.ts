@@ -1,9 +1,9 @@
 import PromiseRouter = require('express-promise-router')
-import {CampaignModel, CampaignRepository} from '../models/campaign'
-import {connection} from '../db'
-import {config} from '../config'
+import {CampaignModel, CampaignRepository} from '../../models/campaign'
+import {connection} from '../../db'
+import {config} from '../../config'
 import {URL} from 'url'
-import * as slugUtils from '../util/slug-utils'
+import * as slugUtils from '../../util/slug-utils'
 import {QueryFailedError} from 'typeorm'
 
 export function campaigns() {
