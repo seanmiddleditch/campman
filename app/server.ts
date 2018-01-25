@@ -9,6 +9,7 @@ import * as favicon from 'serve-favicon'
 import * as passport from 'passport'
 import * as session from 'express-session'
 import * as redis from 'connect-redis'
+import * as cors from 'cors'
 import { Connection } from 'typeorm'
 import { URL } from 'url'
 import { CampaignRole, googleAuth } from './auth'
@@ -64,12 +65,13 @@ import * as models from './models'
     if (!config.production)
         app.use('/js/main.js.map', express.static(path.join(clientRoot, 'dist', 'main.js.map')))
 
-    // enable CORS, knowing that the prior entry ensures we're on our domain or a sub
-    app.use((req, res, next) => {
-        res.header('Access-Control-Allow-Origin', req.headers.origin as string)
-        res.header('Access-Control-Allow-Credentials', 'true')
-        next()
-    })
+    app.use(cors({
+        origin: [
+            config.publicURL.toString(),
+            new RegExp(`/[.]${config.publicURL.hostname}\$/`)
+        ],
+        credentials: true
+    }))
 
     app.use(BodyParser.urlencoded({ extended: false }))
     app.use(BodyParser.json())
@@ -95,18 +97,8 @@ import * as models from './models'
 
     // set profile information
     app.use(async (req, res, next) => {
-        const sessionKey = req.campaign ? `campaign[${req.campaign.id}].role` : 'Visitor'
-        const sessionRole = req.session && req.session[sessionKey]
-
         req.profileId = req.user ? req.user.id : 0
-        req.campaignRole = sessionRole || CampaignRole.Visitor
         res.locals.profile = req.user
-
-        if (req.profileId && req.session && !sessionRole && req.campaign) {
-            req.campaignRole = await membershipRepository.findRoleForProfile({ profileId: req.profileId, campaignId: req.campaign.id })
-            req.session[sessionKey] = req.campaignRole
-        }
-
         next()
     })
 

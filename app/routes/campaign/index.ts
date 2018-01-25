@@ -2,7 +2,8 @@ import {Request, Response, NextFunction} from 'express'
 import {wiki} from './wiki'
 import {tags} from './tags'
 import {media} from './media'
-import {CampaignModel, CampaignRepository} from '../../models'
+import {CampaignModel, CampaignRepository, MembershipRepository,} from '../../models'
+import {CampaignRole} from '../../auth'
 import PromiseRouter = require('express-promise-router')
 import {connection} from '../../db'
 
@@ -36,6 +37,31 @@ function resolveCampaign()
         }
 
         res.status(404).render('not-found')
+    }
+}
+
+function lookupProfileRolse()
+{
+    const membershipRepository = connection().getCustomRepository(MembershipRepository)
+    return async (req: Request, res: Response, next: NextFunction) =>
+    {
+        if (req.campaign && req.user && req.session)
+        {
+            const key = `campaign[${req.campaign.id}].role`
+            if (!(key in req.session))
+            {
+                const role = await await membershipRepository.findRoleForProfile({profileId: req.profileId, campaignId: req.campaign.id})
+                req.session[key] = role
+            }
+
+            req.campaignRole = res.locals.role = req.session[key]
+        }
+        else
+        {
+            req.campaignRole = res.locals.role = CampaignRole.Visitor
+        }
+
+        next()
     }
 }
 
