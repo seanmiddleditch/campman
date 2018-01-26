@@ -11,7 +11,7 @@ export function tags()
 
     router.get('/tags', async (req, res, next) => {
         if (!req.campaign)
-            return next()
+            throw new Error('Missing campaign')
 
         const all = await tagRepo.findForCampaign({campaignId: req.campaign.id})
         if (!all)

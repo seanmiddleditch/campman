@@ -2,6 +2,7 @@ import {Request, Response, NextFunction} from 'express'
 import {wiki} from './wiki'
 import {tags} from './tags'
 import {media} from './media'
+import {settings} from './settings'
 import {CampaignModel, CampaignRepository, MembershipRepository,} from '../../models'
 import {CampaignRole} from '../../auth'
 import PromiseRouter = require('express-promise-router')
@@ -40,7 +41,7 @@ function resolveCampaign()
     }
 }
 
-function lookupProfileRolse()
+function lookupProfileRole()
 {
     const membershipRepository = connection().getCustomRepository(MembershipRepository)
     return async (req: Request, res: Response, next: NextFunction) =>
@@ -68,10 +69,11 @@ function lookupProfileRolse()
 export function routes()
 {
     const router = PromiseRouter()
-    router.use(resolveCampaign())
+    router.use(resolveCampaign(), lookupProfileRole())
     router.use(wiki())
     router.use(tags())
     router.use(media())
+    router.use(settings())
     router.use('/', (req, res) => res.redirect('/w/home'))
     return router
 }

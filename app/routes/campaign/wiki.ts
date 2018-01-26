@@ -14,9 +14,7 @@ export function wiki() {
 
     router.get('/wiki', async (req, res, next) => {
         if (!req.campaign)
-        {
-            return next()
-        }
+            throw new Error('Missing campaign')
 
         const all = await pageRepository.findForCampaign({campaignId: req.campaign.id})
 
@@ -39,9 +37,7 @@ export function wiki() {
 
     router.get('/wiki/new', async (req, res, next) => {
         if (!req.campaign)
-        {
-            return next()
-        }
+            throw new Error('Missing campaign')
 
         if (!checkAccess({target: 'page:create', profileId: req.profileId, role: req.campaignRole}))
         {
@@ -54,9 +50,7 @@ export function wiki() {
 
     router.get('/w/:slug/edit', async (req, res, next) => {
         if (!req.campaign)
-        {
-            return next()
-        }
+            throw new Error('Missing campaign')
 
         const inSlug = req.params['slug'];
 
@@ -81,9 +75,7 @@ export function wiki() {
 
     router.get('/w/:slug', async (req, res, next) => {
         if (!req.campaign)
-        {
-            return next()
-        }
+            throw new Error('Missing campaign')
 
         const inSlug = req.params['slug'];
 
@@ -126,9 +118,7 @@ export function wiki() {
 
     router.post('/wiki', async (req, res, next) => {
         if (!req.campaign)
-        {
-            return next()
-        }
+            throw new Error('Missing campaign')
         
         const title = req.body['title'] as string|undefined
         let slug = req.body['slug'] as string|undefined
@@ -136,7 +126,10 @@ export function wiki() {
             slug = slugUtils.sanitize(title)
 
         if (!slug)
-            return res.status(400).json({status: 'Missing slug'})
+        {
+            res.status(400).json({status: 'Missing slug'})
+            return
+        }
         const page = await pageRepository.fetchBySlug({slug, campaignId: req.campaign.id})
 
         const campaignId = req.campaign.id
@@ -151,8 +144,8 @@ export function wiki() {
         {
             if (!checkAccess({target: 'page:edit', profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public}))
             {
-                res.status(403)
-                return res.json({status: 'access denied'})
+                res.status(403).json({status: 'access denied'})
+                return
             }
 
             await pageRepository.updatePage({
@@ -185,8 +178,8 @@ export function wiki() {
         {
             if (!checkAccess({target: 'page:create', profileId: req.profileId, role: req.campaignRole}))
             {
-                res.status(403)
-                res.json({status: 'access denied'})
+                res.status(403).json({status: 'access denied'})
+                return
             }
 
             const page = await pageRepository.createPage({

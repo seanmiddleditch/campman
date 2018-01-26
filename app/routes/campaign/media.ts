@@ -28,14 +28,12 @@ export function media()
 
     router.put('/media/:pathspec?', async (req, res, next) => {
         if (!req.campaign)
-        {
-            return next()
-        }
+            throw new Error('Missing campaign')
         
         if (!checkAccess({target: 'media:upload', hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403)
-            return res.json({status: 'access denied'})
+            res.status(403).json({status: 'access denied'})
+            return
         }
 
         const filePath = '/' + req.params['pathspec'] as string
@@ -54,20 +52,38 @@ export function media()
         const thumbnailMaxSize = 64 * 1024 // 64k
         const thumbnailDimensions = imageSize(thumbnailBuffer)
         if (thumbnailDimensions.type != 'png')
-            return res.json({status: 'Thumbnail must be a PNG'})
+        {
+            res.status(400).json({status: 'Thumbnail must be a PNG'})
+            return
+        }
         else if (thumbnailDimensions.width > thumbnailMaxDimension)
-            return res.json({status: 'Thumbnail must be no larger than 200x200'})
+        {
+            res.status(400).json({status: 'Thumbnail must be no larger than 200x200'})
+            return
+        }
         else if (thumbnailDimensions.height > thumbnailMaxDimension)
-            return res.json({status: 'Thumbnail must be no larger than 200x200'})
+        {
+            res.status(400).json({status: 'Thumbnail must be no larger than 200x200'})
+            return
+        }
         else if (thumbnailBuffer.byteLength > thumbnailMaxSize)
-            return res.json({status: 'Thumbnail must be no larger than 64kb'})
+        {
+            res.status(400).json({status: 'Thumbnail must be no larger than 64kb'})
+            return
+        }
 
         if (fileType(fileHeadBuffer).mime !== contentType)
-            return res.json({status: 'Incorrect mime type provided for file contents'})
+        {
+            res.status(400).json({status: 'Incorrect mime type provided for file contents'})
+            return
+        }
         
         const extension = path.extname(filePath)
         if (mime.getType(extension) !== contentType)
-            return res.json({status: 'Incorrect file extension provided'})
+        {
+            res.status(400).json({status: 'Incorrect file extension provided'})
+            return
+        }
 
         const librarySlug = req.campaign.slug
         const s3key = `media/${contentHexMD5}${extension}`
@@ -75,7 +91,10 @@ export function media()
 
         const cleanPath = path.posix.resolve('/', filePath)
         if (filePath !== cleanPath || filePath.length > 255)
-            return res.json({status: 'invalid path'})
+        {
+            res.status(400).json({status: 'invalid path'})
+            return
+        }
 
         // find existing storage or create it if necessary
         let storage = await storageRepository.createQueryBuilder('storage')
@@ -178,14 +197,12 @@ export function media()
 
     router.post('/media/:pathspec?', async (req, res, next) => {
         if (!req.campaign)
-        {
-            return next()
-        }
+            throw new Error('Missing campaign')
         
         if (!checkAccess({target: 'media:upload', hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403)
-            return res.json({status: 'access denied'})
+            res.status(403).json({status: 'access denied'})
+            return
         }
 
         const contentMD5 = req.body['contentMD5'] as string
@@ -194,8 +211,8 @@ export function media()
         const storage = await storageRepository.findOne({contentMD5: contentHexMD5})
         if (!storage)
         {
-            res.status(404)
-            return res.json({status: 'not found'})
+            res.status(404).json({status: 'not found'})
+            return
         }
 
         const headParams: S3.HeadObjectRequest = {
@@ -229,22 +246,20 @@ export function media()
 
     router.delete('/media/:pathspec?', async (req, res, next) => {
         if (!req.campaign)
-        {
-            return next()
-        }
+            throw new Error('Missing campaign')
 
         if (!checkAccess({target: 'media:delete', hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403)
-            return res.json({status: 'access denied'})
+            res.status(403).json({status: 'access denied'})
+            return
         }
 
         const path = '/' + req.params['pathspec'] as string
         const media = await mediaRepository.findByPath({campaignId: req.campaign.id, path})
         if (!media)
         {
-            res.status(404)
-            return res.json({status: 'Media not found'})
+            res.status(404).json({status: 'Media not found'})
+            return
         }
 
         await mediaRepository.delete({id: media.id})
@@ -254,14 +269,12 @@ export function media()
 
     router.get('/media/:pathspec?', async (req, res, next) => {
         if (!req.campaign)
-        {
-            return next()
-        }
+            throw new Error('Missing campaign')
 
         if (!checkAccess({target: 'media:list', hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403)
-            return res.json({status: 'access denied'})
+            res.status(403).json({status: 'access denied'})
+            return
         }
 
         const canUpload = checkAccess({target: 'media:upload', hidden: false, profileId: req.profileId, role: req.campaignRole});
@@ -300,8 +313,7 @@ export function media()
         }
         else
         {
-            res.status(406)
-            res.json({status: 'Unknown Accept header value or header not present'})
+            res.status(406).json({status: 'Unknown Accept header value or header not present'})
         }
     })
 
