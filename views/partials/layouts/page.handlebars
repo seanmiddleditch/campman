@@ -6,16 +6,22 @@
     {{#if campaign}}
     <div class='navbar-brand'><a href='{{config.publicURL}}'><i class='fa fa-home'></i></a></div>
     <div class='navbar-brand'><a href='/'>{{campaign.title}}</a></div>
-    <div class='collapse navbar-collapse' id='navbarTogglerDemo03'>
+    <div class='collapse navbar-collapse'>
         <ul class='navbar-nav mr-auto mt-2 mt-lg-0'>
-            <div class='nav-link disabled'>Adventures</div>
-            <div class='nav-link'><a href='/wiki'>Wiki</a></div>
-            <div class='nav-link'><a href='/tags'>Tags</a></div>
-            <div class='nav-link disabled'>Maps</div>
-            <div class='nav-link disabled'>Characters</div>
-            <div class='nav-link disabled'>Timeline</div>
-            <div class='nav-link'><a href='/media'>Media</a></div>
-            <div class='nav-link'><a href='/settings'><i class='fa fa-cog'></i></a></div>
+            <li class='nav-item'><a class='nav-link disabled' href='#'>Adventures</a></li>
+            <li class='nav-item'><a class='nav-link' href='/wiki'>Wiki</a></li>
+            <li class='nav-item'><a class='nav-link' href='/tags'>Tags</a></li>
+            <li class='nav-item'><a class='nav-link disabled' href='#'>Maps</a></li>
+            <li class='nav-item'><a class='nav-link disabled' href='#'>Characters</a></li>
+            <li class='nav-item'><a class='nav-link disabled' href='#'>Timeline</a></li>
+            <li class='nav-item'><a class='nav-link' href='/media'>Media</a></li>
+            <li class='nav-item dropdown'>
+                <a class='nav-link' href='#' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'><i class='fa fa-cog'></i></a>
+                <div class='dropdown-menu'>
+                    <a class='dropdown-item' href='/settings'>Settings</a>
+                    <a class='dropdown-item' href='/membership'>Members</a>
+                </div>
+            </li>
         </ul>
     </div>
     {{else}}

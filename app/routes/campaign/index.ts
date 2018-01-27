@@ -3,6 +3,7 @@ import {wiki} from './wiki'
 import {tags} from './tags'
 import {media} from './media'
 import {settings} from './settings'
+import {membership} from './membership'
 import {CampaignModel, CampaignRepository, MembershipRepository,} from '../../models'
 import {CampaignRole} from '../../auth'
 import PromiseRouter = require('express-promise-router')
@@ -74,6 +75,7 @@ export function routes()
     router.use(tags())
     router.use(media())
     router.use(settings())
+    router.use(membership())
     router.use('/', (req, res) => res.redirect('/w/home'))
     return router
 }

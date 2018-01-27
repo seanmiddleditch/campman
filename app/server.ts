@@ -15,6 +15,7 @@ import { URL } from 'url'
 import { CampaignRole, googleAuth } from './auth'
 import { Config, config } from './config'
 import { connectToDatabase } from './db'
+import * as handlebarsHelpers from './util/handlebars-helpers'
 
 import * as routes from './routes'
 import * as models from './models'
@@ -41,7 +42,8 @@ import * as models from './models'
     const app = express()
     app.engine('handlebars', exphbs({
         partialsDir: path.join(viewsRoot, 'partials'),
-        layoutsDir: path.join(viewsRoot, 'partials', 'layouts')
+        layoutsDir: path.join(viewsRoot, 'partials', 'layouts'),
+        helpers: handlebarsHelpers
     }))
     app.locals.config = {
         publicURL: config.publicURL,

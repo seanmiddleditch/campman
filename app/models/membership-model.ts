@@ -42,6 +42,7 @@ export class MembershipRepository extends Repository<MembershipModel>
     {
         const memberships = await this.createQueryBuilder('membership')
             .innerJoinAndSelect('membership.profile', 'profile')
+            .where({campaignId})
             .getMany()
         return memberships.map(membership => ({
             role: membership.role,

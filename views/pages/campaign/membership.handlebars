@@ -1,0 +1,10 @@
+{{>layouts/page title='Campaign Membership'}}
+
+{{#*inline "content"}}
+<div id='campaign-membership'></div>
+<script defer>
+    ReactDOM.render(React.createElement(CampaignMembership, {
+        members: {{{json members}}}
+    }, null), document.getElementById('campaign-membership'))
+</script>
+{{/inline}}
