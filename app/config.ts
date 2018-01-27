@@ -19,6 +19,7 @@ export class Config
     readonly mailgunKey: string
     readonly mailDomain: string
     readonly inviteAddress: string
+    readonly googleAnalyticsId?: string
 
     constructor()
     {
@@ -38,6 +39,7 @@ export class Config
         this.mailgunKey = process.env.MAILGUN_KEY || ''
         this.mailDomain = process.env.MAIL_DOMAIN || this.publicURL.hostname
         this.inviteAddress = process.env.INVITE_ADDRESS || 'invite-noreply@' + this.mailDomain
+        this.googleAnalyticsId = process.env.GOOGLE_ANALYTICS_ID
     }
 }
 
