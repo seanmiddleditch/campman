@@ -76,6 +76,11 @@ export function routes()
     router.use(media())
     router.use(settings())
     router.use(membership())
-    router.use('/', (req, res) => res.redirect('/w/home'))
+    router.use('/', (req, res) => {
+        if (req.url === '/')
+            res.redirect('/w/home')
+        else
+            res.render('not-found')
+    })
     return router
 }

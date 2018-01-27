@@ -7,6 +7,11 @@ export function routes()
     const router = PromiseRouter()
     router.use(auth())
     router.use(campaigns())
-    router.use('/', (req, res) => res.render('index'))
+    router.use('/', (req, res) => {
+        if (req.url === '/')
+            res.render('index')
+        else
+            res.render('not-found')
+    })
     return router
 }
