@@ -44,7 +44,8 @@ import * as models from './models'
         layoutsDir: path.join(viewsRoot, 'partials', 'layouts')
     }))
     app.locals.config = {
-        publicURL: config.publicURL
+        publicURL: config.publicURL,
+        googleAnalyticsId: config.googleAnalyticsId
     }
     app.set('view engine', 'handlebars')
     app.set('views', path.join(viewsRoot, 'pages'))
