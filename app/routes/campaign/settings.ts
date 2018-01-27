@@ -1,6 +1,6 @@
 import {Request, Response} from 'express'
 import {checkAccess} from '../../auth'
-import {CampaignRepository} from '../../models'
+import {CampaignRepository, CampaignVisibility} from '../../models'
 import {connection} from '../../db'
 import {URL} from 'url'
 import {config} from '../../config'
@@ -45,6 +45,9 @@ export function settings()
 
         campaign.title = req.body['title'] || campaign.title
         campaign.slug = req.body['slug'] ? slugUtils.sanitize(req.body['slug']) : campaign.slug
+        campaign.visibility = req.body['visibility'] ?
+            (req.body['visibility'] === CampaignVisibility.Public ? CampaignVisibility.Public : CampaignVisibility.Hidden) :
+            campaign.visibility
 
         if (!slugUtils.isLegal(campaign.slug))
         {
@@ -54,16 +57,15 @@ export function settings()
 
         await campaignRepository.save(campaign)
 
-        if (campaign.slug !== req.campaign.slug)
-        {
-            const url = new URL('/', config.publicURL)
-            url.host = `${campaign.slug}.${url.host}`
-            res.redirect(url.toString(), 307)
-        }
-        else
-        {
-            res.redirect('/settings')
-        }
+        const url = new URL('/', config.publicURL)
+        url.host = `${campaign.slug}.${url.host}`
+
+        res.json({
+            status: 'success',
+            data: {
+                hostname: url.host
+            }
+        })
     })
 
     return router
