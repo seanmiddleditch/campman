@@ -1,14 +1,19 @@
 import PromiseRouter = require('express-promise-router')
 import {checkAccess, CampaignRole} from '../../auth'
 import {MembershipRepository} from '../../models/membership-model'
+import {InvitationRepository} from '../../models/invitation-model'
 import {connection} from '../../db'
 import {config} from '../../config'
 import {URL} from 'url'
 import {QueryFailedError} from 'typeorm'
+import * as shortid from 'shortid'
+import * as mailgun from 'mailgun-js'
 
 export function membership() {
     const router = PromiseRouter()
     const membershipRepository = connection().getCustomRepository(MembershipRepository)
+    const invitationRepository = connection().getCustomRepository(InvitationRepository)
+    const messages = mailgun({apiKey: config.mailgunKey, domain: config.mailDomain}).messages()
 
     router.get('/membership', async (req, res, next) => {
         if (!req.campaign)
@@ -16,13 +21,66 @@ export function membership() {
 
         if (!checkAccess({target: 'campaign:configure', hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403).json({status: 'access denied'})
+            res.status(404).render('access-denied')
             return
         }
 
         const all = await membershipRepository.findForCampaign({campaignId: req.campaign.id})
 
         res.render('campaign/membership', {members: all})
+    })
+
+    router.post('/membership', async (req, res, next) => {
+        if (!req.campaign)
+            throw new Error('Missing campaign')
+
+        const email = req.body['email'] as string|undefined
+        
+        if (!email)
+        {
+            res.status(400).json({
+                status: 'failed',
+                message: 'Invalid email address.'
+            })
+            return
+        }
+
+        const code = shortid()
+        
+        const invite = await invitationRepository.createInvitation({code, email, campaignId: req.campaign.id})
+
+        const title = req.campaign.title
+        const inviter = req.user.nickname || req.user.fullname
+        const url = new URL(`/join/${code}`, config.publicURL).toString()
+        try
+        {
+            const result = true
+            await new Promise<string>((resolve, reject) => {
+                messages.send({
+                    from: config.inviteAddress,
+                    to: email,
+                    subject: `Invitation to ${title}`,
+                    text: `You have been invited to ${title} by ${inviter}. Go to ${url} to join! If this message appears to be in error, please ignore it.`
+                }, (err, body) => {
+                    if (err) reject(err)
+                    else resolve(body)
+                })
+            })
+            res.json({
+                status: 'success',
+                data: {
+                    code
+                }
+            })
+        }
+        catch (err)
+        {
+            console.error(err)
+            res.status(500).json({
+                status: 'failed',
+                message: 'Could not send email.'
+            })
+        }
     })
 
     router.post('/membership/:profileId', async (req, res, next) => {

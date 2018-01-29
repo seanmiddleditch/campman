@@ -125,7 +125,6 @@ class MemberItem extends React.Component<MemberItemProps, MemberItemState>
 interface InviteMemberState
 {
     inviteEmail: string
-    inviteRole: string
 }
 class InviteMember extends React.Component<{}, InviteMemberState>
 {
@@ -133,8 +132,7 @@ class InviteMember extends React.Component<{}, InviteMemberState>
     {
         super(props)
         this.state = {
-            inviteEmail: '',
-            inviteRole: 'Player'
+            inviteEmail: ''
         }
     }
     
@@ -144,16 +142,10 @@ class InviteMember extends React.Component<{}, InviteMemberState>
         this.setState({inviteEmail: ev.target.value})
     }
 
-    private _handleInviteRoleChanged(ev: React.ChangeEvent<HTMLSelectElement>)
-    {
-        ev.preventDefault()
-        this.setState({inviteRole: ev.target.value})
-    }
-
     private _handleInviteClicked(ev: React.MouseEvent<HTMLButtonElement>)
     {
         ev.preventDefault()
-        const promise = fetch('/membership/invite', {
+        const promise = fetch('/membership', {
             method: 'POST',
             mode: 'cors',
             credentials: 'include',
@@ -161,8 +153,7 @@ class InviteMember extends React.Component<{}, InviteMemberState>
                 'Content-Type': 'application/json'
             }),
             body: JSON.stringify({
-                email: this.state.inviteEmail,
-                role: this.state.inviteRole
+                email: this.state.inviteEmail
             })
         }).then(response => {
             if (!response.ok)
@@ -185,10 +176,7 @@ class InviteMember extends React.Component<{}, InviteMemberState>
                     <input className='form-control' type='text' value={this.state.inviteEmail} onChange={ev => this._handleInviteEmailChanged(ev)} placeholder='email address'/>
                 </td>
                 <td>
-                    <select className='form-control' value={this.state.inviteRole} onChange={ev => this._handleInviteRoleChanged(ev)}>
-                        <option value='GameMaster'>GM</option>
-                        <option value='Player'>Player</option>
-                    </select>
+                    Player
                 </td>
                 <td>
                     <button className='btn btn-primary' onClick={ev => this._handleInviteClicked(ev)}>Invite</button>

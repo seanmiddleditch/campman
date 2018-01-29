@@ -25,11 +25,13 @@ export class InvitationRepository extends Repository<InvitationModel>
 {
     public async createInvitation(params: {code: string, email: string, campaignId: number})
     {
-        await this.create({
+        const invite = this.create({
             id: params.code,
             email: params.email,
             campaignId: params.campaignId
         })
+        await this.save(invite)
+        return invite
     }
 
     public static async acceptInvite(conn: Connection, {code, profileId}: {code: string, profileId: number})

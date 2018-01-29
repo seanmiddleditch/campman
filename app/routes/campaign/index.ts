@@ -4,6 +4,7 @@ import {tags} from './tags'
 import {media} from './media'
 import {settings} from './settings'
 import {membership} from './membership'
+import {checkAccess} from '../../auth'
 import {CampaignModel, CampaignRepository, MembershipRepository,} from '../../models'
 import {CampaignRole} from '../../auth'
 import PromiseRouter = require('express-promise-router')
@@ -67,10 +68,23 @@ function lookupProfileRole()
     }
 }
 
+function checkViewAccess()
+{
+    return async (req: Request, res: Response, next: NextFunction) => 
+    {
+        if (!checkAccess({target: 'campaign:view', hidden: false, profileId: req.profileId, role: req.campaignRole}))
+        {
+            res.status(404).render('access-denied')
+            return
+        }
+        next()
+    }
+}
+
 export function routes()
 {
     const router = PromiseRouter()
-    router.use(resolveCampaign(), lookupProfileRole())
+    router.use(resolveCampaign(), lookupProfileRole(), checkViewAccess())
     router.use(wiki())
     router.use(tags())
     router.use(media())
