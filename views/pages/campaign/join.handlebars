@@ -1,5 +1,17 @@
 {{>layouts/page title='Join Campaign'}}
 
 {{#*inline "content"}}
-    Work in Progress
+{{#if success}}
+<div class='alert alert-primary'>
+    You have successfully joined the campaign!
+</div>
+{{else}}
+<div class='alert alert-danger'>
+    {{#if error}}
+    {{error}}
+    {{else}}
+    We're sorry, but your join request is invalid or cannot be processed at this time.
+    {{/if}}
+</div>
+{{/if}}
 {{/inline}}

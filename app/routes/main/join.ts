@@ -13,16 +13,9 @@ export function join() {
     router.get('/join/:code', async (req, res, next) => {
         const code = req.params['code']
 
-        const invitation = await invitationRepository.findOneById(code)
-        if (!invitation)
-        {
-            res.status(404).render('not-found')
-            return
-        }
-
         if (!req.user)
         {
-            res.status(403).render('access-denied')
+            res.render('campaign/join', {success: false, error: 'Please login to join.'})
             return
         }
 
@@ -32,14 +25,16 @@ export function join() {
                 code,
                 profileId: req.user.id
             })
+            if (result)
+                res.render('campaign/join', {success: true})
+            else
+                res.render('campaign/join', {success: false, error: 'Expired or invalid code.'})
         }
         catch (e)
         {
-            res.status(404).render('not-found')
-            return
+            console.error(e)
+            res.render('campaign/join', {success: false, error: 'Expired or invalid code.'})
         }
-
-        res.render('campaign/join')
     })
 
     return router

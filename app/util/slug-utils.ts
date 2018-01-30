@@ -12,7 +12,7 @@ export function isValid(slug: string): boolean
 const illegalSlugs = [
     'www', 'api', 'mail', 'media', // real sub-domains used by the app
     'local', 'dev', 'staging', // sub-domains used by branches
-    'admin', 'profile', 'app', 'login', 'images' // official-looking subdomains
+    'admin', 'profile', 'app', 'login', 'images', 'email', 'web' // official-looking subdomains
 ]
 export function isLegal(slug: string): boolean
 {

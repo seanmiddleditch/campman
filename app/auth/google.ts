@@ -1,5 +1,5 @@
 import {Profile, Strategy} from 'passport'
-import {OAuth2Strategy} from 'passport-google-oauth'
+import * as Google from 'passport-google-oauth2'
 import {ProfileModel, ProfileRepository} from '../models'
 import {URL} from 'url'
 import {Connection} from 'typeorm'
@@ -8,15 +8,9 @@ export function googleAuth(connection: Connection, publicURL: string, googleClie
 {
     const profileRepository = connection.getCustomRepository(ProfileRepository)
 
-    const callbackURL = new URL(publicURL)
-    callbackURL.pathname = '/auth/google/callback'
-    return new OAuth2Strategy({
-        clientID: googleClientId,
-        clientSecret: googleAuthSecret,
-        callbackURL: callbackURL.toString(),
-        accessType: 'offline',
-        approval_prompt: 'force'
-    }, (accessToken: string, refreshToken: string, profile: Profile, callback: (err: Error|null, profile: ProfileModel|null) => void) => {
+    const callbackURL = new URL('/auth/google/callback', publicURL)
+
+    const verify = (accessToken: string, refreshToken: string, profile: Profile, callback: (err: Error|null, profile: ProfileModel|null) => void) => {
         if (!profile.emails) callback(new Error('Email required'), null)
         else profileRepository.findOrCreateForGoogle({
                 googleId: profile.id,
@@ -26,5 +20,13 @@ export function googleAuth(connection: Connection, publicURL: string, googleClie
             })
             .then(profile => callback(null, profile))
             .catch(err => callback(err, null))
-    })
+    }
+
+    const options: Google.StrategyOptions = {
+        clientID: googleClientId,
+        clientSecret: googleAuthSecret,
+        callbackURL: callbackURL.toString()
+    }
+
+    return new Google.Strategy(options, verify)
 }

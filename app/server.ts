@@ -10,6 +10,7 @@ import * as passport from 'passport'
 import * as session from 'express-session'
 import * as redis from 'connect-redis'
 import * as cors from 'cors'
+import { CorsOptions } from 'cors'
 import { Connection } from 'typeorm'
 import { URL } from 'url'
 import { CampaignRole, googleAuth } from './auth'
@@ -68,13 +69,20 @@ import * as models from './models'
     if (!config.production)
         app.use('/js/main.js.map', express.static(path.join(clientRoot, 'dist', 'main.js.map')))
 
-    app.use(cors({
-        origin: [
-            config.publicURL.toString(),
-            new RegExp(`/[.]${config.publicURL.hostname}\$/`)
-        ],
+    const corsOptions: CorsOptions = {
+        origin: (origin, callback) => {
+            if (!origin)
+                return callback(null, true) // browser not using CORS or has no origin
+
+            const hostname = new URL(origin).hostname
+            if (hostname === host || hostname.endsWith(`.${host}`))
+                callback(null, true) // browser origin matches our subs
+            else
+                callback(new Error('Not allowed by CORS'), false) // unknown origin
+        },
         credentials: true
-    }))
+    }
+    app.use(cors(corsOptions))
 
     app.use(BodyParser.urlencoded({ extended: false }))
     app.use(BodyParser.json())

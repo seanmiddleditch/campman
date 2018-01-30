@@ -45,7 +45,7 @@ export function auth()
                  req.session.returnURL = req.headers.referer
             next()
         },
-        passport.authenticate('google', {scope: ['email', 'profile']}))
+        passport.authenticate('google', {prompt: '', scope: ['email', 'profile']}))
 
     return router
 }

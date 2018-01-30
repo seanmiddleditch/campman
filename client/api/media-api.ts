@@ -19,7 +19,7 @@ interface MediaAPIPresignResult
 
 export class MediaAPI
 {
-    async presign({contentType, contentSize, contentMD5, path, caption, fileHead, thumbnailBase64}: MediaAPIPresignParams) : Promise<MediaAPIPresignResult>
+    private async _presign({contentType, contentSize, contentMD5, path, caption, fileHead, thumbnailBase64}: MediaAPIPresignParams) : Promise<MediaAPIPresignResult>
     {
         const response = await fetch(`/media${path}`, {
             method: 'PUT',
@@ -37,7 +37,7 @@ export class MediaAPI
             throw new Error(body.status)
     }
 
-    async verify({path, contentMD5}: {path: string, contentMD5: string})
+    private async _verify({path, contentMD5}: {path: string, contentMD5: string})
     {
         const response = await fetch(`/media${path}`, {
             method: 'POST',
@@ -55,7 +55,7 @@ export class MediaAPI
             throw new Error(body.status)
     }
 
-    async s3PutObject({url, file, contentType, contentMD5}: {url: string, file: File, contentType: string, contentMD5: string})
+    private async _s3PutObject({url, file, contentType, contentMD5}: {url: string, file: File, contentType: string, contentMD5: string})
     {
         const result = await fetch(url, {
             method: 'PUT',
@@ -96,11 +96,11 @@ export class MediaAPI
         const fileHead = btoa(Array.from(new Uint8Array(buffer.slice(0, 64))).map(b => String.fromCharCode(b)).join(''))
         const thumbnailBase64 = thumbnailDataURL.split(',', 2)[1]
 
-        const signed = await this.presign({contentType, contentSize, contentMD5, path, caption, fileHead, thumbnailBase64})
+        const signed = await this._presign({contentType, contentSize, contentMD5, path, caption, fileHead, thumbnailBase64})
         if (signed.signed_put_url)
         {
-            const put = await this.s3PutObject({url: signed.signed_put_url, file, contentType, contentMD5})
-            await this.verify({path: signed.path, contentMD5})
+            const put = await this._s3PutObject({url: signed.signed_put_url, file, contentType, contentMD5})
+            await this._verify({path: signed.path, contentMD5})
         }
 
         return {
