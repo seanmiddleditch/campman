@@ -125,6 +125,9 @@ class MemberItem extends React.Component<MemberItemProps, MemberItemState>
 interface InviteMemberState
 {
     inviteEmail: string
+    message?: string
+    error?: string
+    promise?: Promise<void>
 }
 class InviteMember extends React.Component<{}, InviteMemberState>
 {
@@ -162,27 +165,45 @@ class InviteMember extends React.Component<{}, InviteMemberState>
         }).then(result => {
             if (result.status !== 'success')
                 throw new Error(result.message)
+            this.setState({message: 'Invitation sent!', promise: undefined})
         }).catch(err => {
-            alert(err)
+            console.error(err)
+            this.setState({error: err.toString(), promise: undefined})
         })
+        this.setState({promise, message: undefined, error: undefined})
     }
 
     public render()
     {
-        return (
+        return (<tfoot>
+            {this.state.message && <tr>
+                <td colSpan={5}>
+                    <div className='alert alert-primary'>{this.state.message}</div>
+                </td>
+            </tr>}
+            {this.state.error && <tr>
+                <td colSpan={5}>
+                    <div className='alert alert-danger'>{this.state.error}</div>
+                </td>
+            </tr>}
             <tr>
                 <td/>
                 <td colSpan={2}>
-                    <input className='form-control' type='text' value={this.state.inviteEmail} onChange={ev => this._handleInviteEmailChanged(ev)} placeholder='email address'/>
+                    <input className='form-control' type='text' disabled={!!this.state.promise} value={this.state.inviteEmail} onChange={ev => this._handleInviteEmailChanged(ev)} placeholder='email address'/>
                 </td>
                 <td>
                     Player
                 </td>
                 <td>
-                    <button className='btn btn-primary' onClick={ev => this._handleInviteClicked(ev)}>Invite</button>
+                    <button className='btn btn-primary' disabled={!!this.state.promise} onClick={ev => this._handleInviteClicked(ev)}>
+                        {this.state.promise ?
+                            <span><i className='fa fa-spinner fa-spin'></i> Sending</span>:
+                            <span><i className='fa fa-envelope-o'></i> Send Invite</span>
+                        }
+                    </button>
                 </td>
             </tr>
-        )
+        </tfoot>)
     }
 }
 
@@ -234,9 +255,7 @@ export class CampaignMembership extends React.Component<Props, State>
                         <MemberItem key={member.id} member={member} onDeleted={id => this._handleDeleted(id)}/>
                     ))}
                 </tbody>
-                <tfoot>
-                    <InviteMember/>
-                </tfoot>
+                <InviteMember/>
             </table>
         )
     }
