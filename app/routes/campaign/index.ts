@@ -9,6 +9,8 @@ import {CampaignModel, CampaignRepository, MembershipRepository,} from '../../mo
 import {CampaignRole} from '../../auth'
 import PromiseRouter = require('express-promise-router')
 import {connection} from '../../db'
+import {URL} from 'url'
+import {config} from '../../config'
 
 function resolveCampaign()
 {
@@ -20,10 +22,16 @@ function resolveCampaign()
         const campaign = domainCache.get(req.hostname)
         const slug = req.subdomains.length ? req.subdomains[req.subdomains.length - 1] : null
 
+        // only trust if the campaign validates
+        const campaignHost = `${slug}.${config.publicURL.host}`
+
         if (campaign)
         {
             req.campaign = campaign
             res.locals.campaign = campaign
+            res.locals.campaignURL = new URL('', config.publicURL)
+            res.locals.campaignURL.host = campaignHost
+
             return next()
         }
         else if (slug)
@@ -34,6 +42,8 @@ function resolveCampaign()
                 domainCache.set(req.hostname, req.campaign || null)
                 req.campaign.id = req.campaign ? req.campaign.id : 0
                 res.locals.campaign = req.campaign
+                res.locals.campaignURL = new URL('', config.publicURL)
+                res.locals.campaignURL.host = campaignHost
     
                 return next()
             }

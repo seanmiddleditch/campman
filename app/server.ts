@@ -124,8 +124,10 @@ import * as models from './models'
             mainRouter(req, res, next)
         else if (req.hostname === wwwHost)
             res.redirect(config.publicURL.toString())
-        else
+        else if (req.hostname.endsWith(`.${host}`))
             campaignRouter(req, res, next)
+        else
+            res.redirect(config.publicURL.toString(), 307)
     })
 
     const server = await app.listen(config.port)

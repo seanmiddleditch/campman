@@ -1,76 +1,7 @@
 {{>layouts/essential title=title}}
 
 {{#*inline "body"}}
-
-<nav class='navbar sticky-top navbar-expand-lg navbar-light bg-light' style='height: 60px'>
-    {{#if campaign}}
-    <div class='navbar-brand'><a href='{{config.publicURL}}'><i class='fa fa-home'></i></a></div>
-    <div class='navbar-brand'><a href='/'>{{campaign.title}}</a></div>
-    <div class='collapse navbar-collapse'>
-        <ul class='navbar-nav mr-auto mt-2 mt-lg-0'>
-            <li class='nav-item'><a class='nav-link disabled' href='#'>Adventures</a></li>
-            <li class='nav-item'><a class='nav-link' href='/wiki'>Wiki</a></li>
-            <li class='nav-item'><a class='nav-link' href='/tags'>Tags</a></li>
-            <li class='nav-item'><a class='nav-link disabled' href='#'>Maps</a></li>
-            <li class='nav-item'><a class='nav-link disabled' href='#'>Characters</a></li>
-            <li class='nav-item'><a class='nav-link disabled' href='#'>Timeline</a></li>
-            <li class='nav-item'><a class='nav-link' href='/media'>Media</a></li>
-            <li class='nav-item dropdown'>
-                <a class='nav-link' href='#' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'><i class='fa fa-cog'></i></a>
-                <div class='dropdown-menu'>
-                    <a class='dropdown-item' href='/settings'>Settings</a>
-                    <a class='dropdown-item' href='/membership'>Members</a>
-                </div>
-            </li>
-        </ul>
-    </div>
-    {{else}}
-    <div class='navbar-brand'><a href='{{config.publicURL}}'><i class='fa fa-home'></i> Campaign Manager</a></div>
-    <div class='collapse navbar-collapse' id='navbarTogglerDemo03'>
-        <ul class='navbar-nav mr-auto mt-2 mt-lg-0'>
-            <div class='nav-link'><a href='/campaigns'>Campaigns</a></div>
-        </ul>
-    </div>
-    {{/if}}
-    <form class='input-group' action='/search' method='get'>
-        <input class='form-control' type='search' name='q' placeholder='Search' aria-label='Search'/>
-        <span class='input-group-btn'>
-            <button class='btn btn-outline-primary my-2 my-sm-0' type='submit'>
-                <span class='fa fa-search'></span>
-            </button>
-        </span>
-    </form>
-    <ul class='navbar-nav ml-2 ml-lg-2 mt-2 mt-lg-0'>
-        {{#if profile}}
-        <div class='btn-group' role='group'>
-            <button class='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
-                <span>{{profile.nickname}}</span>
-                {{#if profile.photoURL}}
-                <img style='width: 24px; height: 24px' src='{{profile.photoURL}}'/>
-                {{else}}
-                <i class='navigation-bar-profile-photo fa fa-user-circle-o'></i>
-                {{/if}}
-            </button>
-            <div class='dropdown-menu'>
-                <a class='dropdown-item' href='{{config.publicURL}}campaigns'>Campaigns</a>
-                <a class='dropdown-item' href='{{config.publicURL}}profile'>Profile</a>
-                <a class='dropdown-item' id='nav-logout-btn'>Logout</a>
-            </div>
-        </div>
-        {{else}}
-        <button class='btn btn-signin-google p-0 m-0' id='nav-login-btn'>
-            <img src='/images/google-signin/normal.png' alt='Sign-in (Google+)'/>
-        </button>
-        {{/if}}
-        <script defer>
-            $(() => {
-                const session = new LoginSession('{{config.publicURL}}')
-                $('#nav-login-btn').click(e => {session.login().then(() => window.location.reload(true)); return false})
-                $('#nav-logout-btn').click(e => {session.logout().then(() => window.location.reload(true)); return false})
-            })
-        </script>
-    </ul>
-</nav>
+{{>inline/nav}}
 <main role='main' class='container mt-2'>
     <div class='page-header'>
         {{#>page_header}}
@@ -83,7 +14,7 @@
         {{/content}}
     </div>
 </main>
-<footer class='mt-2' style='position: absolute; bottom: 0; height: 60px; line-height: 60px; width: 100%; margin: 0; padding: 0'>
-    <div class='text-muted text-center'><a href='https://github.com/seanmiddleditch/campman'>Campaign Manager</a> by <a href='http://seanmiddleditch.com'>Sean Middleditch</a></div>
+<footer class='mt-2' style='position: absolute; bottom: 0; height: 60px; line-height: 60px; width: 100%; margin: 0; padding: 0; color: grey; font-size: small'>
+    <div class='text-muted text-center'>Powered by <a href='https://github.com/seanmiddleditch/campman'>Campaign Manager</a></div>
 </footer>
 {{/inline}}
