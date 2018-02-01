@@ -5,7 +5,7 @@ import {media} from './media'
 import {settings} from './settings'
 import {membership} from './membership'
 import {checkAccess} from '../../auth'
-import {CampaignModel, CampaignRepository, MembershipRepository,} from '../../models'
+import {CampaignModel, CampaignRepository, MembershipRepository, CampaignVisibility,} from '../../models'
 import {CampaignRole} from '../../auth'
 import PromiseRouter = require('express-promise-router')
 import {connection} from '../../db'
@@ -82,7 +82,7 @@ function checkViewAccess()
 {
     return async (req: Request, res: Response, next: NextFunction) => 
     {
-        if (!checkAccess({target: 'campaign:view', hidden: false, profileId: req.profileId, role: req.campaignRole}))
+        if (!checkAccess({target: 'campaign:view', hidden: !req.campaign || req.campaign.visibility == CampaignVisibility.Hidden, profileId: req.profileId, role: req.campaignRole}))
         {
             res.status(404).render('access-denied')
             return
