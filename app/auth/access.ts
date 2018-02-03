@@ -1,13 +1,14 @@
 import {CampaignModel, MembershipModel} from '../models'
+import {CampaignRole} from './role'
+export {CampaignRole}
 
-export enum CampaignRole
+interface AccessParams
 {
-    Owner = 'Owner',
-    GameMaster = 'GameMaster',
-    Player = 'Player',
-    Visitor = 'Visitor'
+    profileId?: number
+    ownerId?: number
+    hidden?: boolean
+    role: CampaignRole
 }
-
 type AccessCondition = (params: AccessParams) => boolean
 type AccessControls = AccessCondition[]
 
@@ -83,21 +84,11 @@ export const accessConfiguration : AccessConfiguration = {
         p => p.role === CampaignRole.Owner,
     ]
 }
+type AccessTargets = keyof AccessConfiguration
 
-export type AccessTargets = keyof AccessConfiguration
-
-export interface AccessParams
+export function checkAccess(target: AccessTargets, params: AccessParams) : boolean
 {
-    target: AccessTargets
-    profileId?: number
-    ownerId?: number
-    hidden?: boolean
-    role: CampaignRole
-}
-
-export function checkAccess(params: AccessParams) : boolean
-{
-    const access = accessConfiguration[params.target]
+    const access = accessConfiguration[target]
 
     for (const condition of access)
     {

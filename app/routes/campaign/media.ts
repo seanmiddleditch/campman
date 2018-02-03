@@ -30,7 +30,7 @@ export function media()
         if (!req.campaign)
             throw new Error('Missing campaign')
         
-        if (!checkAccess({target: 'media:upload', hidden: false, profileId: req.profileId, role: req.campaignRole}))
+        if (!checkAccess('media:upload', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
             res.status(403).json({status: 'access denied'})
             return
@@ -199,7 +199,7 @@ export function media()
         if (!req.campaign)
             throw new Error('Missing campaign')
         
-        if (!checkAccess({target: 'media:upload', hidden: false, profileId: req.profileId, role: req.campaignRole}))
+        if (!checkAccess('media:upload', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
             res.status(403).json({status: 'access denied'})
             return
@@ -248,7 +248,7 @@ export function media()
         if (!req.campaign)
             throw new Error('Missing campaign')
 
-        if (!checkAccess({target: 'media:delete', hidden: false, profileId: req.profileId, role: req.campaignRole}))
+        if (!checkAccess('media:delete', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
             res.status(403).json({status: 'access denied'})
             return
@@ -271,14 +271,14 @@ export function media()
         if (!req.campaign)
             throw new Error('Missing campaign')
 
-        if (!checkAccess({target: 'media:list', hidden: false, profileId: req.profileId, role: req.campaignRole}))
+        if (!checkAccess('media:list', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
             res.status(403).json({status: 'access denied'})
             return
         }
 
-        const canUpload = checkAccess({target: 'media:upload', hidden: false, profileId: req.profileId, role: req.campaignRole});
-        const canDelete = checkAccess({target: 'media:delete', hidden: false, profileId: req.profileId, role: req.campaignRole});
+        const canUpload = checkAccess('media:upload', {hidden: false, profileId: req.profileId, role: req.campaignRole});
+        const canDelete = checkAccess('media:delete', {hidden: false, profileId: req.profileId, role: req.campaignRole});
 
         const media = await mediaRepository.findByCampaign({campaignId: req.campaign.id})
 

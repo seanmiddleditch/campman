@@ -82,7 +82,7 @@ function checkViewAccess()
 {
     return async (req: Request, res: Response, next: NextFunction) => 
     {
-        if (!checkAccess({target: 'campaign:view', hidden: !req.campaign || req.campaign.visibility == CampaignVisibility.Hidden, profileId: req.profileId, role: req.campaignRole}))
+        if (!checkAccess('campaign:view', {hidden: !req.campaign || req.campaign.visibility == CampaignVisibility.Hidden, profileId: req.profileId, role: req.campaignRole}))
         {
             res.status(404).render('access-denied')
             return

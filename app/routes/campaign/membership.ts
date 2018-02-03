@@ -19,7 +19,7 @@ export function membership() {
         if (!req.campaign)
             throw new Error('Missing campaign')
 
-        if (!checkAccess({target: 'campaign:configure', hidden: false, profileId: req.profileId, role: req.campaignRole}))
+        if (!checkAccess('campaign:configure', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
             res.status(404).render('access-denied')
             return
@@ -87,7 +87,7 @@ export function membership() {
         if (!req.campaign)
             throw new Error('Missing campaign')
 
-        if (!checkAccess({target: 'campaign:configure', hidden: false, profileId: req.profileId, role: req.campaignRole}))
+        if (!checkAccess('campaign:configure', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
             res.status(403).json({status: 'access denied'})
             return
@@ -125,7 +125,7 @@ export function membership() {
         if (!req.campaign)
             throw new Error('Missing campaign')
 
-        if (!checkAccess({target: 'campaign:configure', hidden: false, profileId: req.profileId, role: req.campaignRole}))
+        if (!checkAccess('campaign:configure', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
             res.status(403).json({status: 'access denied'})
             return

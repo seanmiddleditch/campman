@@ -18,18 +18,17 @@ export function wiki() {
 
         const all = await pageRepository.findForCampaign({campaignId: req.campaign.id})
 
-        const canCreate = checkAccess({target: 'page:create', profileId: req.profileId, role: req.campaignRole})
+        const canCreate = checkAccess('page:create', {profileId: req.profileId, role: req.campaignRole})
 
         res.render('list-pages', {
-            pages: all.filter(page => checkAccess({
-                target: 'page:view',
+            pages: all.filter(page => checkAccess('page:view', {
                 profileId: req.profileId,
                 role: req.campaignRole,
                 ownerId: page.authorId,
                 hidden: page.visibility !== PageVisibility.Public
             })).map(page => ({
                 ...page,
-                editable: checkAccess({target: 'page:edit', profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public})
+                editable: checkAccess('page:edit', {profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public})
             })),
             canCreate
         })
@@ -39,7 +38,7 @@ export function wiki() {
         if (!req.campaign)
             throw new Error('Missing campaign')
 
-        if (!checkAccess({target: 'page:create', profileId: req.profileId, role: req.campaignRole}))
+        if (!checkAccess('page:create', {profileId: req.profileId, role: req.campaignRole}))
         {
             res.status(403)
             res.json({status: 'access denied'})
@@ -61,7 +60,7 @@ export function wiki() {
             return res.render('not-found')
         }
 
-        if (!checkAccess({target: 'page:edit', profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public}))
+        if (!checkAccess('page:edit', {profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public}))
         {
             res.status(403)
             return res.render('access-denied')
@@ -86,7 +85,7 @@ export function wiki() {
             return res.render('not-found')
         }
 
-        if (!checkAccess({target: 'page:view', profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public}))
+        if (!checkAccess('page:view', {profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public}))
         {
             res.status(403)
             return res.render('access-denied')
@@ -94,15 +93,13 @@ export function wiki() {
 
         const {slug, title, rawbody, tags, visibility} = page
 
-        const secrets = checkAccess({
-            target: 'page:view-secret',
+        const secrets = checkAccess('page:view-secret', {
             profileId: req.profileId,
             role: req.campaignRole,
             ownerId: page.authorId,
             hidden: page.visibility !== PageVisibility.Public
         })
-        const editable = checkAccess({
-            target: 'page:edit',
+        const editable = checkAccess('page:edit', {
             profileId: req.profileId,
             role: req.campaignRole,
             ownerId: page.authorId,
@@ -142,7 +139,7 @@ export function wiki() {
 
         if (page)
         {
-            if (!checkAccess({target: 'page:edit', profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public}))
+            if (!checkAccess('page:edit', {profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public}))
             {
                 res.status(403).json({status: 'access denied'})
                 return
@@ -176,7 +173,7 @@ export function wiki() {
         }
         else
         {
-            if (!checkAccess({target: 'page:create', profileId: req.profileId, role: req.campaignRole}))
+            if (!checkAccess('page:create', {profileId: req.profileId, role: req.campaignRole}))
             {
                 res.status(403).json({status: 'access denied'})
                 return
@@ -223,7 +220,7 @@ export function wiki() {
     //         {
     //             res.status(404).json({message: 'Page not found'})
     //         }
-    //         else if (!checkAccess({target: 'page:delete', profileId: req.profileId, role: req.userRole, ownerID: result.page.authorID}))
+    //         else if (!checkAccess('page:delete', {profileId: req.profileId, role: req.userRole, ownerID: result.page.authorID}))
     //         {
     //             res.status(403).json({message: 'Access denied'})
     //         }

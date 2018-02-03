@@ -17,8 +17,7 @@ export function tags()
         if (!all)
             return res.status(404).render('not-found')
 
-        const filtered = all.filter(label => checkAccess({
-            target: 'tag:view',
+        const filtered = all.filter(label => checkAccess('tag:view', {
             profileId: req.profileId,
             role: req.campaignRole
         }))
