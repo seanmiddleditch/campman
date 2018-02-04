@@ -11,22 +11,27 @@ import {QueryFailedError} from 'typeorm'
 import * as mime from 'mime'
 import * as fileType from 'file-type'
 import * as imageSize from 'image-size'
+import {URL} from 'url'
 
-export function media()
+export function files()
 {
     const router = PromiseRouter()
 
     const mediaRepository = connection().getCustomRepository(MediaFileRepository)
     const storageRepository = connection().getRepository(MediaStorageModel)
 
-    const makeMediaURL = (key: string) => `https://s3-${config.awsRegion}.amazonaws.com/${config.s3Bucket}/${key}`
+    const mediaURL = new URL('', config.publicURL)
+    mediaURL.hostname = `media.${mediaURL.hostname}`
+
+    const makeMediaURL = (key: string) => new URL(`/img/full/${path.basename(key)}`, mediaURL).toString()
+    const makeThumbURL = (key: string, size: number) => new URL(`/img/thumb/${size}/${path.basename(key, path.extname(key))}.png`, mediaURL).toString()
 
     const s3 = new S3()
     s3.config.region = config.awsRegion
     s3.config.accessKeyId = config.awsAccessKey
     s3.config.secretAccessKey = config.awsAuthSecret
 
-    router.put('/media/:pathspec?', async (req, res, next) => {
+    router.put('/files/:pathspec?', async (req, res, next) => {
         if (!req.campaign)
             throw new Error('Missing campaign')
         
@@ -42,35 +47,9 @@ export function media()
         const contentType = req.body['contentType'] as string
         const contentSize = req.body['contentSize'] as number
         const caption = req.body['caption'] || ''
-        const thumbnailBase64 = req.body['thumbnailBase64']
 
         const contentHexMD5 = Buffer.from(contentMD5, 'base64').toString('hex')
         const fileHeadBuffer = Buffer.from(fileHead, 'base64')
-        const thumbnailBuffer = Buffer.from(thumbnailBase64, 'base64')
-
-        const thumbnailMaxDimension = 200
-        const thumbnailMaxSize = 64 * 1024 // 64k
-        const thumbnailDimensions = imageSize(thumbnailBuffer)
-        if (thumbnailDimensions.type != 'png')
-        {
-            res.status(400).json({status: 'Thumbnail must be a PNG'})
-            return
-        }
-        else if (thumbnailDimensions.width > thumbnailMaxDimension)
-        {
-            res.status(400).json({status: 'Thumbnail must be no larger than 200x200'})
-            return
-        }
-        else if (thumbnailDimensions.height > thumbnailMaxDimension)
-        {
-            res.status(400).json({status: 'Thumbnail must be no larger than 200x200'})
-            return
-        }
-        else if (thumbnailBuffer.byteLength > thumbnailMaxSize)
-        {
-            res.status(400).json({status: 'Thumbnail must be no larger than 64kb'})
-            return
-        }
 
         if (fileType(fileHeadBuffer).mime !== contentType)
         {
@@ -87,7 +66,6 @@ export function media()
 
         const librarySlug = req.campaign.slug
         const s3key = `media/${contentHexMD5}${extension}`
-        const thumbS3key = `media/thumbs/${contentHexMD5}.png`
 
         const cleanPath = path.posix.resolve('/', filePath)
         if (filePath !== cleanPath || filePath.length > 255)
@@ -106,7 +84,6 @@ export function media()
         {
             storage = storageRepository.create({
                 s3key: s3key,
-                thumbS3key,
                 contentMD5: contentHexMD5,
                 state: 'Pending'
             })
@@ -150,22 +127,6 @@ export function media()
         let signed_put_url: string|undefined
         if (storage.state === 'Pending')
         {
-            // store the thumbnail immediately, since we already have it
-            const putThumbParams: S3.PutObjectRequest = {
-                Bucket: config.s3Bucket,
-                Key: thumbS3key,
-                ContentType: 'image/png',
-                ContentLength: thumbnailBuffer.byteLength,
-                ACL: 'public-read',
-                Body: thumbnailBuffer
-            }
-            await new Promise<S3.PutObjectOutput>((resolve, reject) => {
-                s3.putObject(putThumbParams, (err, data) => {
-                    if (err) reject(err)
-                    else resolve(data)
-                })
-            })
-
             // generate a signed URL for the client to upload the full image
             const putParams: S3.PutObjectRequest = {
                 Bucket: config.s3Bucket,
@@ -189,13 +150,12 @@ export function media()
             body: {
                 path: cleanPath,
                 signed_put_url,
-                url: makeMediaURL(s3key),
-                thumb_url: makeMediaURL(thumbS3key)
+                url: makeMediaURL(s3key)
             }
         })
     })
 
-    router.post('/media/:pathspec?', async (req, res, next) => {
+    router.post('/files/:pathspec?', async (req, res, next) => {
         if (!req.campaign)
             throw new Error('Missing campaign')
         
@@ -244,7 +204,7 @@ export function media()
         }
     })
 
-    router.delete('/media/:pathspec?', async (req, res, next) => {
+    router.delete('/files/:pathspec?', async (req, res, next) => {
         if (!req.campaign)
             throw new Error('Missing campaign')
 
@@ -267,7 +227,7 @@ export function media()
         res.json({status: 'success'})
     })
 
-    router.get('/media/:pathspec?', async (req, res, next) => {
+    router.get('/files/:pathspec?', async (req, res, next) => {
         if (!req.campaign)
             throw new Error('Missing campaign')
 
@@ -288,7 +248,7 @@ export function media()
                 media: media.map(m => ({
                     path: m.path,
                     url: makeMediaURL(m.s3key),
-                    thumb_url: makeMediaURL(m.thumb_s3key),
+                    thumb_url: makeThumbURL(m.s3key, 100),
                     caption: m.caption,
                     attribution: m.attribution
                 })),
@@ -304,7 +264,7 @@ export function media()
                     files: media.map(m => ({
                         path: m.path,
                         url: makeMediaURL(m.s3key),
-                        thumb_url: makeMediaURL(m.thumb_s3key),
+                        thumb_url: makeThumbURL(m.s3key, 100),
                         caption: m.caption,
                         attribution: m.attribution
                     }))

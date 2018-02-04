@@ -59,6 +59,7 @@ import * as models from './models'
     const host = config.publicURL.hostname
     const apiHost = `api.${host}`
     const wwwHost = `www.${host}`
+    const mediaHost = `media.${host}`
 
     // static assets first, before campaign checks or other work
     app.use(favicon(path.join(staticRoot, 'images', 'favicon.ico')))
@@ -116,12 +117,15 @@ import * as models from './models'
     const apiRouter = routes.apiRoutes()
     const mainRouter = routes.mainRoutes()
     const campaignRouter = routes.campaignRoutes()
+    const mediaRouter = routes.mediaRoutes()
 
     app.use(async (req, res, next) => {
         if (req.hostname === apiHost)
             apiRouter(req, res, next)
         else if (req.hostname === host)
             mainRouter(req, res, next)
+        else if (req.hostname === mediaHost)
+            mediaRouter(req, res, next)
         else if (req.hostname === wwwHost)
             res.redirect(config.publicURL.toString())
         else if (req.hostname.endsWith(`.${host}`))

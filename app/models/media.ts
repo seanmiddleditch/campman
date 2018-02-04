@@ -14,9 +14,6 @@ export class MediaStorageModel
     @Column()
     public s3key: string
 
-    @Column({name: 'thumb_s3key'})
-    public thumbS3key: string
-
     @Column({name: 'content_md5'})
     public contentMD5: string
    
@@ -65,7 +62,7 @@ export class MediaModel
 @EntityRepository(MediaModel)
 export class MediaFileRepository extends Repository<MediaModel>
 {
-    public async findByCampaign({campaignId}: {campaignId: number}) : Promise<{id: number, s3key: string, thumb_s3key: string, path: string, caption?: string, attribution?: string}[]>
+    public async findByCampaign({campaignId}: {campaignId: number}) : Promise<{id: number, s3key: string, path: string, caption?: string, attribution?: string}[]>
     {
         return this.createQueryBuilder('media')
             .innerJoinAndSelect('media_storage', 'storage', 'storage.id=media.storage_id')
@@ -77,11 +74,10 @@ export class MediaFileRepository extends Repository<MediaModel>
             ])
             .addSelect('media.id', 'id')
             .addSelect('storage.s3key', 's3key')
-            .addSelect('storage.thumb_s3key', 'thumb_s3key')
             .getRawMany()
     }
 
-    public async findByPath({campaignId, path}: {campaignId: number, path: string}) : Promise<{id: number, s3key: string, thumb_s3key: string, path: string, caption?: string, attribution?: string, state: MediaState}|undefined>
+    public async findByPath({campaignId, path}: {campaignId: number, path: string}) : Promise<{id: number, s3key: string, path: string, caption?: string, attribution?: string, state: MediaState}|undefined>
     {
         return this.createQueryBuilder('media')
             .innerJoinAndSelect('media_storage', 'storage', 'storage.id=media.storage_id')
@@ -93,7 +89,6 @@ export class MediaFileRepository extends Repository<MediaModel>
             ])
             .addSelect('media.id', 'id')
             .addSelect('storage.s3key', 's3key')
-            .addSelect('storage.thumb_s3key', 'thumb_s3key')
             .getRawOne()
     }
 }

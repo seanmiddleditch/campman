@@ -7,7 +7,6 @@ interface MediaAPIPresignParams
     path: string
     caption?: string
     fileHead: string
-    thumbnailBase64: string
 }
 interface MediaAPIPresignResult
 {
@@ -19,14 +18,14 @@ interface MediaAPIPresignResult
 
 export class MediaAPI
 {
-    private async _presign({contentType, contentSize, contentMD5, path, caption, fileHead, thumbnailBase64}: MediaAPIPresignParams) : Promise<MediaAPIPresignResult>
+    private async _presign({contentType, contentSize, contentMD5, path, caption, fileHead}: MediaAPIPresignParams) : Promise<MediaAPIPresignResult>
     {
-        const response = await fetch(`/media${path}`, {
+        const response = await fetch(`/files${path}`, {
             method: 'PUT',
             headers: new Headers({'Content-Type': 'application/json'}),
             mode: 'same-origin',
             credentials: 'include',
-            body: JSON.stringify({contentType, contentSize, contentMD5, caption, head: fileHead, thumbnailBase64})
+            body: JSON.stringify({contentType, contentSize, contentMD5, caption, head: fileHead})
         })
         if (!response.ok)
             throw new Error(response.statusText)
@@ -39,7 +38,7 @@ export class MediaAPI
 
     private async _verify({path, contentMD5}: {path: string, contentMD5: string})
     {
-        const response = await fetch(`/media${path}`, {
+        const response = await fetch(`/files${path}`, {
             method: 'POST',
             headers: new Headers({'Content-Type': 'application/json'}),
             mode: 'same-origin',
@@ -70,7 +69,7 @@ export class MediaAPI
             throw new Error(result.statusText)
     }
 
-    async upload({file, thumbnail, path, caption}: {file: File, thumbnail: Blob, path?: string, caption?: string})
+    async upload({file, path, caption}: {file: File, path?: string, caption?: string})
     {
         path = path || `/${file.name}`
         const contentType = file.type
@@ -84,19 +83,10 @@ export class MediaAPI
                 else resolve(reader.result)
             }
         })
-        const thumbnailDataURL = await new Promise<string>((resolve, reject) => {
-            const reader = new FileReader()
-            reader.readAsDataURL(thumbnail)
-            reader.onloadend = ev => {
-                if (reader.error) reject(reader.error)
-                else resolve(reader.result)
-            }
-        })
         const contentMD5 = btoa(window['SparkMD5'].ArrayBuffer.hash(buffer, /*raw=*/true))
         const fileHead = btoa(Array.from(new Uint8Array(buffer.slice(0, 64))).map(b => String.fromCharCode(b)).join(''))
-        const thumbnailBase64 = thumbnailDataURL.split(',', 2)[1]
 
-        const signed = await this._presign({contentType, contentSize, contentMD5, path, caption, fileHead, thumbnailBase64})
+        const signed = await this._presign({contentType, contentSize, contentMD5, path, caption, fileHead})
         if (signed.signed_put_url)
         {
             const put = await this._s3PutObject({url: signed.signed_put_url, file, contentType, contentMD5})
@@ -115,7 +105,7 @@ export class MediaAPI
         if (path.length === 0 || path.charAt(0) !== '/')
             path = `/${path}`
 
-        const result = await fetch(`/media${path}`, {
+        const result = await fetch(`/files${path}`, {
             method: 'GET',
             mode: 'same-origin',
             credentials: 'include',
@@ -134,7 +124,7 @@ export class MediaAPI
 
     async delete(path)
     {
-        const result = await fetch(`/media${path}`, {
+        const result = await fetch(`/files${path}`, {
             method: 'DELETE',
             mode: 'same-origin',
             credentials: 'include'

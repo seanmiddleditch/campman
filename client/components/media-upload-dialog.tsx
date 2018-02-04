@@ -17,7 +17,6 @@ interface Props {
 }
 interface State {
     file?: File
-    thumbnail?: Blob
     upload?: Promise<void>
     caption?: string
     path?: string
@@ -32,8 +31,8 @@ export class MediaUploadDialog extends React.Component<Props, State>
         this.state = {}
     }
 
-    private _onImageSelected(file: File, thumbnail: Blob) {
-        this.setState({file, thumbnail})
+    private _onImageSelected(file: File) {
+        this.setState({file})
     }
 
     private _onPathChanged(path: string) {
@@ -51,8 +50,8 @@ export class MediaUploadDialog extends React.Component<Props, State>
 
     private _onUploadClicked(ev: React.MouseEvent<HTMLButtonElement>) {
         ev.preventDefault()
-        const {file, thumbnail, path, caption} = this.state
-        const upload = this._media.upload({file, thumbnail, path, caption}).then(({url, thumb_url, path}) => {
+        const {file, path, caption} = this.state
+        const upload = this._media.upload({file, path, caption}).then(({url, thumb_url, path}) => {
             this.setState({upload: undefined})
             this.props.onUpload({url, thumb_url, path})
         }).catch(e => {
@@ -72,7 +71,7 @@ export class MediaUploadDialog extends React.Component<Props, State>
                     {this.state.error && (<div className='form-group'>
                         <span className='error text-danger'><i className='fa fa-exclamation-triangle'></i> {this.state.error}</span>
                     </div>)}
-                    <ImageSelect className='form-group' onImageSelected={({file, thumbnail}) => this._onImageSelected(file, thumbnail)} onPathChanged={path => this._onPathChanged(path)}/>
+                    <ImageSelect className='form-group' onImageSelected={file => this._onImageSelected(file)} onPathChanged={path => this._onPathChanged(path)}/>
                     <div className='form-group'>
                         <label htmlFor='caption'>Caption</label>
                         <input className='form-control' type='text' placeholder='Description of file' disabled={!!this.state.upload} onChange={ev => this._onCaptionChanged(ev)}/>

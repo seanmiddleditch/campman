@@ -1,7 +1,7 @@
 import {Request, Response, NextFunction} from 'express'
 import {wiki} from './wiki'
 import {tags} from './tags'
-import {media} from './media'
+import {files} from './files'
 import {settings} from './settings'
 import {membership} from './membership'
 import {maps} from './maps'
@@ -98,7 +98,7 @@ export function routes()
     router.use(resolveCampaign(), lookupProfileRole(), checkViewAccess())
     router.use(wiki())
     router.use(tags())
-    router.use(media())
+    router.use(files())
     router.use(settings())
     router.use(membership())
     router.use(maps())
