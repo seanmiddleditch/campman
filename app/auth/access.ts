@@ -22,7 +22,8 @@ interface AccessConfiguration
     ['media:upload']: AccessControls
     ['media:list']: AccessControls
     ['media:delete']: AccessControls
-    ['maps:list']: AccessControls
+    ['map:view']: AccessControls
+    ['map:create']: AccessControls
     ['page:view']: AccessControls
     ['page:view-secret']: AccessControls
     ['page:create']: AccessControls
@@ -57,8 +58,13 @@ export const accessConfiguration : AccessConfiguration = {
     'media:list': [
         p => !p.hidden
     ],
-    'maps:list': [
+    'map:view': [
+        p => p.ownerId === p.profileId,
         p => !p.hidden
+    ],
+    'map:create': [
+        p => p.role === CampaignRole.Owner,
+        p => p.role === CampaignRole.GameMaster
     ],
     'page:view': [
         p => p.ownerId === p.profileId,

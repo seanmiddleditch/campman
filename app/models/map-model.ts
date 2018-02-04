@@ -1,5 +1,5 @@
 import {Entity, Column, ManyToOne, PrimaryGeneratedColumn, JoinColumn, EntityRepository, Repository} from 'typeorm'
-import {MediaModel} from './media'
+import {MediaStorageModel} from './media'
 import {CampaignModel} from './campaign'
 
 @Entity({name: 'map'})
@@ -21,9 +21,9 @@ export class MapModel
     @Column({name: 'media_id'})
     public mediaId: number;
 
-    @ManyToOne(t => MediaModel)
+    @ManyToOne(t => MediaStorageModel)
     @JoinColumn({name: 'media_id'})
-    public media?: MediaModel
+    public media?: MediaStorageModel
 }
 
 @EntityRepository(MapModel)

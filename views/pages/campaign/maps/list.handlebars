@@ -1,0 +1,18 @@
+{{>layouts/page title='Maps' page_icon='globe'}}
+
+{{#*inline "content"}}
+<div class='list-group'>
+    {{#if canCreate}}
+    <div class='list-group-item'>
+        <a href='/maps/new' class='btn btn-primary'><i class='fa fa-plus'></i> New Map</a>
+    </div>
+    {{/if}}
+{{#each maps}}
+    <a href='/maps/m/{{this.slug}}' class='list-group-item'>
+        <div class='list-item-name'><i class='fa fa-file'></i> {{this.title}}</div>
+    </a>
+{{else}}
+    <div class='list-group-item'>No results</div>
+{{/each}}
+</div>
+{{/inline}}

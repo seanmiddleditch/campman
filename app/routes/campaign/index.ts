@@ -4,6 +4,7 @@ import {tags} from './tags'
 import {media} from './media'
 import {settings} from './settings'
 import {membership} from './membership'
+import {maps} from './maps'
 import {checkAccess} from '../../auth'
 import {CampaignModel, CampaignRepository, MembershipRepository, CampaignVisibility,} from '../../models'
 import {CampaignRole} from '../../auth'
@@ -100,9 +101,10 @@ export function routes()
     router.use(media())
     router.use(settings())
     router.use(membership())
+    router.use(maps())
     router.use('/', (req, res) => {
         if (req.url === '/')
-            res.redirect('/w/home')
+            res.redirect('/wiki/p/home')
         else
             res.render('not-found')
     })
