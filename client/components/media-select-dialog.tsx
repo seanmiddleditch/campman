@@ -2,6 +2,7 @@ import * as React from 'react'
 
 import {MediaUploadDialog} from './media-upload-dialog'
 import {MediaAPI} from '../api/media-api'
+import {Dialog} from './dialog'
 
 interface MediaFile
 {
@@ -53,7 +54,6 @@ interface State
 export class MediaSelectDialog extends React.Component<Props, State>
 {
     private _media = new MediaAPI()
-    private _visible = false
 
     constructor(props: Props)
     {
@@ -76,39 +76,9 @@ export class MediaSelectDialog extends React.Component<Props, State>
         }
     }
 
-    private _show() {
-        if (!this._visible) {
-            this._visible = true;
-            const dialog = $(this.refs.dialog) as any
-            dialog.modal('show')
-        }
-
+    componentDidMount() {
         if (!this.state.media)
             this._fetch(this.props.path)
-    }
-
-    private async _hide() {
-        if (this._visible) {
-            this._visible = false;
-            const dialog = $(this.refs.dialog) as any
-            dialog.modal('hide')
-        }
-    }
-
-    componentDidMount() {
-        if (this.props.visible)
-            this._show()
-    }
-
-    componentWillUnmount() {
-        this._hide()
-    }
-
-    componentDidUpdate() {
-        if (this.props.visible && !this.state.uploadDialogOpen)
-            this._show()
-        else
-            this._hide()
     }
 
     private _handleRefreshClicked(ev: React.MouseEvent<HTMLButtonElement>)
@@ -131,13 +101,11 @@ export class MediaSelectDialog extends React.Component<Props, State>
     private _handleUploadClicked(ev: React.MouseEvent<HTMLButtonElement>)
     {
         ev.preventDefault()
-        this._hide()
         this.setState({uploadDialogOpen: true})
     }
 
     private _handleUploadClosed()
     {
-        this._show()
         this.setState({uploadDialogOpen: false})
     }
 
@@ -186,37 +154,33 @@ export class MediaSelectDialog extends React.Component<Props, State>
         return (
             <div>
                 <MediaUploadDialog visible={this.state.uploadDialogOpen} onCancel={() => this._handleUploadClosed()} onUpload={file => this._handleMediaUploaded(file)}/>
-                <div ref='dialog' className='modal' data-backdrop='static'>
-                    <div className='modal-dialog' role='document'>
-                        <div className='modal-content'>
-                            <div className='modal-body'>
-                                <div className='input-group mb-2'>
-                                    <span className='input-group-append'>
-                                        <span className='input-group-text'><i className='fa fa-search'></i></span>
-                                    </span>
-                                    <input className='form-control' type='text' placeholder='search...' value={this.state.search} onChange={ev => this._handleSearchChange(ev)}/>
-                                    <span className='input-group-prepend'>
-                                        {(this.state.fetch ?
-                                            <button disabled className='btn btn-outline-secondary disabled'><i className='fa fa-refresh fa-spin fa-fw'/></button> :
-                                            <button className='btn btn-outline-secondary' onClick={ev => this._handleRefreshClicked(ev)}><i className='fa fa-refresh'/></button>
-                                        )}
-                                    </span>
-                                </div>
-                                {this.state.error && (<div className='input-groupz   mb-2'>
-                                    <span className='error text-danger'><i className='fa fa-exclamation-triangle'></i> {this.state.error}</span>
-                                </div>)}
-                                <div className='list-group' style={{maxHeight: '400px', overflowY: 'scroll'}}>
-                                    <MediaList media={this.state.media} selected={this.state.selected} filter={f => this._filter(f)} onClick={(e, f) => this._handleSelectItem(e, f)} onDoubleClick={(e, f) => this._handleCommitSelection(e, f)}/>
-                                </div>
-                            </div>
-                            <div className='modal-footer'>
-                                <button className='btn btn-info mr-auto' onClick={ev => this._handleUploadClicked(ev)}><i className='fa fa-upload'></i> Upload New Media</button>
-                                <button className='btn btn-secondary' onClick={ev => this._handleCancelClicked(ev)}>Cancel</button>
-                                <button className='btn btn-primary' disabled={!this.state.selected} onClick={ev => this._handleCommitSelection(ev, this.state.selected)}><i className='fa fa-plus'></i> Insert Media</button>
-                            </div>
+                <Dialog visible={this.props.visible && !this.state.uploadDialogOpen}>
+                    <div className='modal-body'>
+                        <div className='input-group mb-2'>
+                            <span className='input-group-append'>
+                                <span className='input-group-text'><i className='fa fa-search'></i></span>
+                            </span>
+                            <input className='form-control' type='text' placeholder='search...' value={this.state.search} onChange={ev => this._handleSearchChange(ev)}/>
+                            <span className='input-group-prepend'>
+                                {(this.state.fetch ?
+                                    <button disabled className='btn btn-outline-secondary disabled'><i className='fa fa-refresh fa-spin fa-fw'/></button> :
+                                    <button className='btn btn-outline-secondary' onClick={ev => this._handleRefreshClicked(ev)}><i className='fa fa-refresh'/></button>
+                                )}
+                            </span>
+                        </div>
+                        {this.state.error && (<div className='input-groupz   mb-2'>
+                            <span className='error text-danger'><i className='fa fa-exclamation-triangle'></i> {this.state.error}</span>
+                        </div>)}
+                        <div className='list-group' style={{maxHeight: '400px', overflowY: 'scroll'}}>
+                            <MediaList media={this.state.media} selected={this.state.selected} filter={f => this._filter(f)} onClick={(e, f) => this._handleSelectItem(e, f)} onDoubleClick={(e, f) => this._handleCommitSelection(e, f)}/>
                         </div>
                     </div>
-                </div>
+                    <div className='modal-footer'>
+                        <button className='btn btn-info mr-auto' onClick={ev => this._handleUploadClicked(ev)}><i className='fa fa-upload'></i> Upload New Media</button>
+                        <button className='btn btn-secondary' onClick={ev => this._handleCancelClicked(ev)}>Cancel</button>
+                        <button className='btn btn-primary' disabled={!this.state.selected} onClick={ev => this._handleCommitSelection(ev, this.state.selected)}><i className='fa fa-plus'></i> Insert Media</button>
+                    </div>
+                </Dialog>
             </div>
         )
     }
