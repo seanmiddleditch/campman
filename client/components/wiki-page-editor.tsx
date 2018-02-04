@@ -162,7 +162,7 @@ export class WikiPageEditor extends React.Component<WikiPageEditorProps, WikiPag
                 <div className='form-group mb-2'>
                     <div className='input-group'>
                         <div className='input-group-prepend'>
-                            <span className='input-group-text'>/w/</span>
+                            <span className='input-group-text'>/wiki/p/</span>
                         </div>
                         <input ref='slug' type='text' className='form-control' placeholder='Unique slug' onChange={ev => this._handleSlugChanged(ev)}/>
                     </div>

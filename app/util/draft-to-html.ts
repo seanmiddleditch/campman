@@ -67,7 +67,7 @@ function renderEntity(entity: any, children?: string)
     {
         case 'wiki-link':
             const href = htmlEscape(slugUtils.sanitize(entity.data.target))
-            return `<a href="/w/${href}">${children}</a>`
+            return `<a href="/wiki/p/${href}">${children}</a>`
         default:
             return children
     }

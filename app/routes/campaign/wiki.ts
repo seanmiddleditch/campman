@@ -47,7 +47,7 @@ export function wiki() {
         res.render('edit-page', {page: {}})
     })
 
-    router.get('/w/:slug/edit', async (req, res, next) => {
+    router.get('/wiki/p/:slug/edit', async (req, res, next) => {
         if (!req.campaign)
             throw new Error('Missing campaign')
 
@@ -72,7 +72,7 @@ export function wiki() {
         })
     })
 
-    router.get('/w/:slug', async (req, res, next) => {
+    router.get('/wiki/p/:slug', async (req, res, next) => {
         if (!req.campaign)
             throw new Error('Missing campaign')
 
@@ -155,9 +155,9 @@ export function wiki() {
             })
 
             if (req.accepts('application/json'))
-                res.json({status: 'success', location: `/w/${page.slug}`})
+                res.json({status: 'success', location: `/wiki/p/${page.slug}`})
             else
-                res.redirect(`/w/${page.slug}`)
+                res.redirect(`/wiki/p/${page.slug}`)
             // return res.json({
             //     status: 'success',
             //     body: {
@@ -190,9 +190,9 @@ export function wiki() {
             })
 
             if (req.accepts('application/json'))
-                res.json({status: 'success', location: `/w/${page.slug}`})
+                res.json({status: 'success', location: `/wiki/p/${page.slug}`})
             else
-                res.redirect(`/w/${page.slug}`)
+                res.redirect(`/wiki/p/${page.slug}`)
             // res.json({
             //     status: 'success',
             //     body: {
