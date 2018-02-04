@@ -4,7 +4,7 @@
 <div class='list-group'>
     {{#if canCreate}}
     <div class='list-group-item'>
-        <a href='/maps/new' class='btn btn-primary'><i class='fa fa-plus'></i> New Map</a>
+        <a href='#' onClick='ShowNewMapDialog(); event.preventDefault();' class='btn btn-primary'><i class='fa fa-plus'></i> New Map</a>
     </div>
     {{/if}}
 {{#each maps}}

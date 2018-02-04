@@ -21,10 +21,6 @@ interface WikiPageEditorState
 }
 export class WikiPageEditor extends React.Component<WikiPageEditorProps, WikiPageEditorState>
 {
-    refs: {
-        slug: HTMLInputElement
-    }
-
     constructor(props: WikiPageEditorProps)
     {
         super(props)
@@ -47,7 +43,6 @@ export class WikiPageEditor extends React.Component<WikiPageEditorProps, WikiPag
     {
         ev.preventDefault()
         this.setState({title: ev.target.value})
-        this.refs.slug.placeholder = WikiPageEditor._makeSlug(ev.target.value)
     }
 
     private _handleTagsChanged(ev: React.ChangeEvent<HTMLInputElement>)
@@ -164,7 +159,7 @@ export class WikiPageEditor extends React.Component<WikiPageEditorProps, WikiPag
                         <div className='input-group-prepend'>
                             <span className='input-group-text'>/wiki/p/</span>
                         </div>
-                        <input ref='slug' type='text' className='form-control' placeholder='Unique slug' onChange={ev => this._handleSlugChanged(ev)}/>
+                        <input type='text' className='form-control' placeholder={WikiPageEditor._makeSlug(this.state.title)} onChange={ev => this._handleSlugChanged(ev)}/>
                     </div>
                     <small className='form-text text-muted'>May only contain letters, numbers, and dashes.</small>
                 </div>)}
