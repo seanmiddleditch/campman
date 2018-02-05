@@ -75,11 +75,12 @@ export function routes()
             return
         }
 
-        console.log(`Generating thumbnail size=${size} for ${media.s3key} at ${thumbKey}`)
+        console.log(`Generating thumbnail size=${size} for ${media.contentMD5}.${media.extension} at ${thumbKey}`)
 
         // create the thumbnail
+        const s3key = `media/${media.contentMD5}.${media.extension}`
         const getParams: S3.GetObjectRequest = {
-            Key: media.s3key,
+            Key: s3key,
             Bucket: config.s3Bucket
         }
         const fullResult = await new Promise<S3.GetObjectOutput>((resolve, reject) => s3.getObject(getParams, (err, data) =>

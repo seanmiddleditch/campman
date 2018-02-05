@@ -6,20 +6,21 @@ import {Dialog} from './dialog'
 
 interface MediaFile
 {
-    url: string
-    thumb_url: string
+    hash: string
+    extension: string
     caption?: string
     path: string
 }
 
 function MediaList({media, selected, filter, onClick, onDoubleClick}: {media?: MediaFile[], selected?: MediaFile, filter: (f: MediaFile) => boolean, onClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void, onDoubleClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void})
 {
+    const api = new MediaAPI()
     if (!media)
         return <div>No media available</div>
     const items = media.filter(f => filter(f)).map(file => (
         <div key={file.path} className='list-group-item' style={{cursor: 'pointer', background: (selected && selected.path === file.path) ? '#EEE' : 'inherit'}} onClick={ev => onClick(ev, file)} onDoubleClick={ev => onDoubleClick(ev, file)}>
             <figure className='figure'>
-                <img src={file.thumb_url} className='figure-img img-fluid rounded img-thumbnail' alt={file.caption}/>
+                <img src={api.getThumbURL(file.hash, 100)} className='figure-img img-fluid rounded img-thumbnail' alt={file.caption}/>
                 <figcaption className='figure-caption'>{file.caption || file.path}</figcaption>
             </figure>
         </div>

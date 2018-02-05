@@ -1,22 +1,8 @@
-
-interface MediaAPIPresignParams
-{
-    file: Blob
-    path: string
-    caption?: string
-}
-interface MediaAPIPresignResult
-{
-    url: string
-    thumb_url: string
-    signed_put_url?: string
-    path: string
-}
-
 export class MediaAPI
 {
-    private async _putFile({file, path, caption}: MediaAPIPresignParams) : Promise<MediaAPIPresignResult>
+    private async _putFile(params: {file: Blob, path: string, caption?: string}) : Promise<{contentMD5: string, extension: string, path: string}>
     {
+        const {file, path, caption} = params
         const data = new FormData()
         data.append('file', file)
         if (caption)
@@ -44,7 +30,8 @@ export class MediaAPI
         const result = await this._putFile({file, path, caption})
 
         return {
-            url: result.url,
+            hash: result.contentMD5,
+            extension: result.extension,
             path: result.path
         }
     }
@@ -85,5 +72,19 @@ export class MediaAPI
 
         if (body.status !== 'success')
             throw new Error(body.message)
+    }
+
+    getImageURL(hash: string, ext: string)
+    {
+        const url = new URL(`/img/full/${hash}.${ext}`, window.__config.publicURL)
+        url.hostname = `media.${url.hostname}`
+        return url.toString()
+    }
+
+    getThumbURL(hash: string, size: number)
+    {
+        const url = new URL(`/img/thumb/${size}/${hash}.png`, window.__config.publicURL)
+        url.hostname = `media.${url.hostname}`
+        return url.toString()
     }
 }

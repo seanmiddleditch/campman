@@ -24,7 +24,7 @@ function DeleteMedia(ev, path) {
 <div class='clearfix'>
 {{#each media}}
     <div class='card float-left m-2' style='width: 12rem; height: 16rem'>
-        <div style='height: 140px; overflow: hidden'><a href='{{this.url}}'><img src='{{this.thumb_url}}' class='card-img-top' alt='{{this.caption}}'/></a></div>
+        <div style='height: 140px; overflow: hidden'><a href='{{image_url hash=this.contentMD5 ext=this.extension}}'><img src='{{thumb_url hash=this.contentMD5 size=200}}' class='card-img-top' alt='{{this.caption}}'/></a></div>
         <div class='card-body'>
             <h5 class='card-title'>{{#if this.caption}}{{this.caption}}{{else}}{{this.path}}{{/if}}</h5>
             <a href='{{this.url}}' class='btn btn-link'><i class='fa fa-search-plus'></i></a>

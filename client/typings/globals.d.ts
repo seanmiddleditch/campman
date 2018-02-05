@@ -1,3 +1,5 @@
-declare var __config: {
-    publicURL: string
+interface Window {
+    __config: {
+        publicURL: string
+    }
 }

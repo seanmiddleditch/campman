@@ -22,18 +22,12 @@ export function files()
     const mediaRepository = connection().getCustomRepository(MediaFileRepository)
     const storageRepository = connection().getRepository(MediaStorageModel)
 
-    const mediaURL = new URL('', config.publicURL)
-    mediaURL.hostname = `media.${mediaURL.hostname}`
-
-    const makeMediaURL = (key: string) => new URL(`/img/full/${path.basename(key)}`, mediaURL).toString()
-    const makeThumbURL = (key: string, size: number) => new URL(`/img/thumb/${size}/${path.basename(key, path.extname(key))}.png`, mediaURL).toString()
-
     const s3 = new S3()
     s3.config.region = config.awsRegion
     s3.config.accessKeyId = config.awsAccessKey
     s3.config.secretAccessKey = config.awsAuthSecret
 
-    router.post('/files', multer({limits: {fileSize: 1024*1024}}).single('file'), async (req, res, next) => {
+    router.post('/files', multer({limits: {fileSize: 5*1024*1024}}).single('file'), async (req, res, next) => {
         if (!req.campaign)
             throw new Error('Missing campaign')
         
@@ -53,6 +47,13 @@ export function files()
             return
         }
 
+        const cleanPath = path.posix.resolve('/', filePath)
+        if (filePath !== cleanPath || filePath.length > 255)
+        {
+            res.status(400).json({status: 'error', message: 'Path is not legal.'})
+            return
+        }
+
         const hashBuffer = crypto.createHash('md5').update(file.buffer).digest()
         const hashHexMD5 = hashBuffer.toString('hex')
         const hashBase64MD5 = hashBuffer.toString('base64')
@@ -66,27 +67,22 @@ export function files()
             return
         }
 
-        const librarySlug = req.campaign.slug
-        const s3key = `media/${hashHexMD5}${extension}`
-
-        const cleanPath = path.posix.resolve('/', filePath)
-        if (filePath !== cleanPath || filePath.length > 255)
-        {
-            res.status(400).json({status: 'error', message: 'Path is not legal.'})
-            return
-        }
+        const imageInfo = imageSize(file.buffer)
 
         // find existing storage or create it if necessary
         let storage = await storageRepository.createQueryBuilder('storage')
-            .select(['id', 's3key'])
+            .select(['id'])
             .where('content_md5=:md5', {md5: hashHexMD5})
             .printSql()
             .getRawOne()
         if (!storage)
         {
             storage = storageRepository.create({
-                s3key: s3key,
-                contentMD5: hashHexMD5
+                contentMD5: hashHexMD5,
+                extension,
+                byteLength: file.size,
+                imageWidth: imageInfo.width,
+                imageHeight: imageInfo.height,
             })
             storage = await storageRepository.save(storage)
         }
@@ -109,6 +105,7 @@ export function files()
             if (error instanceof QueryFailedError)
             {
                 res.status(400).json({status: 'error', message: 'File at that path already exists.'})
+                return
             }
             else
             {
@@ -119,7 +116,7 @@ export function files()
         // generate a signed URL for the client to upload the full image
         const putParams: S3.PutObjectRequest = {
             Bucket: config.s3Bucket,
-            Key: s3key,
+            Key: `media/${hashHexMD5}${extension}`,
             ContentType: contentType,
             ContentLength: file.size,
             ContentMD5: hashBase64MD5,
@@ -145,7 +142,8 @@ export function files()
             status: 'success',
             body: {
                 path: cleanPath,
-                url: makeMediaURL(s3key)
+                contentMD5: hashHexMD5,
+                extension
             }
         })
     })
@@ -193,8 +191,8 @@ export function files()
             res.render('media-browser', {
                 media: media.map(m => ({
                     path: m.path,
-                    url: makeMediaURL(m.s3key),
-                    thumb_url: makeThumbURL(m.s3key, 100),
+                    contentMD5: m.contentMD5,
+                    extension: m.extension,
                     caption: m.caption,
                     attribution: m.attribution
                 })),
@@ -209,8 +207,8 @@ export function files()
                 body: {
                     files: media.map(m => ({
                         path: m.path,
-                        url: makeMediaURL(m.s3key),
-                        thumb_url: makeThumbURL(m.s3key, 100),
+                        contentMD5: m.contentMD5,
+                        extension: m.extension,
                         caption: m.caption,
                         attribution: m.attribution
                     }))
