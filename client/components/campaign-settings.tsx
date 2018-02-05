@@ -85,7 +85,7 @@ export class CampaignSettings extends React.Component<Props, State>
             }
             else
             {
-                this.setState({saving: undefined, message: body.status})
+                this.setState({saving: undefined, message: body.message})
             }
         }).catch(err => {
             console.error(err)

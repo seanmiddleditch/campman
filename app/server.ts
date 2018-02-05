@@ -85,8 +85,8 @@ import * as models from './models'
     }
     app.use(cors(corsOptions))
 
-    app.use(BodyParser.urlencoded({ extended: false }))
-    app.use(BodyParser.json())
+    app.use(BodyParser.urlencoded({ extended: false, limit: 5*1024*1024 }))
+    app.use(BodyParser.json({type: 'application/json'}))
 
     passport.use(googleAuth(connection, config.publicURL.toString(), config.googleClientID, config.googleAuthSecret))
     passport.serializeUser((user: models.ProfileModel, done) => done(null, user))

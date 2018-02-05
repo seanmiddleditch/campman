@@ -6,7 +6,6 @@ import {ImageSelect} from './image-select'
 
 interface MediaFile {
     url: string
-    thumb_url: string
     path: string
 }
 
@@ -51,9 +50,9 @@ export class MediaUploadDialog extends React.Component<Props, State>
     private _onUploadClicked(ev: React.MouseEvent<HTMLButtonElement>) {
         ev.preventDefault()
         const {file, path, caption} = this.state
-        const upload = this._media.upload({file, path, caption}).then(({url, thumb_url, path}) => {
+        const upload = this._media.upload({file, path, caption}).then(({url, path}) => {
             this.setState({upload: undefined})
-            this.props.onUpload({url, thumb_url, path})
+            this.props.onUpload({url, path})
         }).catch(e => {
             this.setState({
                 upload: undefined,

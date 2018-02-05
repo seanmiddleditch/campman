@@ -12,6 +12,8 @@ import * as mime from 'mime'
 import * as fileType from 'file-type'
 import * as imageSize from 'image-size'
 import {URL} from 'url'
+import * as multer from 'multer'
+import * as crypto from 'crypto'
 
 export function files()
 {
@@ -31,67 +33,63 @@ export function files()
     s3.config.accessKeyId = config.awsAccessKey
     s3.config.secretAccessKey = config.awsAuthSecret
 
-    router.put('/files/:pathspec?', async (req, res, next) => {
+    router.post('/files', multer({limits: {fileSize: 1024*1024}}).single('file'), async (req, res, next) => {
         if (!req.campaign)
             throw new Error('Missing campaign')
         
         if (!checkAccess('media:upload', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403).json({status: 'access denied'})
+            res.status(403).json({status: 'error', message: 'Access denied.'})
             return
         }
 
-        const filePath = '/' + req.params['pathspec'] as string
-        const fileHead = req.body['head'] as string
-        const contentMD5 = req.body['contentMD5'] as string
-        const contentType = req.body['contentType'] as string
-        const contentSize = req.body['contentSize'] as number
+        const file = req.file
+        const filePath = req.body['path'] || req.file.filename
         const caption = req.body['caption'] || ''
 
-        const contentHexMD5 = Buffer.from(contentMD5, 'base64').toString('hex')
-        const fileHeadBuffer = Buffer.from(fileHead, 'base64')
-
-        if (fileType(fileHeadBuffer).mime !== contentType)
+        if (!file)
         {
-            res.status(400).json({status: 'Incorrect mime type provided for file contents'})
+            res.status(404).json({status: 'error', message: 'File must be provided.'})
             return
         }
+
+        const hashBuffer = crypto.createHash('md5').update(file.buffer).digest()
+        const hashHexMD5 = hashBuffer.toString('hex')
+        const hashBase64MD5 = hashBuffer.toString('base64')
+
+        const contentType = fileType(file.buffer).mime
         
         const extension = path.extname(filePath)
         if (mime.getType(extension) !== contentType)
         {
-            res.status(400).json({status: 'Incorrect file extension provided'})
+            res.status(400).json({status: 'error', message: 'File extension does not match file type.'})
             return
         }
 
         const librarySlug = req.campaign.slug
-        const s3key = `media/${contentHexMD5}${extension}`
+        const s3key = `media/${hashHexMD5}${extension}`
 
         const cleanPath = path.posix.resolve('/', filePath)
         if (filePath !== cleanPath || filePath.length > 255)
         {
-            res.status(400).json({status: 'invalid path'})
+            res.status(400).json({status: 'error', message: 'Path is not legal.'})
             return
         }
 
         // find existing storage or create it if necessary
         let storage = await storageRepository.createQueryBuilder('storage')
-            .select(['id', 's3key', 'thumb_s3key', 'state'])
-            .where('content_md5=:md5', {md5: contentHexMD5})
+            .select(['id', 's3key'])
+            .where('content_md5=:md5', {md5: hashHexMD5})
             .printSql()
             .getRawOne()
         if (!storage)
         {
             storage = storageRepository.create({
                 s3key: s3key,
-                contentMD5: contentHexMD5,
-                state: 'Pending'
+                contentMD5: hashHexMD5
             })
             storage = await storageRepository.save(storage)
         }
-
-        const pathComponents = path.parse(filePath)
-        let pathAttempt = 1
 
         // try create a new media entry
         let media = mediaRepository.create({
@@ -102,106 +100,54 @@ export function files()
             attribution: ''
         })
 
-        for (;;)
+        try
         {
-            try
+            await mediaRepository.save(media)
+        }
+        catch (error)
+        {
+            if (error instanceof QueryFailedError)
             {
-                await mediaRepository.save(media)
-                break
+                res.status(400).json({status: 'error', message: 'File at that path already exists.'})
             }
-            catch (error)
+            else
             {
-                if (error instanceof QueryFailedError)
-                {
-                    ++pathAttempt
-                    media.path = path.format({...pathComponents, base: `${pathComponents.name} (${pathAttempt})${pathComponents.ext}`})
-                }
-                else
-                {
-                    throw error
-                }
+                throw error
             }
         }
 
-        // if storage isn't yet initialized, start that process now
-        let signed_put_url: string|undefined
-        if (storage.state === 'Pending')
+        // generate a signed URL for the client to upload the full image
+        const putParams: S3.PutObjectRequest = {
+            Bucket: config.s3Bucket,
+            Key: s3key,
+            ContentType: contentType,
+            ContentLength: file.size,
+            ContentMD5: hashBase64MD5,
+            ACL: 'public-read',
+            Body: file.buffer
+        }
+        try
         {
-            // generate a signed URL for the client to upload the full image
-            const putParams: S3.PutObjectRequest = {
-                Bucket: config.s3Bucket,
-                Key: s3key,
-                Expires: 60 * 5 /* 5 minutes */ as any, // the SDK wants a Date, but that always results in a bad signed URL
-                ContentType: contentType,
-                //ContentLength: contentSize, // not supported by presigned URLs, for some reason
-                ContentMD5: contentMD5,
-                ACL: 'public-read'
-            }
-            signed_put_url = await new Promise<string>((resolve, reject) => {
-                s3.getSignedUrl('putObject', putParams, (err, data) => {
+            const result = await new Promise<S3.PutObjectOutput>((resolve, reject) => {
+                s3.putObject(putParams, (err, data) => {
                     if (err) reject(err)
                     else resolve(data)
                 })
             })
+        }
+        catch (error)
+        {
+            mediaRepository.delete(media)
+            throw error
         }
 
         res.json({
             status: 'success',
             body: {
                 path: cleanPath,
-                signed_put_url,
                 url: makeMediaURL(s3key)
             }
         })
-    })
-
-    router.post('/files/:pathspec?', async (req, res, next) => {
-        if (!req.campaign)
-            throw new Error('Missing campaign')
-        
-        if (!checkAccess('media:upload', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
-        {
-            res.status(403).json({status: 'access denied'})
-            return
-        }
-
-        const contentMD5 = req.body['contentMD5'] as string
-        const contentHexMD5 = Buffer.from(contentMD5, 'base64').toString('hex')
-
-        const storage = await storageRepository.findOne({contentMD5: contentHexMD5})
-        if (!storage)
-        {
-            res.status(404).json({status: 'not found'})
-            return
-        }
-
-        const headParams: S3.HeadObjectRequest = {
-            Bucket: config.s3Bucket,
-            Key: storage.s3key
-        }
-
-        try
-        {
-            const result = await new Promise<S3.HeadObjectOutput>((resolve, reject) => {
-                s3.headObject(headParams, (err, data) => {
-                    if (err) reject(err)
-                    else resolve(data)
-                })
-            })
-
-            storage.state = 'Ready'
-            await storageRepository.save(storage)
-
-            res.json({status: 'success'})
-        }
-        catch (error)
-        {
-            // -- can't get this to work; AWSError is always undefined no matter how I try to import
-            // if (error.name instanceof AWSError)
-            //     return res.json({status: 'Object not available'})
-            // else
-                throw error
-        }
     })
 
     router.delete('/files/:pathspec?', async (req, res, next) => {
@@ -210,7 +156,7 @@ export function files()
 
         if (!checkAccess('media:delete', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403).json({status: 'access denied'})
+            res.status(403).json({status: 'error', message: 'Access denied.'})
             return
         }
 
@@ -218,7 +164,7 @@ export function files()
         const media = await mediaRepository.findByPath({campaignId: req.campaign.id, path})
         if (!media)
         {
-            res.status(404).json({status: 'Media not found'})
+            res.status(404).json({status: 'error', message: 'Media not found.'})
             return
         }
 
@@ -233,7 +179,7 @@ export function files()
 
         if (!checkAccess('media:list', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403).json({status: 'access denied'})
+            res.status(403).json({status: 'error', message: 'Access denied.'})
             return
         }
 
@@ -273,7 +219,7 @@ export function files()
         }
         else
         {
-            res.status(406).json({status: 'Unknown Accept header value or header not present'})
+            res.status(406).json({status: 'error', message: 'Unknown Accept header value or header not present.'})
         }
     })
 

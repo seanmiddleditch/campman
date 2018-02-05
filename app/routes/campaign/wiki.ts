@@ -40,8 +40,8 @@ export function wiki() {
 
         if (!checkAccess('page:create', {profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403)
-            res.json({status: 'access denied'})
+            res.status(403).render('access-denied')
+            return
         }
 
         res.render('edit-page', {page: {}})
@@ -62,8 +62,8 @@ export function wiki() {
 
         if (!checkAccess('page:edit', {profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public}))
         {
-            res.status(403)
-            return res.render('access-denied')
+            res.status(403).render('access-denied')
+            return
         }
 
         const {slug, title, rawbody, tags, visibility} = page
@@ -124,7 +124,7 @@ export function wiki() {
 
         if (!slug)
         {
-            res.status(400).json({status: 'Missing slug'})
+            res.status(400).json({status: 'error', message: 'Missing slug.'})
             return
         }
         const page = await pageRepository.fetchBySlug({slug, campaignId: req.campaign.id})
@@ -141,7 +141,7 @@ export function wiki() {
         {
             if (!checkAccess('page:edit', {profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public}))
             {
-                res.status(403).json({status: 'access denied'})
+                res.status(403).json({status: 'error', message: 'Access denied.'})
                 return
             }
 
@@ -155,7 +155,7 @@ export function wiki() {
             })
 
             if (req.accepts('application/json'))
-                res.json({status: 'success', location: `/wiki/p/${page.slug}`})
+                res.json({status: 'success', data: {location: `/wiki/p/${page.slug}`}})
             else
                 res.redirect(`/wiki/p/${page.slug}`)
             // return res.json({
@@ -175,7 +175,7 @@ export function wiki() {
         {
             if (!checkAccess('page:create', {profileId: req.profileId, role: req.campaignRole}))
             {
-                res.status(403).json({status: 'access denied'})
+                res.status(403).json({status: 'error', message: 'Access denied.'})
                 return
             }
 
@@ -190,7 +190,7 @@ export function wiki() {
             })
 
             if (req.accepts('application/json'))
-                res.json({status: 'success', location: `/wiki/p/${page.slug}`})
+                res.json({status: 'success', data: {location: `/wiki/p/${page.slug}`}})
             else
                 res.redirect(`/wiki/p/${page.slug}`)
             // res.json({

@@ -38,10 +38,7 @@ export function membership() {
         
         if (!email)
         {
-            res.status(400).json({
-                status: 'failed',
-                message: 'Invalid email address.'
-            })
+            res.status(400).json({status: 'error', message: 'Invalid email address.'})
             return
         }
 
@@ -66,20 +63,12 @@ export function membership() {
                     else resolve(body)
                 })
             })
-            res.json({
-                status: 'success',
-                data: {
-                    code
-                }
-            })
+            res.json({status: 'success', data: {code}})
         }
         catch (err)
         {
             console.error(err)
-            res.status(500).json({
-                status: 'failed',
-                message: 'Could not send email.'
-            })
+            res.status(500).json({status: 'error', message: 'Could not send email.'})
         }
     })
 
@@ -89,7 +78,7 @@ export function membership() {
 
         if (!checkAccess('campaign:configure', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403).json({status: 'access denied'})
+            res.status(403).json({status: 'error', message: 'Access denied.'})
             return
         }
 
@@ -99,12 +88,12 @@ export function membership() {
         const oldRole = await membershipRepository.findRoleForProfile({profileId, campaignId: req.campaign.id})
         if (oldRole === CampaignRole.Owner)
         {
-            res.status(400).json({status: 'failed', message: 'Cannot delete the owner from a campaign.'})
+            res.status(400).json({status: 'error', message: 'Cannot delete the owner from a campaign.'})
             return;
         }
         else if (oldRole === CampaignRole.Visitor)
         {
-            res.status(400).json({status: 'failed', message: 'Cannot change the role of non-members.'})
+            res.status(400).json({status: 'error', message: 'Cannot change the role of non-members.'})
             return
         }
 
@@ -135,7 +124,7 @@ export function membership() {
         const role = await membershipRepository.findRoleForProfile({profileId, campaignId: req.campaign.id})
         if (role === CampaignRole.Owner)
         {
-            res.status(400).json({status: 'failed', message: 'Cannot delete the owner from a campaign.'})
+            res.status(400).json({status: 'error', message: 'Cannot delete the owner from a campaign.'})
             return;
         }
 

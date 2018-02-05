@@ -18,7 +18,7 @@ export function settings()
 
         if (!checkAccess('campaign:configure', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403).json({status: 'access denied'})
+            res.status(403).json({status: 'error', message: 'Access denied.'})
             return
         }
 
@@ -35,7 +35,7 @@ export function settings()
 
         if (!checkAccess('campaign:configure', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403).json({status: 'access denied'})
+            res.status(403).json({status: 'error', message: 'Access denied.'})
             return
         }
 
@@ -51,7 +51,7 @@ export function settings()
 
         if (!slugUtils.isLegal(campaign.slug))
         {
-            res.status(400).json({status: 'Illegal slug', fields: {slug: 'Must only be letters, numbers, and dashes.'}})
+            res.status(400).json({status: 'error', message: 'Illegal slug.', fields: {slug: 'Must only be letters, numbers, and dashes.'}})
             return
         }
 

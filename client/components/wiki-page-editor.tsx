@@ -91,9 +91,9 @@ export class WikiPageEditor extends React.Component<WikiPageEditorProps, WikiPag
 
                 const body = await response.json()
                 if (body.status !== 'success')
-                    throw new Error(body.status)
+                    throw new Error(body.message)
                 else
-                    document.location.href = body.location
+                    document.location.href = body.data.location
                 this.setState({saving: undefined})
             }).catch(err => {
                 alert(err)

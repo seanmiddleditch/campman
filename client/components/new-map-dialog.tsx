@@ -72,7 +72,7 @@ export class NewMapDialog extends React.Component<Props, State>
 
         //         const body = await response.json()
         //         if (body.status !== 'success')
-        //             throw new Error(body.status)
+        //             throw new Error(body.message)
         //         else
         //             document.location.href = body.location
         //         this.setState({saving: undefined})
@@ -120,7 +120,7 @@ export class NewMapDialog extends React.Component<Props, State>
                             <input ref='slug' type='text' className='form-control' onChange={ev => this._handleSlugChanged(ev)} placeholder={NewMapDialog._makeSlug(this.state.title)}/>
                         </div>
                     </div>
-                    <ImageSelect className='form-group' onImageSelected={({file, thumbnail}) => this._handleImageSelected(file)}/>
+                    <ImageSelect className='form-group' onImageSelected={file => this._handleImageSelected(file)}/>
                 </div>
                 <div className='modal-footer'>
                     <button className='btn btn-secondary pull-left' onClick={ev => this._handleCancelClicked(ev)}><i className='fa fa-ban'></i> Cancel</button>
