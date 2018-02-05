@@ -1,18 +1,20 @@
 {{>layouts/page title='Maps' page_icon='globe'}}
 
 {{#*inline "content"}}
-<div class='list-group'>
-    {{#if canCreate}}
-    <div class='list-group-item'>
-        <a href='#' onClick='ShowNewMapDialog(); event.preventDefault();' class='btn btn-primary'><i class='fa fa-plus'></i> New Map</a>
-    </div>
-    {{/if}}
+{{#if canCreate}}
+<button onClick='ShowNewMapDialog(); event.preventDefault();' class='btn btn-primary'><i class='fa fa-plus'></i> New Map</button>
+{{/if}}
+<div class='clearfix'>
 {{#each maps}}
-    <a href='/maps/m/{{this.slug}}' class='list-group-item'>
-        <div class='list-item-name'><i class='fa fa-file'></i> {{this.title}}</div>
+    <a href='/maps/m/{{this.slug}}'>
+        <div class='card float-left m-2' style='width: 12rem; height: 14rem'>
+            <div style='height: 140px; overflow: hidden'><img src='{{thumb_url hash=this.storage.contentMD5 size=200}}' class='card-img-top' alt='{{this.title}}'/></div>
+            <div class='card-body'>
+                <h5 class='card-title'>{{this.title}}</h5>
+            </div>
+        </div>
     </a>
 {{else}}
-    <div class='list-group-item'>No results</div>
+    <div class='alert alert-warning'>No results</div>
 {{/each}}
-</div>
 {{/inline}}

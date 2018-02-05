@@ -5,6 +5,7 @@ import {config} from '../config'
 import * as imageSize from 'image-size'
 import * as fileType from 'file-type'
 import * as crypto from 'crypto'
+import * as mime from 'mime'
 
 export async function insertMedia(file: Buffer)
 {
@@ -14,12 +15,14 @@ export async function insertMedia(file: Buffer)
     const hashHexMD5 = hashBuffer.toString('hex')
 
     // find existing storage or create it if necessary
-    const exists = !!await storageRepository.createQueryBuilder('storage')
-        .select(['id'])
+    const existing = await storageRepository.createQueryBuilder('storage')
+        .select(['id', 'extension'])
         .where('content_md5=:md5', {md5: hashHexMD5})
         .getRawOne()
-    if (exists)
+    if (existing)
     {
+        const contentType = mime.getType(existing.extension)
+        return {hashHexMD5, contentType, storageId: existing.id}
     }
 
     const imageInfo = imageSize(file)
@@ -56,5 +59,5 @@ export async function insertMedia(file: Buffer)
         })
     })
 
-    return {hashHexMD5, storageId: storage.id, contentType}
+    return {hashHexMD5, contentType, storageId: storage.id}
 }

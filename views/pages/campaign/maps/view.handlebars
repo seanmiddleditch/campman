@@ -1,0 +1,7 @@
+{{>layouts/page title=map.title page_icon='globe'}}
+
+{{#*inline "content"}}
+<div>
+    <a href='{{image_url hash=map.storage.contentMD5 ext=map.storage.extension}}'><img src='{{image_url hash=map.storage.contentMD5 ext=map.storage.extension}}' alt='{{map.title}}'/></a>
+</div>
+{{/inline}}

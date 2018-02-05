@@ -15,6 +15,7 @@ interface State
     file?: File
     title: string
     slug: string
+    saving?: Promise<void>
 }
 export class NewMapDialog extends React.Component<Props, State>
 {
@@ -47,41 +48,37 @@ export class NewMapDialog extends React.Component<Props, State>
     private _handleSubmitClicked(ev: React.MouseEvent<HTMLButtonElement>)
     {
         ev.preventDefault()
-        // if (!this.state.saving)
-        // {
-        //     const saving = fetch('/wiki', {
-        //         method: 'POST',
-        //         mode: 'same-origin',
-        //         credentials: 'include',
-        //         headers: new Headers({
-        //             'Content-Type': 'application/json',
-        //             'Accept': 'application/json'
-        //         }),
-        //         body: JSON.stringify({
-        //             slug: this.state.slug,
-        //             title: this.state.title,
-        //             labels: this.state.tags,
-        //             visibility: this.state.visibility,
-        //             rawbody: this.state.document
-        //         })
-        //     }).then(async (response) => {
-        //         if (!response.ok)
-        //             throw new Error(response.statusText)
-        //         else if (response.status !== 200)
-        //             throw new Error(response.statusText)
+        if (!this.state.saving)
+        {
+            const data = new FormData()
+            data.append('slug', this.state.slug)
+            data.append('title', this.state.title)
+            //data.append('visibility', this.state.visibility)
+            data.append('file', this.state.file)
+            const saving = fetch('/maps', {
+                method: 'POST',
+                mode: 'same-origin',
+                credentials: 'include',
+                body: data
+            }).then(async (response) => {
+                if (!response.ok)
+                    throw new Error(response.statusText)
+                else if (response.status !== 200)
+                    throw new Error(response.statusText)
 
-        //         const body = await response.json()
-        //         if (body.status !== 'success')
-        //             throw new Error(body.message)
-        //         else
-        //             document.location.href = body.location
-        //         this.setState({saving: undefined})
-        //     }).catch(err => {
-        //         alert(err)
-        //         this.setState({saving: undefined})
-        //     })
-        //     this.setState({saving})
-        // }
+                const body = await response.json()
+                if (body.status !== 'success')
+                    throw new Error(body.message)
+                else
+                    document.location.href = body.location
+                this.setState({saving: undefined})
+            }).catch(err => {
+                console.error(err)
+                alert(err)
+                this.setState({saving: undefined})
+            })
+            this.setState({saving})
+        }
     }
 
     private _handleCancelClicked(ev: React.MouseEvent<HTMLButtonElement>)
@@ -98,7 +95,7 @@ export class NewMapDialog extends React.Component<Props, State>
 
     private _handleImageSelected(file: File)
     {
-
+        this.setState({file})
     }
 
     render()
