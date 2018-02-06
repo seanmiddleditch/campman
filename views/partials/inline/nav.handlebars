@@ -1,9 +1,19 @@
-<nav class='navbar sticky-top navbar-expand-lg navbar-light bg-light' style='height: 60px'>
+<nav class='navbar sticky-top navbar-expand-lg navbar-light bg-light justify-content-between' style='min-height: 60px'>
     {{#if campaign}}
-    <div class='navbar-brand'><a href='{{config.publicURL}}'><i class='fa fa-home'></i></a></div>
-    <div class='navbar-brand'><a href='{{campaignURL}}'>{{campaign.title}}</a></div>
-    <div class='collapse navbar-collapse'>
-        <ul class='navbar-nav mr-auto mt-2 mt-lg-0'>
+    <div class='navbar-brand'>
+        <a href='{{config.publicURL}}'><i class='fa fa-home'></i></a>
+        <a href='{{campaignURL}}'>{{campaign.title}}</a>
+    </div>
+    {{else}}
+    <div class='navbar-brand'><a href='{{config.publicURL}}'><i class='fa fa-home'></i> Campaign Manager</a></div>
+    {{/if}}
+
+    <button class='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbar-links' aria-controls='navbar-links' aria-expanded='false' aria-label='Toggle navigation'>
+        <span class='navbar-toggler-icon'></span>
+    </button>
+    <div class='collapse navbar-collapse' id='navbar-links'>
+        <ul class='navbar-nav mr-lg-auto'>
+            {{#if campaign}}
             <li class='nav-item'><a class='nav-link disabled' href='#'>Adventures</a></li>
             <li class='nav-item'><a class='nav-link' href='{{campaignURL}}wiki'>Wiki</a></li>
             <li class='nav-item'><a class='nav-link' href='{{campaignURL}}tags'>Tags</a></li>
@@ -18,25 +28,20 @@
                     <a class='dropdown-item' href='{{campaignURL}}membership'>Members</a>
                 </div>
             </li>
-        </ul>
-    </div>
-    {{else}}
-    <div class='navbar-brand'><a href='{{config.publicURL}}'><i class='fa fa-home'></i> Campaign Manager</a></div>
-    <div class='collapse navbar-collapse' id='navbarTogglerDemo03'>
-        <ul class='navbar-nav mr-auto mt-2 mt-lg-0'>
+            {{else}}
             <div class='nav-link'><a href='{{config.publicURL}}campaigns'>Campaigns</a></div>
+            {{/if}}
         </ul>
-    </div>
-    {{/if}}
-    <form class='input-group' action='/search' method='get'>
-        <input class='form-control' type='search' name='q' placeholder='Search' aria-label='Search'/>
-        <span class='input-group-btn'>
-            <button class='btn btn-outline-primary my-2 my-sm-0' type='submit'>
-                <span class='fa fa-search'></span>
-            </button>
-        </span>
-    </form>
-    <ul class='navbar-nav ml-2 ml-lg-2 mt-2 mt-lg-0'>
+
+        <form class='input-group mr-sm-2' action='/search' method='get'>
+            <input class='form-control' type='search' name='q' placeholder='Search' aria-label='Search'/>
+            <span class='input-group-append'>
+                <button class='btn btn-outline-primary my-2 my-sm-0' type='submit'>
+                    <span class='fa fa-search'></span>
+                </button>
+            </span>
+        </form>
+
         {{#if profile}}
         <div class='btn-group' role='group'>
             <button class='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
@@ -58,12 +63,13 @@
             <img src='{{config.publicURL}}images/google-signin/normal.png' alt='Sign-in (Google+)'/>
         </button>
         {{/if}}
-        <script defer>
-            $(() => {
-                const session = new LoginSession('{{config.publicURL}}')
-                $('#nav-login-btn').click(e => {session.login().then(() => window.location.reload(true)); return false})
-                $('#nav-logout-btn').click(e => {session.logout().then(() => window.location.reload(true)); return false})
-            })
-        </script>
-    </ul>
+    </div>
 </nav>
+
+<script defer>
+    $(() => {
+        const session = new LoginSession('{{config.publicURL}}')
+        $('#nav-login-btn').click(e => {session.login().then(() => window.location.reload(true)); return false})
+        $('#nav-logout-btn').click(e => {session.logout().then(() => window.location.reload(true)); return false})
+    })
+</script>
