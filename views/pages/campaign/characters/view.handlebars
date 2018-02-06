@@ -1,0 +1,14 @@
+{{>layouts/page title=char.title}}
+
+{{#*inline "page_header"}}
+<h1>
+    {{char.title}}
+{{#if char.editable}}
+    <a href='/wiki/p/{{char.slug}}/edit'><button class='btn btn-link'><i class='fa fa-pencil'></i></button></a>
+{{/if}}
+</h1>
+{{/inline}}
+
+{{#*inline "content"}}
+<div>{{draft2html raw=char.rawbody}}</div>
+{{/inline}}

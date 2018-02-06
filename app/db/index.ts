@@ -29,7 +29,8 @@ export async function connectToDatabase(databaseURL: string) : Promise<Connectio
             models.MediaModel,
             models.MediaStorageModel,
             models.MapModel,
-            models.InvitationModel
+            models.InvitationModel,
+            models.CharacterModel
         ]
     })
 

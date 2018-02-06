@@ -61,6 +61,12 @@ export function maps()
         if (!req.campaign)
             throw new Error('Missing campaign')
 
+        if (!checkAccess('map:create', {profileId: req.profileId, role: req.campaignRole}))
+        {
+            res.status(403).render('access-denied')
+            return
+        }
+
         const {storageId} = await insertMedia(req.file.buffer)
 
         const map = mapRepository.create({
@@ -71,7 +77,7 @@ export function maps()
         })
         await mapRepository.save(map)
 
-        res.json({status: 'error', message: 'Unsupported.'})
+        res.json({status: 'success', message: 'Map created.'})
     })
 
     return router

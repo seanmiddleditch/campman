@@ -1,5 +1,7 @@
 import {config} from '../config'
 import {URL} from 'url'
+import {draftToHtml} from './draft-to-html'
+import {SafeString} from 'handlebars'
 
 export function json(context: any)
 {
@@ -22,4 +24,11 @@ export function thumb_url(params: {hash: {hash: string|undefined, size: number|u
     const url = new URL(`/img/thumb/${size}/${hash}.png`, config.publicURL)
     url.hostname = `media.${url.hostname}`
     return url.toString()
+}
+
+export function draft2html(params: {hash: {raw: string|undefined, secrets: boolean|undefined}})
+{
+    const raw = params.hash.raw
+    const secrets = params.hash.secrets || false
+    return new SafeString(raw ? draftToHtml(raw, secrets) : '')
 }

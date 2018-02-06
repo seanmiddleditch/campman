@@ -5,6 +5,7 @@ import {files} from './files'
 import {settings} from './settings'
 import {membership} from './membership'
 import {maps} from './maps'
+import {characters} from './characters'
 import {checkAccess} from '../../auth'
 import {CampaignModel, CampaignRepository, MembershipRepository, CampaignVisibility,} from '../../models'
 import {CampaignRole} from '../../auth'
@@ -102,6 +103,7 @@ export function routes()
     router.use(settings())
     router.use(membership())
     router.use(maps())
+    router.use(characters())
     router.use('/', (req, res) => {
         if (req.url === '/')
             res.redirect('/wiki/p/home')

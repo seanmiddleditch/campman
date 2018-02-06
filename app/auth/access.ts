@@ -29,6 +29,9 @@ interface AccessConfiguration
     ['page:create']: AccessControls
     ['page:edit']: AccessControls
     ['page:delete']: AccessControls
+    ['character:view']: AccessControls
+    ['character:create']: AccessControls
+    ['character:edit']: AccessControls
 }
 
 export const accessConfiguration : AccessConfiguration = {
@@ -88,6 +91,18 @@ export const accessConfiguration : AccessConfiguration = {
     'page:delete': [
         p => p.ownerId === p.profileId,
         p => p.role === CampaignRole.Owner,
+    ],
+    'character:view': [
+        p => p.ownerId === p.profileId,
+        p => !p.hidden
+    ],
+    'character:create': [
+        p => p.role !== CampaignRole.Visitor
+    ],
+    'character:edit': [
+        p => p.ownerId === p.profileId,
+        p => p.role === CampaignRole.Owner,
+        p => p.role === CampaignRole.GameMaster,
     ]
 }
 type AccessTargets = keyof AccessConfiguration
