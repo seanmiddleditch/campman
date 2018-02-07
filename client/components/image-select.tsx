@@ -7,6 +7,8 @@ interface Props
     disabled?: boolean
     onImageSelected: (file: File) => void
     onPathChanged?: (path: string) => void
+    size?: number|string
+    fallbackURL?: string
 }
 interface State
 {
@@ -22,6 +24,27 @@ export class ImageSelect extends React.Component<Props, State>
         this.state = {}
     }
 
+    private _width()
+    {
+        if (typeof this.props.size === 'number')
+            return `${this.props.size}px`
+        else if (typeof this.props.size === 'string')
+            return this.props.size
+        else
+            return '100%'
+    }
+
+    private _preview()
+    {
+        console.log(this.props.fallbackURL)
+        if (this.state.objectURL)
+            return <img style={{maxWidth: this._width()}} className='img-responsive img-preview mb-2' src={this.state.objectURL}/>
+        else if (this.props.fallbackURL)
+            return <img style={{maxWidth: this._width()}} className='img-responsive img-preview mb-2' src={this.props.fallbackURL}/>
+        else
+            return <div/>
+    }
+
     public render()
     {
         const preview = this.props.preview === undefined || !!this.props.preview
@@ -30,10 +53,7 @@ export class ImageSelect extends React.Component<Props, State>
 
         return (
             <div className={this.props.className}>
-                {preview && this.state.objectURL ? 
-                    <img style={{maxWidth: '100%'}} className='img-responsive img-preview mb-2' src={this.state.objectURL}/> :
-                    <div/>
-                }
+                {this._preview()}
                 <div className='input-group'>
                     <div className='input-group-prepend'>
                         <label htmlFor='media-upload-file' className='btn btn-secondary input-group-text'><i className='fa fa-file-image-o'></i>&nbsp;Select File</label>
@@ -68,7 +88,7 @@ export class ImageSelect extends React.Component<Props, State>
             const file = ev.target.files[0]
             this.setState({
                 file,
-                objectURL: URL.createObjectURL(file)
+                objectURL: (this.props.preview === undefined || !!this.props.preview) ? URL.createObjectURL(file) : undefined
             }, () => this.props.onImageSelected(file))
         }
         else

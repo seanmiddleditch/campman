@@ -44,32 +44,25 @@ export class CharacterRepository extends Repository<CharacterModel>
 {
     public async findForCampaign({campaignId}: {campaignId: number})
     {
-        return this.createQueryBuilder('character')
-            .where('character.library_id=:campaignId', {campaignId})
-            .getRawMany()
-            .then(results => results.map(row => ({
-                    id: row.character_id as number,
-                    portraitStorageId: row.character_portrait_id as number|null,
-                    slug: row.character_slug as string|null,
-                    title: row.character_title as string,
-                    visible: row.character_visible as boolean,
-                    alive: row.character_alive as boolean
-                })))
+        return this.find({
+            where: {campaignId},
+            relations: ['portrait']
+        })
     }
 
     public async fetchBySlug({slug, campaignId}: {slug: string, campaignId: number})
     {
-        return this.createQueryBuilder('character')
-            .where('character.slug=:slug AND character.library_id=:campaignId', {slug, campaignId})
-            .getRawOne()
-            .then(row => row && ({
-                id: row.character_id as number,
-                portraitStorageId: row.character_portrait_id as number|null,
-                slug: row.character_slug as string|null,
-                title: row.character_title as string,
-                visible: row.character_visible as boolean,
-                alive: row.character_alive as boolean,
-                rawbody: row.character_rawbody as string
-            }))
+        return this.findOne({
+            where: {slug, campaignId},
+            relations: ['portrait']
+        })
+    }
+
+    public async fetchById({id, campaignId}: {id: number, campaignId: number})
+    {
+        return this.findOne({
+            where: {id, campaignId},
+            relations: ['portrait']
+        })
     }
 }

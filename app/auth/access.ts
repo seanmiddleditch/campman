@@ -63,6 +63,8 @@ export const accessConfiguration : AccessConfiguration = {
     ],
     'map:view': [
         p => p.ownerId === p.profileId,
+        p => p.role === CampaignRole.Owner,
+        p => p.role === CampaignRole.GameMaster,
         p => !p.hidden
     ],
     'map:create': [
@@ -94,6 +96,8 @@ export const accessConfiguration : AccessConfiguration = {
     ],
     'character:view': [
         p => p.ownerId === p.profileId,
+        p => p.role === CampaignRole.Owner,
+        p => p.role === CampaignRole.GameMaster,
         p => !p.hidden
     ],
     'character:create': [

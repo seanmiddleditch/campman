@@ -6,9 +6,9 @@
 {{/if}}
 <div class='clearfix'>
 {{#each characters}}
-    <a href='/chars/c/{{this.slug}}'>
+    <a href='/chars/c/{{#if this.slug}}{{this.slug}}{{else}}{{this.id}}{{/if}}'>
         <div class='card float-left m-2' style='width: 12rem; height: 14rem'>
-            <div style='height: 140px; overflow: hidden'><img src='{{thumb_url hash=this.storage.contentMD5 size=200}}' class='card-img-top' alt='{{this.title}}'/></div>
+            <div style='height: 140px; overflow: hidden'><img src='{{thumb_url hash=this.portrait.contentMD5 size=200}}' class='card-img-top' alt='{{this.title}}'/></div>
             <div class='card-body'>
                 <h5 class='card-title'>{{this.title}}</h5>
             </div>

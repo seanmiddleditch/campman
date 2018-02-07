@@ -4,11 +4,37 @@
 <h1>
     {{char.title}}
 {{#if char.editable}}
-    <a href='/wiki/p/{{char.slug}}/edit'><button class='btn btn-link'><i class='fa fa-pencil'></i></button></a>
+    <button class='btn btn-link' onClick='ShowCharacterEditor()'><i class='fa fa-pencil'></i></button>
 {{/if}}
 </h1>
+
 {{/inline}}
 
 {{#*inline "content"}}
-<div>{{draft2html raw=char.rawbody}}</div>
+<div id='char-contents'>
+    {{#if char.portrait}}
+    <div class='pull-right'>
+        <img src='{{thumb_url hash=char.portrait.contentMD5 size=200}}'/>
+    </div>
+    {{/if}}
+
+    <div>{{draft2html raw=char.rawbody}}</div>
+</div>
+
+{{#if char.editable}}
+<script defer>
+    function ShowCharacterEditor()
+    {
+        ReactDOM.render(React.createElement(CharacterEditor, {
+            data: {
+                title: '{{char.title}}',
+                visibility: '{{char.visibility}}',
+                {{#if char.slug}}slug: '{{char.slug}}',{{/if}}
+                {{#if char.rawbody}}body: {{{char.rawbody}}}{{else}}body: null{{/if}},
+                {{#if char.portrait}}portrait: {hash: '{{char.portrait.contentMD5}}'},{{/if}}
+            }
+        }, null), document.getElementById('char-contents'))
+    }
+</script>
+{{/if}}
 {{/inline}}

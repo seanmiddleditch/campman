@@ -32,6 +32,31 @@ export function characters() {
         })
     })
 
+    router.get('/chars/c/:id(\\d+)/', async (req, res, next) =>
+    {
+        if (!req.campaign)
+            throw new Error('Missing campaign')
+
+        const id = req.params['id']
+        const char = await characterRepository.fetchById({id, campaignId: req.campaign.id})
+
+        if (!char)
+        {
+            res.status(404).render('not-found')
+            return
+        }
+
+        if (!checkAccess('character:view', {profileId: req.profileId, role: req.campaignRole}))
+        {
+            res.status(403).render('access-denied')
+            return
+        }
+
+        const editable = checkAccess('character:edit', {profileId: req.profileId, role: req.campaignRole})
+
+        res.render('campaign/characters/view', {char: {...char, editable}})
+    })
+
     router.get('/chars/c/:slug', async (req, res, next) =>
     {
         if (!req.campaign)
@@ -74,7 +99,8 @@ export function characters() {
             campaignId: req.campaign.id,
             title: req.body['title'] || 'Map',
             portraitStorageId: storageId,
-            rawbody: req.body['rawbody']
+            rawbody: req.body['rawbody'],
+            visible: req.body['visible'] === 'visible'
         })
         await characterRepository.save(char)
 

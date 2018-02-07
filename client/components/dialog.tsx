@@ -48,7 +48,7 @@ export class Dialog extends React.Component<Props, State>
         return (
             <div>
                 <div ref='dialog' className='modal' data-backdrop='static'>
-                    <div className='modal-dialog' role='document'>
+                    <div className='modal-dialog modal-lg' role='document'>
                         <div className='modal-content'>
                             {this.props.children}
                         </div>
