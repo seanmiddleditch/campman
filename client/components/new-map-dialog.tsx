@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom'
 
 import {Dialog} from './dialog'
 import {ImageSelect} from './image-select'
+import {SaveButton} from './save-button'
 
 interface Props
 {
@@ -45,9 +46,8 @@ export class NewMapDialog extends React.Component<Props, State>
         this.setState({slug: ev.target.value})
     }
 
-    private _handleSubmitClicked(ev: React.MouseEvent<HTMLButtonElement>)
+    private _handleSubmitClicked()
     {
-        ev.preventDefault()
         if (!this.state.saving)
         {
             const data = new FormData()
@@ -121,7 +121,7 @@ export class NewMapDialog extends React.Component<Props, State>
                 </div>
                 <div className='modal-footer'>
                     <button className='btn btn-secondary pull-left' onClick={ev => this._handleCancelClicked(ev)}><i className='fa fa-ban'></i> Cancel</button>
-                    <button className='btn btn-primary' disabled={!this.state.file} onClick={ev => this._handleSubmitClicked(ev)}><i className='fa fa-plus'></i> Create</button>
+                    <SaveButton icon='plus' title='Create' working='Creating' saving={!!this.state.saving} onClick={() => this._handleSubmitClicked()}/>
                 </div>
             </Dialog>
         )

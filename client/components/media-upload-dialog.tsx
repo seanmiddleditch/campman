@@ -3,6 +3,7 @@ import * as ReactDOM from 'react-dom'
 import {MediaAPI} from '../api/media-api'
 import {Dialog} from './dialog'
 import {ImageSelect} from './image-select'
+import {SaveButton} from './save-button'
 
 interface MediaFile {
     hash: string
@@ -48,8 +49,7 @@ export class MediaUploadDialog extends React.Component<Props, State>
         this.props.onCancel()
     }
 
-    private _onUploadClicked(ev: React.MouseEvent<HTMLButtonElement>) {
-        ev.preventDefault()
+    private _onUploadClicked() {
         const {file, path, caption} = this.state
         const upload = this._media.upload({file, path, caption}).then(result => {
             this.setState({upload: undefined})
@@ -78,8 +78,8 @@ export class MediaUploadDialog extends React.Component<Props, State>
                     </div>
                 </div>
                 <div className='modal-footer'>
-                    <button className='btn btn-secondary btn-cancel' disabled={!!this.state.upload} onClick={ev => this._onCancelClicked(ev)}>Cancel</button>
-                    <button className='btn btn-primary btn-upload' disabled={!this.state.file || !!this.state.upload} onClick={ev => this._onUploadClicked(ev)}><i className={'fa ' + (this.state.upload ? 'fa-spinner fa-spin' : 'fa-cloud-upload')}></i> Upload</button>
+                    <button className='btn btn-secondary' disabled={!!this.state.upload} onClick={ev => this._onCancelClicked(ev)}>Cancel</button>
+                    <SaveButton icon='cloud-upload' title='Upload' working='Uploading' disabled={!this.state.file || !!this.state.upload} saving={!!this.state.upload} onClick={() => this._onUploadClicked()}/>
                 </div>
             </Dialog>
         )

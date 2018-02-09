@@ -1,40 +1,25 @@
 {{>layouts/page title=char.title}}
 
 {{#*inline "page_header"}}
-<h1>
-    {{char.title}}
-{{#if char.editable}}
-    <button class='btn btn-link' onClick='ShowCharacterEditor()'><i class='fa fa-pencil'></i></button>
-{{/if}}
-</h1>
-
 {{/inline}}
 
 {{#*inline "content"}}
-<div id='char-contents'>
-    {{#if char.portrait}}
-    <div class='pull-right'>
-        <img src='{{thumb_url hash=char.portrait.contentMD5 size=200}}'/>
-    </div>
-    {{/if}}
-
-    <div>{{draft2html raw=char.rawbody}}</div>
-</div>
-
-{{#if char.editable}}
-<script defer>
-    function ShowCharacterEditor()
-    {
-        ReactDOM.render(React.createElement(CharacterEditor, {
-            data: {
-                title: '{{char.title}}',
-                visibility: '{{char.visibility}}',
-                {{#if char.slug}}slug: '{{char.slug}}',{{/if}}
-                {{#if char.rawbody}}body: {{{char.rawbody}}}{{else}}body: null{{/if}},
-                {{#if char.portrait}}portrait: {hash: '{{char.portrait.contentMD5}}'},{{/if}}
-            }
-        }, null), document.getElementById('char-contents'))
-    }
+<div id='char-contents'/>
+<script>
+    ReactDOM.render(React.createElement(ViewCharacter, {
+        id: {{char.id}},
+        char: {
+            title: '{{char.title}}',
+            visibility: '{{char.visibility}}',
+            {{#if char.slug}}slug: '{{char.slug}}',{{/if}}
+            {{#if char.rawbody}}
+            body: {{{char.rawbody}}},
+            {{else}}
+            body: null,
+            {{/if}}
+            {{#if char.portrait}}portrait: {hash: '{{char.portrait.contentMD5}}'},{{/if}}
+        },
+        editable: {{char.editable}}
+    }, null), document.getElementById('char-contents'))
 </script>
-{{/if}}
 {{/inline}}

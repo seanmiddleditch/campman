@@ -8,7 +8,8 @@ interface Props
     onImageSelected: (file: File) => void
     onPathChanged?: (path: string) => void
     size?: number|string
-    fallbackURL?: string
+    fallback?: () => any
+    label?: boolean
 }
 interface State
 {
@@ -36,11 +37,11 @@ export class ImageSelect extends React.Component<Props, State>
 
     private _preview()
     {
-        console.log(this.props.fallbackURL)
+        console.log(this.props.fallback)
         if (this.state.objectURL)
             return <img style={{maxWidth: this._width()}} className='img-responsive img-preview mb-2' src={this.state.objectURL}/>
-        else if (this.props.fallbackURL)
-            return <img style={{maxWidth: this._width()}} className='img-responsive img-preview mb-2' src={this.props.fallbackURL}/>
+        else if (this.props.fallback)
+            return this.props.fallback()
         else
             return <div/>
     }
@@ -54,13 +55,20 @@ export class ImageSelect extends React.Component<Props, State>
         return (
             <div className={this.props.className}>
                 {this._preview()}
-                <div className='input-group'>
-                    <div className='input-group-prepend'>
-                        <label htmlFor='media-upload-file' className='btn btn-secondary input-group-text'><i className='fa fa-file-image-o'></i>&nbsp;Select File</label>
-                    </div>
-                    <input id='media-upload-file' type='file' style={{display: 'none'}} onChange={ev => this._onFileChanged(ev)} disabled={!!this.props.disabled}/>
-                    <input type='text' className='form-control' disabled={nameEditable} value={this.state.path} placeholder={namePlaceholder} onChange={ev => this._onPathChanged(ev)}/>
-                </div>
+                {this.props.label ? (
+                    <label className='input-group'>
+                        <div className='input-group-prepend'>
+                            <div className='btn btn-secondary input-group-text'><i className='fa fa-file-image-o'></i>&nbsp;Select File</div>
+                        </div>
+                        <input type='file' className='d-none' onChange={ev => this._onFileChanged(ev)} disabled={!!this.props.disabled}/>
+                        <input type='text' className='form-control' disabled={nameEditable} value={this.state.path} placeholder={namePlaceholder} onChange={ev => this._onPathChanged(ev)}/>
+                    </label>
+                ) : (
+                    <label className='input-group'>
+                        <input type='file' className='d-none' onChange={ev => this._onFileChanged(ev)} disabled={!!this.props.disabled}/>
+                        <div className='btn btn-outline-secondary'><i className='fa fa-file-image-o'></i>&nbsp;Select File</div>
+                    </label>
+                )}
             </div>
         )
     }

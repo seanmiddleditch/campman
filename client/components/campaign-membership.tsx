@@ -1,4 +1,5 @@
 import * as React from 'react'
+import {SaveButton} from './save-button'
 
 interface Member
 {
@@ -145,9 +146,8 @@ class InviteMember extends React.Component<{}, InviteMemberState>
         this.setState({inviteEmail: ev.target.value})
     }
 
-    private _handleInviteClicked(ev: React.MouseEvent<HTMLButtonElement>)
+    private _handleInviteClicked()
     {
-        ev.preventDefault()
         const promise = fetch('/membership', {
             method: 'POST',
             mode: 'cors',
@@ -195,12 +195,7 @@ class InviteMember extends React.Component<{}, InviteMemberState>
                     Player
                 </td>
                 <td>
-                    <button className='btn btn-primary' disabled={!!this.state.promise} onClick={ev => this._handleInviteClicked(ev)}>
-                        {this.state.promise ?
-                            <span><i className='fa fa-spinner fa-spin'></i> Sending</span>:
-                            <span><i className='fa fa-envelope-o'></i> Send Invite</span>
-                        }
-                    </button>
+                    <SaveButton icon='envelope-o' title='Send Invite' working='Sending' disabled={!!this.state.promise} saving={!!this.state.promise} onClick={() => this._handleInviteClicked()}/>
                 </td>
             </tr>
         </tfoot>)

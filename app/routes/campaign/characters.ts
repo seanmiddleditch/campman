@@ -93,18 +93,39 @@ export function characters() {
             return
         }
 
-        const storageId = req.file ? (await insertMedia(req.file.buffer)).storageId : null
+        const charId = req.body['id']
+        const char = await characterRepository.fetchById({id: charId, campaignId: req.campaign.id})
+        if (char)
+        {
+            const storageId = req.file ? (await insertMedia(req.file.buffer)).storageId : char.portraitStorageId
 
-        const char = characterRepository.create({
-            campaignId: req.campaign.id,
-            title: req.body['title'] || 'Map',
-            portraitStorageId: storageId,
-            rawbody: req.body['rawbody'],
-            visible: req.body['visible'] === 'visible'
-        })
-        await characterRepository.save(char)
+            const updatedChar = characterRepository.merge(char, {
+                title: req.body['title'] || char.title,
+                slug: req.body['slug'] || char.slug,
+                portraitStorageId: storageId,
+                rawbody: req.body['rawbody'] || char.rawbody,
+                visible: ('visible' in req.body) ? req.body['visible'] === 'visible' : char.visible
+            })
+            await characterRepository.save(updatedChar)
 
-        res.json({status: 'success', message: 'Character created.'})
+            res.json({status: 'success', message: 'Character created.'})
+        }
+        else
+        {
+            const storageId = req.file ? (await insertMedia(req.file.buffer)).storageId : null
+
+            const newChar = characterRepository.create({
+                campaignId: req.campaign.id,
+                title: req.body['title'] || 'Map',
+                slug: req.body['slug'] || slugUtils.sanitize(req.body['title']),
+                portraitStorageId: storageId,
+                rawbody: req.body['rawbody'],
+                visible: req.body['visible'] === 'visible'
+            })
+            await characterRepository.save(newChar)
+
+            res.json({status: 'success', message: 'Character created.'})
+        }
     })
 
     return router

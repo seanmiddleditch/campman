@@ -1,5 +1,6 @@
 import * as React from 'react'
 import {MarkEditor} from './mark-editor'
+import {SaveButton} from './save-button'
 
 interface WikiPageEditorProps
 {
@@ -63,9 +64,8 @@ export class WikiPageEditor extends React.Component<WikiPageEditorProps, WikiPag
         this.setState({document})
     }
 
-    private _handleSubmitClicked(ev: React.MouseEvent<HTMLButtonElement>)
+    private _handleSubmitClicked()
     {
-        ev.preventDefault()
         if (!this.state.saving)
         {
             const saving = fetch('/wiki', {
@@ -126,12 +126,7 @@ export class WikiPageEditor extends React.Component<WikiPageEditorProps, WikiPag
                         <a className={'dropdown-item ' + (this.state.visibility == 'Hidden' ? 'active' : '')} onClick={ev  => this._handleVisibilityClicked(ev, 'Hidden')}>GM Secret</a>
                     </div>
                 </div>
-                <button disabled={!!this.state.saving} className='btn btn-primary' onClick={ev => this._handleSubmitClicked(ev)}>
-                    {(!this.state.saving ? 
-                        <span><i className='fa fa-floppy-o'></i><span> Save Changes</span></span> :
-                        <span><i className='fa fa-spinner fa-spin'></i><span> Saving</span></span>
-                    )}
-                </button>
+                <SaveButton disabled={!!this.state.saving} saving={!!this.state.saving} onClick={() => this._handleSubmitClicked()}/>
             </div>
         )
     }

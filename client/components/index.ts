@@ -8,3 +8,5 @@ export * from './campaign-membership'
 export * from './new-map-dialog'
 export * from './character-editor'
 export * from './new-character-dialog'
+
+export * from './pages'

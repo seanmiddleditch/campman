@@ -1,4 +1,5 @@
 import * as React from 'react'
+import {SaveButton} from './save-button'
 
 interface Campaign
 {
@@ -58,9 +59,8 @@ export class CampaignSettings extends React.Component<Props, State>
         this.setState({campaign: {...this.state.campaign, visibility: ev.target.value === 'Public' ? 'Public' : 'Hidden'}})
     }
 
-    private _handleSubmit(ev: React.SyntheticEvent<HTMLElement>)
+    private _handleSubmit()
     {
-        ev.preventDefault()
         const promise = fetch('/settings', {
             method: 'POST',
             mode: 'cors',
@@ -97,7 +97,7 @@ export class CampaignSettings extends React.Component<Props, State>
     render()
     {
         return (
-            <form onSubmit={ev => this._handleSubmit(ev)}>
+            <form onSubmit={ev => {ev.preventDefault(); this._handleSubmit()}}>
                 {(this.state.message ?
                     <div className={'alert alert-' + this.state.message.type} role='alert'>
                         {this.state.message.text}
@@ -134,12 +134,7 @@ export class CampaignSettings extends React.Component<Props, State>
                     </div>
                 </div>
                 <div className='form-group'>
-                    <button type='submit' className='btn btn-primary' disabled={!!this.state.saving} onClick={ev => this._handleSubmit(ev)}>
-                    {(!this.state.saving ? 
-                        <span><i className='fa fa-floppy-o'></i><span> Save Changes</span></span> :
-                        <span><i className='fa fa-spinner fa-spin'></i><span> Saving</span></span>
-                    )}
-                    </button>
+                    <SaveButton saving={!!this.state.saving} disabled={!!this.state.saving} onClick={() => this._handleSubmit()}/>
                 </div>
             </form>
         )

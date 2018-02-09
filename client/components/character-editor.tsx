@@ -1,6 +1,8 @@
 import * as React from 'react'
 import {ImageSelect} from './image-select'
 import {MarkEditor} from './mark-editor'
+import {ImageThumb} from './image-thumb'
+import {config} from '../api/config'
 
 export interface CharacterData
 {
@@ -13,22 +15,13 @@ export interface CharacterData
 
 interface Props
 {
-    onCancel: () => void
     onChange: (char: CharacterData) => void
     data?: CharacterData
     disabled?: boolean
+    buttons?: () => any
 }
-interface State
+export class CharacterEditor extends React.PureComponent<Props>
 {
-}
-export class CharacterEditor extends React.Component<Props, State>
-{
-    constructor(props: Props)
-    {
-        super(props)
-        this.state = {}
-    }
-
     private static _makeSlug(str: string)
     {
         return str.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/ +/g, ' ').trim().replace(/ /g, '-')
@@ -69,10 +62,7 @@ export class CharacterEditor extends React.Component<Props, State>
     {
         if (this.props.data && this.props.data.portrait && !(this.props.data.portrait instanceof File))
         {
-            const url = new URL(`/img/thumb/200/${this.props.data.portrait.hash}.png`, window.__config.publicURL)
-            url.hostname = `media.${url.hostname}`
-            console.log(url.toString())
-            return url.toString()
+            return <ImageThumb hash={this.props.data.portrait.hash} size={100}/>
         }
         else
         {
@@ -85,7 +75,7 @@ export class CharacterEditor extends React.Component<Props, State>
         return (
             <form>
                 <div className='form-row'>
-                    <div className='col-md-8'>
+                    <div className='col-md-10'>
                         <div className='form-row'>
                             <div className='form-group col-md-8'>
                                 <input type='text' className='form-control' value={this.props.data.title} disabled={this.props.disabled} onChange={ev => this._handleTitleChanged(ev)} placeholder='First Last'/>
@@ -109,10 +99,9 @@ export class CharacterEditor extends React.Component<Props, State>
                             </div>
                         </div>
                     </div>
-                    <ImageSelect size={200} className='form-group col-md-4' disabled={this.props.disabled} onImageSelected={file => this._handleImageSelected(file)} fallbackURL={this._fallbackURL()}/>
+                    <ImageSelect size={100} label={false} className='form-group col-md-2' disabled={this.props.disabled} onImageSelected={file => this._handleImageSelected(file)} fallback={() => this._fallbackURL()}/>
                 </div>
-
-                <MarkEditor document={this.props.data.body} disabled={this.props.disabled} onChange={body => this._handleBodyChanged(body)}/>
+                <MarkEditor document={this.props.data.body} disabled={this.props.disabled} buttons={this.props.buttons} onChange={body => this._handleBodyChanged(body)}/>
             </form>
         )
     }

@@ -2,18 +2,20 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
 import {Dialog} from './dialog'
-import {CharacterEditor, CharacterData} from './character-editor'
+import {CharacterEditor} from './character-editor'
+import {CharacterController, CharacterFields} from './character-controller'
+import {SaveButton} from './save-button'
 
 interface Props
 {
     onCancel: () => void
     onCreate: () => void
     visible?: boolean
-    initial?: CharacterData
+    initial?: CharacterFields
 }
 interface State
 {
-    char?: CharacterData
+    char?: CharacterFields
     saving?: Promise<void>
 }
 export class NewCharacterDialog extends React.Component<Props, State>
@@ -30,47 +32,20 @@ export class NewCharacterDialog extends React.Component<Props, State>
         }
     }
 
-    private _handleSubmitClicked(ev: React.MouseEvent<HTMLButtonElement>)
+    private _handleSubmit()
     {
-        ev.preventDefault()
-        if (!this.state.saving)
-        {
-            const data = new FormData()
-            data.append('slug', this.state.char.slug)
-            data.append('title', this.state.char.title)
-            data.append('visible', this.state.char.visible ? 'visible' : '')
-            if (this.state.char.portrait instanceof File)
-                data.append('portrait', this.state.char.portrait)
-            data.append('rawbody', this.state.char.body ? JSON.stringify(this.state.char.body) : '')
-            const saving = fetch('/chars', {
-                method: 'POST',
-                mode: 'same-origin',
-                credentials: 'include',
-                body: data
-            }).then(async (response) => {
-                if (!response.ok)
-                    throw new Error(response.statusText)
-                else if (response.status !== 200)
-                    throw new Error(response.statusText)
-
-                const body = await response.json()
-                if (body.status !== 'success')
-                    throw new Error(body.message)
-                else
-                    document.location.href = body.location
-                this.setState({saving: undefined})
-            }).catch(err => {
-                console.error(err)
-                alert(err)
-                this.setState({saving: undefined})
-            })
-            this.setState({saving})
-        }
+        document.location.reload(true)
     }
 
-    private _handleChange(char: CharacterData)
+    private _handleChange(char: CharacterFields)
     {
         this.setState({char})
+    }
+
+    private _handleSubmitClicked(ev: React.MouseEvent<HTMLButtonElement>, submit: (data: CharacterFields) => void)
+    {
+        ev.preventDefault()
+        submit(this.state.char)
     }
 
     private _handleCancelClicked(ev: React.MouseEvent<HTMLButtonElement>)
@@ -83,14 +58,16 @@ export class NewCharacterDialog extends React.Component<Props, State>
     {
         return (
             <Dialog visible={this.props.visible}>
-                <div className='modal-header'>Add Character</div>
-                <div className='modal-body'>
-                    <CharacterEditor disabled={!this.props.visible} onChange={char => this._handleChange(char)} onCancel={() => this.props.onCancel()} data={this.state.char}/>
-                </div>
-                <div className='modal-footer'>
-                    <button className='btn btn-secondary pull-left' onClick={ev => this._handleCancelClicked(ev)}><i className='fa fa-ban'></i> Cancel</button>
-                    <button className='btn btn-primary' onClick={ev => this._handleSubmitClicked(ev)}><i className='fa fa-plus'></i> Create</button>
-                </div>
+                <CharacterController onSubmit={() => this._handleSubmit()} form={({saving, submit, errors}) => <div>
+                    <div className='modal-header'>Add Character</div>
+                    <div className='modal-body'>
+                        <CharacterEditor disabled={!this.props.visible || saving} onChange={char => this._handleChange(char)} data={this.state.char}/>
+                    </div>
+                    <div className='modal-footer'>
+                        <button className='btn btn-secondary pull-left' onClick={ev => this._handleCancelClicked(ev)}><i className='fa fa-ban'></i> Cancel</button>
+                        <SaveButton icon='plus' title='Create' working='Creating' disabled={saving} saving={saving} onClick={() => submit(this.state.char)}/>
+                    </div>
+                </div>}/>
             </Dialog>
         )
     }

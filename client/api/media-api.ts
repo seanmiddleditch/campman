@@ -1,3 +1,5 @@
+import {config} from './config'
+
 export class MediaAPI
 {
     private async _putFile(params: {file: Blob, path: string, caption?: string}) : Promise<{contentMD5: string, extension: string, path: string}>
@@ -76,14 +78,14 @@ export class MediaAPI
 
     getImageURL(hash: string, ext: string)
     {
-        const url = new URL(`/img/full/${hash}.${ext}`, window.__config.publicURL)
+        const url = new URL(`/img/full/${hash}.${ext}`, config.publicURL.toString())
         url.hostname = `media.${url.hostname}`
         return url.toString()
     }
 
     getThumbURL(hash: string, size: number)
     {
-        const url = new URL(`/img/thumb/${size}/${hash}.png`, window.__config.publicURL)
+        const url = new URL(`/img/thumb/${size}/${hash}.png`, config.publicURL.toString())
         url.hostname = `media.${url.hostname}`
         return url.toString()
     }
