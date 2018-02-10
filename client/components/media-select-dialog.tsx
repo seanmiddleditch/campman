@@ -68,7 +68,7 @@ export class MediaSelectDialog extends React.Component<Props, State>
     {
         if (!this.state.fetch)
         {
-            const fetch = this._media.list(path).then(media => {
+            const fetch = this._media.listFiles(path).then(media => {
                 this.setState({media, error: undefined, fetch: undefined})
             }).catch(e => {
                 this.setState({error: e.toString(), fetch: undefined})

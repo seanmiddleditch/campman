@@ -17,4 +17,3 @@ module.exports = {
     entities: [path.join(path.resolve('app'), 'dist', 'models', '*.js')],
     ssl: true
 }
-console.log(JSON.stringify(module.exports))

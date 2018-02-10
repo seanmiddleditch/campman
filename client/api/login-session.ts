@@ -2,7 +2,7 @@ import {config} from './config'
 
 export class LoginSession
 {
-    login() : Promise<void>
+    showLoginDialog() : Promise<void>
     {
         return new Promise((resolve, reject) => {
             (window as EventTarget).addEventListener('message', () => resolve(), {once:true})
@@ -11,12 +11,11 @@ export class LoginSession
         })
     }
 
-    logout() : Promise<void>
+    endSession() : Promise<void>
     {
         const logoutURL = new URL('/auth/logout', config.publicURL.toString())
         return new Promise((resolve, reject) => {
             fetch(logoutURL.toString(), {method: 'POST', mode: 'cors', credentials: 'include'}).then(async (res) => {
-                console.log(await res.text())
                 if (res.ok) resolve()
                 else reject()
             })

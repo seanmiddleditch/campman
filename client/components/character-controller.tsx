@@ -1,4 +1,5 @@
 import * as React from 'react'
+import {ContentAPI, CharacterData, ContentError} from '../api/content'
 
 export interface CharacterFields
 {
@@ -20,11 +21,13 @@ interface Props
 }
 interface State
 {
-    saving?: Promise<void>
+    saving?: Promise<CharacterData>
     errors?: Errors
 }
 export class CharacterController extends React.Component<Props, State>
 {
+    private _api = new ContentAPI()
+
     constructor(props: Props)
     {
         super(props)
@@ -35,41 +38,16 @@ export class CharacterController extends React.Component<Props, State>
     {
         if (!this.state.saving)
         {
-            const body = new FormData()
-            if (this.props.id) body.append('id', this.props.id.toString())
-            if (data.slug) body.append('slug', data.slug)
-            if (data.title) body.append('title', data.title)
-            if (typeof data.visible === 'string') body.append('visible', data.visible ? 'visible' : '')
-            if (data.portrait instanceof File) body.append('portrait', data.portrait)
-            if (data.body) body.append('rawbody', data.body ? JSON.stringify(data.body) : '')
-
-            const saving = fetch('/chars', {
-                method: 'POST',
-                mode: 'same-origin',
-                credentials: 'include',
-                body
-            }).then(async (response) => {
-                if (!response.ok)
-                    throw new Error(response.statusText)
-                else if (response.status !== 200)
-                    throw new Error(response.statusText)
-
-                const responseBody = await response.json()
-                if (responseBody.status === 'success')
-                {
-                    this.setState({saving: undefined, errors: undefined}, () => this.props.onSubmit())
-                }
-                else
-                {
-                    const errors = responseBody.errors
-                    this.setState({saving: undefined, errors})
-                }
+            const saving = this._api.saveCharacter({...data, id: this.props.id})
+            this.setState({saving})
+            saving.then(char => {
+                this.setState({saving: undefined}, () => this.props.onSubmit())
             }).catch(err => {
+                if (err instanceof ContentError)
                 console.error(err)
                 alert(err)
                 this.setState({saving: undefined})
             })
-            this.setState({saving, errors: undefined})
         }
     }
 

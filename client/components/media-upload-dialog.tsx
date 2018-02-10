@@ -51,7 +51,7 @@ export class MediaUploadDialog extends React.Component<Props, State>
 
     private _onUploadClicked() {
         const {file, path, caption} = this.state
-        const upload = this._media.upload({file, path, caption}).then(result => {
+        const upload = this._media.uploadFile({file, path, caption}).then(result => {
             this.setState({upload: undefined})
             this.props.onUpload(result)
         }).catch(e => {

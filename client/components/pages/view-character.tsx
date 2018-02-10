@@ -15,7 +15,6 @@ interface Props
 interface State
 {
     char: CharacterFields
-    editChar?: CharacterFields
     editing: boolean
 }
 export class ViewCharacter extends React.Component<Props, State>
@@ -33,19 +32,19 @@ export class ViewCharacter extends React.Component<Props, State>
     {
         ev.preventDefault()
         this.setState({
-            editChar: {...this.state.char},
+            char: {...this.state.char},
             editing: true
         })
     }
 
     private _handleSubmitClicked()
     {
-        this.setState({char: {...this.state.editChar}, editing: false})
+        this.setState({char: {...this.state.char}, editing: false})
     }
 
     private _handleChange(char: CharacterFields)
     {
-        this.setState({editChar: {...char}})
+        this.setState({char: {...char}})
     }
 
     public render()
@@ -53,7 +52,7 @@ export class ViewCharacter extends React.Component<Props, State>
         if (this.state.editing)
             return (
                 <CharacterController id={this.props.id} onSubmit={() => this._handleSubmitClicked()} form={({saving, submit}) => (
-                    <CharacterEditor data={this.props.char} disabled={saving} onChange={char => this._handleChange(char)} buttons={() => (
+                    <CharacterEditor data={this.state.char} disabled={saving} onChange={char => this._handleChange(char)} buttons={() => (
                         <div className='ml-sm-2 float-right'>
                             <SaveButton disabled={saving} saving={saving} onClick={() => submit(this.state.char)}/>
                         </div>

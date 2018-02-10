@@ -2,9 +2,10 @@ import {config} from './config'
 
 export class MediaAPI
 {
-    private async _putFile(params: {file: Blob, path: string, caption?: string}) : Promise<{contentMD5: string, extension: string, path: string}>
+    async uploadFile({file, path, caption}: {file: File, path?: string, caption?: string})
     {
-        const {file, path, caption} = params
+        path = path || `/${file.name}`
+
         const data = new FormData()
         data.append('file', file)
         if (caption)
@@ -19,17 +20,10 @@ export class MediaAPI
         if (!response.ok)
             throw new Error(response.statusText)
         const body = await response.json()
-        if (body.status == 'success')
-            return body.body
-        else
+        if (body.status !== 'success')
             throw new Error(body.message)
-    }
 
-    async upload({file, path, caption}: {file: File, path?: string, caption?: string})
-    {
-        path = path || `/${file.name}`
-
-        const result = await this._putFile({file, path, caption})
+        const result = body.body
 
         return {
             hash: result.contentMD5,
@@ -38,7 +32,7 @@ export class MediaAPI
         }
     }
 
-    async list(path)
+    async listFiles(path)
     {
         if (path.length === 0 || path.charAt(0) !== '/')
             path = `/${path}`
@@ -60,7 +54,7 @@ export class MediaAPI
         return body.body['files']
     }
 
-    async delete(path)
+    async deleteFile(path)
     {
         const result = await fetch(`/files${path}`, {
             method: 'DELETE',

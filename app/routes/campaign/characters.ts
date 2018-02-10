@@ -108,7 +108,7 @@ export function characters() {
             })
             await characterRepository.save(updatedChar)
 
-            res.json({status: 'success', message: 'Character created.'})
+            res.json({status: 'success', message: 'Character created.', body: updatedChar})
         }
         else
         {

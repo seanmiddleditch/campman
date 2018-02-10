@@ -37,7 +37,6 @@ export class ImageSelect extends React.Component<Props, State>
 
     private _preview()
     {
-        console.log(this.props.fallback)
         if (this.state.objectURL)
             return <img style={{maxWidth: this._width()}} className='img-responsive img-preview mb-2' src={this.state.objectURL}/>
         else if (this.props.fallback)
