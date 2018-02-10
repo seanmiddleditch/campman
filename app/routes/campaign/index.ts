@@ -95,6 +95,9 @@ function checkViewAccess()
 
 export function routes()
 {
+    const mediaURL = new URL('', config.publicURL)
+    mediaURL.hostname = `media.${mediaURL.hostname}`
+
     const router = PromiseRouter()
     router.use(resolveCampaign(), lookupProfileRole(), checkViewAccess())
     router.use(wiki())
@@ -104,6 +107,11 @@ export function routes()
     router.use(membership())
     router.use(maps())
     router.use(characters())
+    router.use('/media', (req, res) => {
+        const redirected = new URL('', mediaURL)
+        redirected.pathname = req.url
+        res.redirect(redirected.toString(), 307)
+    })
     router.use('/', (req, res) => {
         if (req.url === '/')
             res.redirect('/wiki/p/home')

@@ -1,14 +1,8 @@
 import {config} from './config'
+import {MediaFile} from '../../common/types'
+import {MediaContent} from '../../common/rpc/media-content'
 
-export class MediaFile
-{
-    path?: string
-    contentMD5: string
-    extension: string
-    caption?: string
-}
-
-export class MediaAPI
+export class MediaAPI implements MediaContent
 {
     async uploadFile({file, path, caption}: {file: File, path?: string, caption?: string})
     {

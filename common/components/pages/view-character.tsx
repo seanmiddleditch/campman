@@ -1,20 +1,23 @@
 import * as React from 'react'
 
 import {CharacterEditor} from '../character-editor'
-import {CharacterController, CharacterFields} from '../character-controller'
+import {CharacterController} from '../character-controller'
 import {ImageThumb} from '../image-thumb'
 import {SaveButton} from '../save-button'
 import {RawDraft} from '../raw-draft'
+import {Content} from '../../rpc'
+import {CharacterData} from '../../types'
 
 interface Props
 {
     id?: number
-    char: CharacterFields,
+    char: CharacterData,
     editable: boolean
+    rpc: Content
 }
 interface State
 {
-    char: CharacterFields
+    char: CharacterData
     editing: boolean
 }
 export class ViewCharacter extends React.Component<Props, State>
@@ -42,7 +45,7 @@ export class ViewCharacter extends React.Component<Props, State>
         this.setState({char: {...this.state.char}, editing: false})
     }
 
-    private _handleChange(char: CharacterFields)
+    private _handleChange(char: CharacterData)
     {
         this.setState({char: {...char}})
     }
@@ -51,8 +54,8 @@ export class ViewCharacter extends React.Component<Props, State>
     {
         if (this.state.editing)
             return (
-                <CharacterController id={this.props.id} onSubmit={() => this._handleSubmitClicked()} form={({saving, submit}) => (
-                    <CharacterEditor data={this.state.char} disabled={saving} onChange={char => this._handleChange(char)} buttons={() => (
+                <CharacterController rpc={this.props.rpc} id={this.props.id} onSubmit={() => this._handleSubmitClicked()} form={({saving, submit}) => (
+                    <CharacterEditor data={this.state.char} rpc={this.props.rpc.media} disabled={saving} onChange={char => this._handleChange(char)} buttons={() => (
                         <div className='ml-sm-2 float-right'>
                             <SaveButton disabled={saving} saving={saving} onClick={() => submit(this.state.char)}/>
                         </div>

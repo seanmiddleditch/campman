@@ -126,7 +126,6 @@ function renderBasicBlock(block: ContentBlock, draft: ContentState) {
     const sections = expandSections(block, draft)
     const text = renderSections(sections)
 
-    console.log(text, sections)
     return render({children: text})
 }
 

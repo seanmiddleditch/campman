@@ -1,14 +1,14 @@
 import * as React from 'react'
 
 import {MediaUploadDialog} from './media-upload-dialog'
-import {MediaAPI, MediaFile} from '../api/media-api'
+import {MediaFile} from '../types'
+import {MediaContent} from '../rpc/media-content'
 import {Dialog} from './dialog'
 import {ImageThumb} from './image-thumb'
 
 
 function MediaList({media, selected, filter, onClick, onDoubleClick}: {media?: MediaFile[], selected?: MediaFile, filter: (f: MediaFile) => boolean, onClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void, onDoubleClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void})
 {
-    const api = new MediaAPI()
     if (!media)
         return <div>No media available</div>
     const items = media.filter(f => filter(f)).map(file => (
@@ -32,6 +32,7 @@ interface Props
     path: string
     onSelect: (media: MediaFile) => void
     onCancel: () => void
+    rpc: MediaContent
 }
 interface State
 {
@@ -45,8 +46,6 @@ interface State
 }
 export class MediaSelectDialog extends React.Component<Props, State>
 {
-    private _media = new MediaAPI()
-
     constructor(props: Props)
     {
         super(props)
@@ -59,7 +58,7 @@ export class MediaSelectDialog extends React.Component<Props, State>
     {
         if (!this.state.fetch)
         {
-            const fetch = this._media.listFiles(path).then(media => {
+            const fetch = this.props.rpc.listFiles(path).then(media => {
                 this.setState({media, error: undefined, fetch: undefined})
             }).catch(e => {
                 this.setState({error: e.toString(), fetch: undefined})
@@ -145,7 +144,7 @@ export class MediaSelectDialog extends React.Component<Props, State>
     {
         return (
             <div>
-                <MediaUploadDialog visible={this.state.uploadDialogOpen} onCancel={() => this._handleUploadClosed()} onUpload={file => this._handleMediaUploaded(file)}/>
+                <MediaUploadDialog visible={this.state.uploadDialogOpen} rpc={this.props.rpc} onCancel={() => this._handleUploadClosed()} onUpload={file => this._handleMediaUploaded(file)}/>
                 <Dialog visible={this.props.visible && !this.state.uploadDialogOpen}>
                     <div className='modal-body'>
                         <div className='input-group mb-2'>

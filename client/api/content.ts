@@ -1,25 +1,7 @@
-export class ContentError extends Error
-{
-    public readonly errors?: any
+import {CharacterContent, ContentError} from '../../common/rpc'
+import {CharacterData} from '../../common/types'
 
-    public constructor(message: string, {errors}: {errors?: any})
-    {
-        super(message)
-        this.errors = errors
-    }
-}
-
-export interface CharacterData
-{
-    id?: number
-    title?: string
-    slug?: string
-    portrait?: File|{hash: string}
-    body?: object
-    visible?: boolean
-}
-
-export class ContentAPI
+export class ContentAPI implements CharacterContent
 {
     public async saveCharacter(char: CharacterData) : Promise<CharacterData>
     {

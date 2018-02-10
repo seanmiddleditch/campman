@@ -7,6 +7,7 @@
 <div id='char-contents'/>
 <script>
     ReactDOM.render(React.createElement(ViewCharacter, {
+        rpc: api,
         id: {{char.id}},
         char: {
             title: '{{char.title}}',

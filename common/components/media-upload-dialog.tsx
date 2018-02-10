@@ -1,6 +1,7 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import {MediaAPI, MediaFile} from '../api/media-api'
+import {MediaFile} from '../types'
+import {MediaContent} from '../rpc/media-content'
 import {Dialog} from './dialog'
 import {ImageSelect} from './image-select'
 import {SaveButton} from './save-button'
@@ -9,6 +10,7 @@ interface Props {
     onCancel: () => void
     onUpload: (media: MediaFile) => void
     visible?: boolean
+    rpc: MediaContent
 }
 interface State {
     file?: File
@@ -19,8 +21,6 @@ interface State {
 }
 export class MediaUploadDialog extends React.Component<Props, State>
 {
-    private _media = new MediaAPI()
-
     constructor(props: Props) {
         super(props)
         this.state = {}
@@ -45,7 +45,7 @@ export class MediaUploadDialog extends React.Component<Props, State>
 
     private _onUploadClicked() {
         const {file, path, caption} = this.state
-        const upload = this._media.uploadFile({file, path, caption}).then(result => {
+        const upload = this.props.rpc.uploadFile({file, path, caption}).then(result => {
             this.setState({upload: undefined})
             this.props.onUpload(result)
         }).catch(e => {
@@ -80,10 +80,10 @@ export class MediaUploadDialog extends React.Component<Props, State>
     }
 }
 
-export function ShowMediaUploadDialog() {
+export function ShowMediaUploadDialog(rpc: MediaContent) {
     const div = document.createElement('div')
     document.body.appendChild(div)
     const onCancel = ()=>{ReactDOM.unmountComponentAtNode(div); document.body.removeChild(div)}
     const onUpload = ()=>{document.location.reload(true)}
-    ReactDOM.render(React.createElement(MediaUploadDialog, {onCancel, onUpload, visible: true}), div)
+    ReactDOM.render(React.createElement(MediaUploadDialog, {onCancel, onUpload, rpc, visible: true}), div)
 }

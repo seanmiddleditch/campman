@@ -2,16 +2,8 @@ import * as React from 'react'
 import {ImageSelect} from './image-select'
 import {MarkEditor} from './mark-editor'
 import {ImageThumb} from './image-thumb'
-import {config} from '../api/config'
-
-export interface CharacterData
-{
-    title: string
-    slug?: string
-    body: object|null
-    visible: boolean
-    portrait?: File|{hash: string}
-}
+import {CharacterData} from '../types'
+import {MediaContent} from '../rpc/media-content'
 
 interface Props
 {
@@ -19,6 +11,7 @@ interface Props
     data?: CharacterData
     disabled?: boolean
     buttons?: () => any
+    rpc: MediaContent
 }
 export class CharacterEditor extends React.PureComponent<Props>
 {
@@ -101,7 +94,7 @@ export class CharacterEditor extends React.PureComponent<Props>
                     </div>
                     <ImageSelect size={100} label={false} className='form-group col-md-2' disabled={this.props.disabled} onImageSelected={file => this._handleImageSelected(file)} fallback={() => this._fallbackURL()}/>
                 </div>
-                <MarkEditor document={this.props.data.body} disabled={this.props.disabled} buttons={this.props.buttons} onChange={body => this._handleBodyChanged(body)}/>
+                <MarkEditor document={this.props.data.body} rpc={this.props.rpc} disabled={this.props.disabled} buttons={this.props.buttons} onChange={body => this._handleBodyChanged(body)}/>
             </form>
         )
     }

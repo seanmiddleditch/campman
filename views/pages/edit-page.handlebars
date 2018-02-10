@@ -7,6 +7,7 @@
 <div id='page-editor'></div>
 <script defer>
     ReactDOM.render(React.createElement(WikiPageEditor, {
+        rpc: api,
         title: '{{page.title}}',
         tags: '{{page.labels}}',
         visibility: '{{page.visibility}}',
