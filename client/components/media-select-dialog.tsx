@@ -1,16 +1,10 @@
 import * as React from 'react'
 
 import {MediaUploadDialog} from './media-upload-dialog'
-import {MediaAPI} from '../api/media-api'
+import {MediaAPI, MediaFile} from '../api/media-api'
 import {Dialog} from './dialog'
+import {ImageThumb} from './image-thumb'
 
-interface MediaFile
-{
-    hash: string
-    extension: string
-    caption?: string
-    path: string
-}
 
 function MediaList({media, selected, filter, onClick, onDoubleClick}: {media?: MediaFile[], selected?: MediaFile, filter: (f: MediaFile) => boolean, onClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void, onDoubleClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void})
 {
@@ -18,11 +12,8 @@ function MediaList({media, selected, filter, onClick, onDoubleClick}: {media?: M
     if (!media)
         return <div>No media available</div>
     const items = media.filter(f => filter(f)).map(file => (
-        <div key={file.path} className='list-group-item' style={{cursor: 'pointer', background: (selected && selected.path === file.path) ? '#EEE' : 'inherit'}} onClick={ev => onClick(ev, file)} onDoubleClick={ev => onDoubleClick(ev, file)}>
-            <figure className='figure'>
-                <img src={api.getThumbURL(file.hash, 100)} className='figure-img img-fluid rounded img-thumbnail' alt={file.caption}/>
-                <figcaption className='figure-caption'>{file.caption || file.path}</figcaption>
-            </figure>
+        <div key={file.path} className='float-left m-2' style={{cursor: 'pointer', background: (selected && selected.path === file.path) ? '#EEE' : 'inherit'}}  onClick={ev => onClick(ev, file)} onDoubleClick={ev => onDoubleClick(ev, file)}>
+            <ImageThumb className='rounded' size={200} hash={file.contentMD5} alt={file.caption} caption={file.caption || file.path}/>
         </div>
     ))
     if (items.length === 0)
@@ -172,7 +163,8 @@ export class MediaSelectDialog extends React.Component<Props, State>
                         {this.state.error && (<div className='input-groupz   mb-2'>
                             <span className='error text-danger'><i className='fa fa-exclamation-triangle'></i> {this.state.error}</span>
                         </div>)}
-                        <div className='list-group' style={{maxHeight: '400px', overflowY: 'scroll'}}>
+                        <div style={{maxHeight: '400px', overflowY: 'scroll'}}>
+                            <div className='clearfix'/>
                             <MediaList media={this.state.media} selected={this.state.selected} filter={f => this._filter(f)} onClick={(e, f) => this._handleSelectItem(e, f)} onDoubleClick={(e, f) => this._handleCommitSelection(e, f)}/>
                         </div>
                     </div>

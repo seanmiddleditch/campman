@@ -1,5 +1,13 @@
 import {config} from './config'
 
+export class MediaFile
+{
+    path?: string
+    contentMD5: string
+    extension: string
+    caption?: string
+}
+
 export class MediaAPI
 {
     async uploadFile({file, path, caption}: {file: File, path?: string, caption?: string})
@@ -26,13 +34,13 @@ export class MediaAPI
         const result = body.body
 
         return {
-            hash: result.contentMD5,
+            contentMD5: result.contentMD5,
             extension: result.extension,
             path: result.path
         }
     }
 
-    async listFiles(path)
+    async listFiles(path) : Promise<MediaFile[]>
     {
         if (path.length === 0 || path.charAt(0) !== '/')
             path = `/${path}`

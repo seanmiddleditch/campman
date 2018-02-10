@@ -4,7 +4,7 @@ import {connection} from '../../db'
 import {config} from '../../config'
 import {URL} from 'url'
 import {checkAccess} from '../../auth'
-import {draftToHtml} from '../../util/draft-to-html'
+import {scrubDraftSecrets} from '../../util/scrub-draft-secrets'
 import * as slugUtils from '../../util/slug-utils'
 
 export function wiki() {
@@ -106,10 +106,8 @@ export function wiki() {
             hidden: page.visibility !== PageVisibility.Public
         })
 
-        const body = draftToHtml(rawbody, secrets)
-
         res.render('view-page', {
-            page: {slug, title, body, rawbody: editable ? rawbody : undefined, tags, visibility, editable}
+            page: {slug, title, rawbody: scrubDraftSecrets(rawbody, secrets), tags, visibility, editable}
         })
     })
 

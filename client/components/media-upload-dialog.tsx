@@ -1,15 +1,9 @@
 import * as React from 'react'
 import * as ReactDOM from 'react-dom'
-import {MediaAPI} from '../api/media-api'
+import {MediaAPI, MediaFile} from '../api/media-api'
 import {Dialog} from './dialog'
 import {ImageSelect} from './image-select'
 import {SaveButton} from './save-button'
-
-interface MediaFile {
-    hash: string
-    extension: string
-    path: string
-}
 
 interface Props {
     onCancel: () => void

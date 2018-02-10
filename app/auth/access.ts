@@ -30,6 +30,7 @@ interface AccessConfiguration
     ['page:edit']: AccessControls
     ['page:delete']: AccessControls
     ['character:view']: AccessControls
+    ['character:view-secret']: AccessControls
     ['character:create']: AccessControls
     ['character:edit']: AccessControls
 }
@@ -99,6 +100,10 @@ export const accessConfiguration : AccessConfiguration = {
         p => p.role === CampaignRole.Owner,
         p => p.role === CampaignRole.GameMaster,
         p => !p.hidden
+    ],
+    'character:view-secret': [
+        p => p.role === CampaignRole.Owner,
+        p => p.role === CampaignRole.GameMaster
     ],
     'character:create': [
         p => p.role !== CampaignRole.Visitor

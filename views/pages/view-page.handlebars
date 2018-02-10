@@ -11,5 +11,8 @@
 
 {{#*inline "content"}}
 <div><i class='fa fa-tags'></i> {{#if page.labels}}{{page.labels}}{{else}}<span class='text-muted'>no tags</span>{{/if}}</div>
-<div>{{{page.body}}}</div>
+<div id='content'></div>
+<script>
+    ReactDOM.render(React.createElement(RawDraft, {raw: {{{page.rawbody}}} }), document.getElementById('content'))
+</script>
 {{/inline}}

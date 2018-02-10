@@ -26,6 +26,8 @@ import {decorators} from './decorators'
 import {applyMarkdownShortcutsOnInput} from './helpers/markdown-shortcuts'
 import {blockRenderer, handleReturn, blockRenderMap} from './helpers/block-utils'
 
+import {MediaFile} from '../../api/media-api'
+
 interface MarkEditorProps
 {
     document: any
@@ -158,7 +160,7 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
         this.setState({mediaPopupOpen: false})
     }
     
-    private _handleInsertMedia(media: {url: string, caption?: string, path: string})
+    private _handleInsertMedia(media: MediaFile)
     {
         this.setState({mediaPopupOpen: false})
 
@@ -166,7 +168,7 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
         const contentState = editorState.getCurrentContent()
         const selection = editorState.getSelection()
 
-        const contentStateWithEntity = contentState.createEntity('image', 'IMMUTABLE', {url: media.url})
+        const contentStateWithEntity = contentState.createEntity('media', 'IMMUTABLE', {...media})
         const entityKey = contentStateWithEntity.getLastCreatedEntityKey()
         const editorStateWithBlock = AtomicBlockUtils.insertAtomicBlock(
             editorState,

@@ -4,7 +4,7 @@ import {CharacterEditor} from '../character-editor'
 import {CharacterController, CharacterFields} from '../character-controller'
 import {ImageThumb} from '../image-thumb'
 import {SaveButton} from '../save-button'
-import {draftToHtml} from '../../../app/util/draft-to-html'
+import {RawDraft} from '../raw-draft'
 
 interface Props
 {
@@ -62,12 +62,11 @@ export class ViewCharacter extends React.Component<Props, State>
         else
             return (
                 <div>
-                    <h1>{this.props.char.title}{this.props.editable && <button className='btn btn-link' onClick={ev => this._handleEditClicked(ev)}><i className='fa fa-pencil'></i> edit</button>}</h1>
+                    <h1>{this.state.char.title}{this.props.editable && <button className='btn btn-link' onClick={ev => this._handleEditClicked(ev)}><i className='fa fa-pencil'></i> edit</button>}</h1>
                     <div className='pull-right'>
-                        {this.props.char.portrait && !(this.props.char.portrait instanceof File) && <ImageThumb hash={this.props.char.portrait.hash} size={200}/>}
+                        {this.state.char.portrait && !(this.state.char.portrait instanceof File) && <ImageThumb hash={this.state.char.portrait.hash} size={200}/>}
                     </div>
-
-                    <div dangerouslySetInnerHTML={{__html: draftToHtml(JSON.stringify(this.props.char.body), false)}}/>
+                    <RawDraft raw={this.state.char.body}/>
                 </div>
             )
     }

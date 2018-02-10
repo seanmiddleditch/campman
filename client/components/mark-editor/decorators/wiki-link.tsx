@@ -12,7 +12,7 @@ const WikiLinkComponent = (props: {contentState: ContentState, entityKey: string
     const {contentState, entityKey, offsetKey} = props
     const entity = contentState.getEntity(entityKey)
     const {target} = entity.getData()
-    return <a href={'/n/' + target} target='_blank' data-offset-key={offsetKey}>{props.children}</a>
+    return <a href={'/wiki/p/' + target} target='_blank' data-offset-key={offsetKey}>{props.children}</a>
 }
 
 export const wikiLinkDecorator: any = {

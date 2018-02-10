@@ -27,7 +27,7 @@ export class ContentAPI
         if (char.id) body.append('id', char.id.toString())
         if (char.slug) body.append('slug', char.slug)
         if (char.title) body.append('title', char.title)
-        if (typeof char.visible === 'string') body.append('visible', char.visible ? 'visible' : '')
+        if ('visible' in char) body.append('visible', char.visible ? 'visible' : '')
         if (char.portrait instanceof File) body.append('portrait', char.portrait)
         if (char.body) body.append('rawbody', char.body ? JSON.stringify(char.body) : '')
 
