@@ -13,6 +13,6 @@
 <div><i class='fa fa-tags'></i> {{#if page.labels}}{{page.labels}}{{else}}<span class='text-muted'>no tags</span>{{/if}}</div>
 <div id='content'></div>
 <script>
-    ReactDOM.render(React.createElement(RawDraft, {raw: {{{page.rawbody}}} }), document.getElementById('content'))
+    ReactDOM.render(React.createElement(RawDraft, {rpc: api, raw: {{{page.rawbody}}} }), document.getElementById('content'))
 </script>
 {{/inline}}

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {MarkEditor} from './mark-editor'
 import {SaveButton} from './save-button'
-import {MediaContent} from '../rpc/media-content'
+import {Content} from '../rpc'
 
 interface WikiPageEditorProps
 {
@@ -10,7 +10,7 @@ interface WikiPageEditorProps
     slug?: string
     body: {}|null
     visibility: string
-    rpc: MediaContent
+    rpc: Content
 }
 interface WikiPageEditorState
 {
@@ -161,7 +161,7 @@ export class WikiPageEditor extends React.Component<WikiPageEditorProps, WikiPag
                     <small className='form-text text-muted'>May only contain letters, numbers, and dashes.</small>
                 </div>)}
                 <div className='form-group mb-2'>
-                    <MarkEditor document={this.state.document} rpc={this.props.rpc} onChange={ev => this._handleBodyChanged(ev)} buttons={() => this._editorButtons()}/>
+                    <MarkEditor document={this.state.document} rpc={this.props.rpc.media} onChange={ev => this._handleBodyChanged(ev)} buttons={() => this._editorButtons()}/>
                 </div>
             </form>
         )

@@ -7,17 +7,21 @@ import {Dialog} from './dialog'
 import {ImageThumb} from './image-thumb'
 
 
-function MediaList({media, selected, filter, onClick, onDoubleClick}: {media?: MediaFile[], selected?: MediaFile, filter: (f: MediaFile) => boolean, onClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void, onDoubleClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void})
+function MediaList({media, selected, filter, onClick, onDoubleClick, loading}: {media?: MediaFile[], selected?: MediaFile, loading: boolean, filter: (f: MediaFile) => boolean, onClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void, onDoubleClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void})
 {
     if (!media)
-        return <div>No media available</div>
+        media = []
+
     const items = media.filter(f => filter(f)).map(file => (
         <div key={file.path} className='float-left m-2' style={{cursor: 'pointer', background: (selected && selected.path === file.path) ? '#EEE' : 'inherit'}}  onClick={ev => onClick(ev, file)} onDoubleClick={ev => onDoubleClick(ev, file)}>
             <ImageThumb className='rounded' size={200} hash={file.contentMD5} alt={file.caption} caption={file.caption || file.path}/>
         </div>
     ))
-    if (items.length === 0)
-        return <div>No matches</div>
+
+    if (items.length === 0 && !loading)
+        return <div>No {filter ? 'matches' : 'available media'}</div>
+    else if (items.length === 0 && loading)
+        return <i className='fa fa-spinner fa-spin fa-3x'></i>
     else
         return (
             <div>
@@ -67,8 +71,15 @@ export class MediaSelectDialog extends React.Component<Props, State>
         }
     }
 
-    componentDidMount() {
-        if (!this.state.media)
+    componentDidMount()
+    {
+        if (!this.state.media && this.props.visible)
+            this._fetch(this.props.path)
+    }
+
+    componentWillReceiveProps(nextProps: Props)
+    {
+        if (!this.state.media && nextProps.visible)
             this._fetch(this.props.path)
     }
 
@@ -164,7 +175,7 @@ export class MediaSelectDialog extends React.Component<Props, State>
                         </div>)}
                         <div style={{maxHeight: '400px', overflowY: 'scroll'}}>
                             <div className='clearfix'/>
-                            <MediaList media={this.state.media} selected={this.state.selected} filter={f => this._filter(f)} onClick={(e, f) => this._handleSelectItem(e, f)} onDoubleClick={(e, f) => this._handleCommitSelection(e, f)}/>
+                            <MediaList loading={!!this.state.fetch} media={this.state.media} selected={this.state.selected} filter={f => this._filter(f)} onClick={(e, f) => this._handleSelectItem(e, f)} onDoubleClick={(e, f) => this._handleCommitSelection(e, f)}/>
                         </div>
                     </div>
                     <div className='modal-footer'>

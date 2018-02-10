@@ -2,7 +2,7 @@
 
 {{#*inline "content"}}
 {{#if canCreate}}
-<button onClick='ShowNewCharacterDialog(); event.preventDefault();' class='btn btn-primary'><i class='fa fa-plus'></i> Add Character</button>
+<button onClick='ShowNewCharacterDialog(api); event.preventDefault();' class='btn btn-primary'><i class='fa fa-plus'></i> Add Character</button>
 {{/if}}
 <div class='clearfix'>
 {{#each characters}}
