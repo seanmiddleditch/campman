@@ -87,16 +87,16 @@ export function characters() {
         if (!req.campaign)
             throw new Error('Missing campaign')
 
-        if (!checkAccess('character:create', {profileId: req.profileId, role: req.campaignRole}))
-        {
-            res.status(403).render('access-denied')
-            return
-        }
-
         const charId = req.body['id']
         const char = await characterRepository.fetchById({id: charId, campaignId: req.campaign.id})
         if (char)
         {
+            if (!checkAccess('character:edit', {profileId: req.profileId, role: req.campaignRole}))
+            {
+                res.status(403).render('access-denied')
+                return
+            }
+
             const storageId = req.file ? (await insertMedia(req.file.buffer)).storageId : char.portraitStorageId
 
             const updatedChar = characterRepository.merge(char, {
@@ -112,6 +112,12 @@ export function characters() {
         }
         else
         {
+            if (!checkAccess('character:create', {profileId: req.profileId, role: req.campaignRole}))
+            {
+                res.status(403).render('access-denied')
+                return
+            }
+
             const storageId = req.file ? (await insertMedia(req.file.buffer)).storageId : null
 
             const newChar = characterRepository.create({
