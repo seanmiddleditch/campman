@@ -1,8 +1,8 @@
 import * as React from 'react'
-import {ImageSelect} from './image-select'
-import {MarkEditor} from './mark-editor'
-import {ImageThumb} from './image-thumb'
-import {CharacterData} from '../types'
+import {ImageSelect} from '../image-select'
+import {MarkEditor} from '../mark-editor'
+import {ImageThumb} from '../image-thumb'
+import {CharacterData} from '../../types'
 
 interface Props
 {

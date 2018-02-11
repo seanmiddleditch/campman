@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
-import {CharacterData} from '../types'
-import {Content, ContentError} from '../rpc'
+import {CharacterData} from '../../types'
+import {Content, ContentError} from '../../rpc'
 
 type Errors = {[key: string]: string|undefined}
 

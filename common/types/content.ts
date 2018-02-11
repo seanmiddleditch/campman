@@ -7,3 +7,12 @@ export interface CharacterData
     rawbody?: object
     visible?: boolean
 }
+
+export interface WikiData
+{
+    slug?: string
+    title: string
+    rawbody: object
+    tags: string
+    visibility: 'Public'|'Hidden'
+}

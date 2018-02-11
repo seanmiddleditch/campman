@@ -68,8 +68,7 @@
 
 <script defer>
     $(() => {
-        const session = new LoginSession('{{config.publicURL}}')
-        $('#nav-login-btn').click(e => {session.showLoginDialog().then(() => window.location.reload(true)); return false})
-        $('#nav-logout-btn').click(e => {session.endSession().then(() => window.location.reload(true)); return false})
+        $('#nav-login-btn').click(e => {api.login.showLoginDialog().then(() => window.location.reload(true)); return false})
+        $('#nav-logout-btn').click(e => {api.login.endSession().then(() => window.location.reload(true)); return false})
     })
 </script>

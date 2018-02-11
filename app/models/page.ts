@@ -67,19 +67,13 @@ export class PageRepository extends Repository<PageModel>
 
     public async fetchBySlug({slug, campaignId}: {slug: string, campaignId: number})
     {
-        return this.createQueryBuilder('note')
-            .where('note."slug"=:slug AND "library_id"=:campaignId', {slug, campaignId})
-            .leftJoinAndSelect('note.tags', 'tag')
-            .getRawOne()
-            .then(row => row && ({
-                id: row.note_id as number,
-                slug: row.note_slug as string,
-                title: row.note_title as string,
-                rawbody: row.note_rawbody as string,
-                visibility: row.note_visibility as PageVisibility,
-                authorId: row.note_author_id as number,
-                tags: row.tag_slug as string
-            }))
+        return this.findOne({
+            relations: ['tags'],
+            where: {
+                slug,
+                campaignId
+            }
+        }).then(ent => ent && ({...ent, tags: ent.tags.join(',')}))
     }
 
     public async updatePage(options: {slug: string, campaignId: number, title?: string, rawbody?: string, visibility?: PageVisibility, tags?: string[]})

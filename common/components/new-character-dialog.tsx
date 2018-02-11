@@ -2,8 +2,8 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 
 import {Dialog} from './dialog'
-import {CharacterEditor} from './character-editor'
-import {CharacterController} from './character-controller'
+import {CharacterEditor} from './forms/character-editor'
+import {CharacterController} from './forms/character-controller'
 import {SaveButton} from './save-button'
 
 import {CharacterData} from '../types'

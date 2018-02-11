@@ -1,7 +1,7 @@
 import * as React from 'react'
 
-import {CharacterEditor} from '../character-editor'
-import {CharacterController} from '../character-controller'
+import {CharacterEditor} from '../forms/character-editor'
+import {CharacterController} from '../forms/character-controller'
 import {ImageThumb} from '../image-thumb'
 import {SaveButton} from '../save-button'
 import {RawDraft} from '../raw-draft'
