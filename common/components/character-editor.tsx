@@ -3,21 +3,19 @@ import {ImageSelect} from './image-select'
 import {MarkEditor} from './mark-editor'
 import {ImageThumb} from './image-thumb'
 import {CharacterData} from '../types'
-import {MediaContent} from '../rpc/media-content'
 
 interface Props
 {
     onChange: (char: CharacterData) => void
-    data?: CharacterData
+    data: CharacterData
     disabled?: boolean
     buttons?: () => any
-    rpc: MediaContent
 }
 export class CharacterEditor extends React.PureComponent<Props>
 {
-    private static _makeSlug(str: string)
+    private static _makeSlug(str: string|undefined)
     {
-        return str.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/ +/g, ' ').trim().replace(/ /g, '-')
+        return str ? str.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/ +/g, ' ').trim().replace(/ /g, '-') : undefined
     }
 
     private _handleTitleChanged(ev: React.ChangeEvent<HTMLInputElement>)
@@ -41,21 +39,21 @@ export class CharacterEditor extends React.PureComponent<Props>
         this.props.onChange({...this.props.data, visible})
     }
 
-    private _handleBodyChanged(body: any)
+    private _handleBodyChanged(rawbody: any)
     {
-        this.props.onChange({...this.props.data, body})
+        this.props.onChange({...this.props.data, rawbody})
     }
 
-    private _handleImageSelected(portrait: File)
+    private _handleImageSelected(portrait: File|null)
     {
-        this.props.onChange({...this.props.data, portrait})
+        this.props.onChange({...this.props.data, portrait: portrait || undefined})
     }
 
     private _fallbackURL()
     {
         if (this.props.data && this.props.data.portrait && !(this.props.data.portrait instanceof File))
         {
-            return <ImageThumb hash={this.props.data.portrait.hash} size={100}/>
+            return <ImageThumb hash={this.props.data.portrait.contentMD5} size={100}/>
         }
         else
         {
@@ -94,7 +92,7 @@ export class CharacterEditor extends React.PureComponent<Props>
                     </div>
                     <ImageSelect size={100} label={false} className='form-group col-md-2' disabled={this.props.disabled} onImageSelected={file => this._handleImageSelected(file)} fallback={() => this._fallbackURL()}/>
                 </div>
-                <MarkEditor document={this.props.data.body} rpc={this.props.rpc} disabled={this.props.disabled} buttons={this.props.buttons} onChange={body => this._handleBodyChanged(body)}/>
+                <MarkEditor document={this.props.data.rawbody} disabled={this.props.disabled} buttons={this.props.buttons} onChange={body => this._handleBodyChanged(body)}/>
             </form>
         )
     }

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {ContentBlock, ContentState, Entity} from 'draft-js'
 
-const wikiLinkDecoratorStrategy = (contentBlock: ContentBlock, callback, contentState: ContentState) => {
+const wikiLinkDecoratorStrategy = (contentBlock: ContentBlock, callback: (s: number, e: number) => void, contentState: ContentState) => {
     contentBlock.findEntityRanges(cm => {
         const entityKey = cm.getEntity()
         return entityKey !== null && contentState.getEntity(entityKey).getType() === 'wiki-link'

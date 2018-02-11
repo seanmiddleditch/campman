@@ -27,7 +27,6 @@ import {applyMarkdownShortcutsOnInput} from './helpers/markdown-shortcuts'
 import {blockRenderer, handleReturn, blockRenderMap} from './helpers/block-utils'
 
 import {MediaFile} from '../../types'
-import {MediaContent} from '../../rpc/media-content'
 
 interface MarkEditorProps
 {
@@ -37,7 +36,6 @@ interface MarkEditorProps
     onChange: (document: any) => void
     buttons?: () => any
     tabIndex?: number
-    rpc: MediaContent
 }
 interface MarkEditorState
 {
@@ -197,7 +195,7 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
     render() {
         return (
             <div>
-                <MediaSelectDialog visible={this.state.mediaPopupOpen} rpc={this.props.rpc} path='/' onSelect={file => this._handleInsertMedia(file)} onCancel={() => this._handleCancelMediaSelector()}/>
+                <MediaSelectDialog visible={this.state.mediaPopupOpen} path='/' onSelect={file => this._handleInsertMedia(file)} onCancel={() => this._handleCancelMediaSelector()}/>
                 <div className='draft-editor form-control' style={{minHeight: '50vh', height: 'auto'}} hidden={this.state.preview} onClick={ev => this._handleClick(ev)}>
                     {(this.props.editable === undefined || this.props.editable) && (
                         <div className='clearfix border-bottom pb-2 pt-2 sticky-top bg-white' style={{top: '60px'}}>

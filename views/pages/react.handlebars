@@ -1,11 +1,13 @@
-{{#>layouts/essential title='Home'}}
+{{#>layouts/page title=title}}
 
-{{#*inline "body"}}
-<div id="content"/>
-<script>
-    window.CM_SESSION = {{{session}}};
-</script>
-<script src="/dist/bundle.js" defer></script>
+{{#*inline "page_header"}}
 {{/inline}}
 
-{{/layouts/essential}}
+{{#*inline "content"}}
+<div id='react-content'>{{{content}}}</div>
+<script>
+    ReactDOM.hydrate(React.createElement(Application, null, React.createElement({{component}}, {...{{{json props}}}, rpc: api})), document.getElementById('react-content'))
+</script>
+{{/inline}}
+
+{{/layouts/page}}

@@ -1,8 +1,9 @@
 import * as React from 'react'
+import * as PropTypes from 'prop-types'
 
 import {MediaUploadDialog} from './media-upload-dialog'
 import {MediaFile} from '../types'
-import {MediaContent} from '../rpc/media-content'
+import {Content} from '../rpc'
 import {Dialog} from './dialog'
 import {ImageThumb} from './image-thumb'
 
@@ -36,7 +37,6 @@ interface Props
     path: string
     onSelect: (media: MediaFile) => void
     onCancel: () => void
-    rpc: MediaContent
 }
 interface State
 {
@@ -50,6 +50,13 @@ interface State
 }
 export class MediaSelectDialog extends React.Component<Props, State>
 {
+    context: {
+        rpc: Content
+    }
+    static contextTypes = {
+        rpc: PropTypes.object
+    }
+
     constructor(props: Props)
     {
         super(props)
@@ -62,8 +69,8 @@ export class MediaSelectDialog extends React.Component<Props, State>
     {
         if (!this.state.fetch)
         {
-            const fetch = this.props.rpc.listFiles(path).then(media => {
-                this.setState({media, error: undefined, fetch: undefined})
+            const fetch = this.context.rpc.media.listFiles(path).then(file => {
+                this.setState({media: file, error: undefined, fetch: undefined})
             }).catch(e => {
                 this.setState({error: e.toString(), fetch: undefined})
             })
@@ -114,7 +121,7 @@ export class MediaSelectDialog extends React.Component<Props, State>
     private _handleMediaUploaded(file: MediaFile)
     {
         this.setState({
-            media: this.state.media.concat([file]),
+            media: this.state.media ? this.state.media.concat([file]) : [file],
             selected: file,
             uploadDialogOpen: false
         })
@@ -126,11 +133,17 @@ export class MediaSelectDialog extends React.Component<Props, State>
         this.setState({selected: file})
     }
 
-    private _handleCommitSelection(ev: React.MouseEvent<HTMLElement>, file: MediaFile)
+    private _handleSelectAndCommit(ev: React.MouseEvent<HTMLDivElement>, file: MediaFile)
     {
         ev.preventDefault()
-        this.setState({selected: file})
-        this.props.onSelect(file)
+        this.setState({selected: file}, () => this.props.onSelect(file))
+    }
+
+    private _handleCommitSelection(ev: React.MouseEvent<HTMLElement>)
+    {
+        ev.preventDefault()
+        if (this.state.selected)
+            this.props.onSelect(this.state.selected)
     }
 
     private _handleCancelClicked(ev: React.MouseEvent<HTMLButtonElement>)
@@ -144,7 +157,7 @@ export class MediaSelectDialog extends React.Component<Props, State>
         if (this.state.searchRegexes)
         {
             for (const regex of this.state.searchRegexes)
-                if ((file.caption && regex.test(file.caption)) || regex.test(file.path))
+                if ((file.caption && regex.test(file.caption)) || (file.path && regex.test(file.path)))
                     return true
             return false
         }
@@ -155,7 +168,7 @@ export class MediaSelectDialog extends React.Component<Props, State>
     {
         return (
             <div>
-                <MediaUploadDialog visible={this.state.uploadDialogOpen} rpc={this.props.rpc} onCancel={() => this._handleUploadClosed()} onUpload={file => this._handleMediaUploaded(file)}/>
+                <MediaUploadDialog visible={this.state.uploadDialogOpen} onCancel={() => this._handleUploadClosed()} onUpload={file => this._handleMediaUploaded(file)}/>
                 <Dialog visible={this.props.visible && !this.state.uploadDialogOpen}>
                     <div className='modal-body'>
                         <div className='input-group mb-2'>
@@ -175,13 +188,13 @@ export class MediaSelectDialog extends React.Component<Props, State>
                         </div>)}
                         <div style={{maxHeight: '400px', overflowY: 'scroll'}}>
                             <div className='clearfix'/>
-                            <MediaList loading={!!this.state.fetch} media={this.state.media} selected={this.state.selected} filter={f => this._filter(f)} onClick={(e, f) => this._handleSelectItem(e, f)} onDoubleClick={(e, f) => this._handleCommitSelection(e, f)}/>
+                            <MediaList loading={!!this.state.fetch} media={this.state.media} selected={this.state.selected} filter={f => this._filter(f)} onClick={(e, f) => this._handleSelectItem(e, f)} onDoubleClick={(e, f) => this._handleSelectAndCommit(e, f)}/>
                         </div>
                     </div>
                     <div className='modal-footer'>
                         <button className='btn btn-info mr-auto' onClick={ev => this._handleUploadClicked(ev)}><i className='fa fa-upload'></i> Upload New Media</button>
                         <button className='btn btn-secondary' onClick={ev => this._handleCancelClicked(ev)}>Cancel</button>
-                        <button className='btn btn-primary' disabled={!this.state.selected} onClick={ev => this._handleCommitSelection(ev, this.state.selected)}><i className='fa fa-plus'></i> Insert Media</button>
+                        <button className='btn btn-primary' disabled={!this.state.selected} onClick={ev => this._handleCommitSelection(ev)}><i className='fa fa-plus'></i> Insert Media</button>
                     </div>
                 </Dialog>
             </div>

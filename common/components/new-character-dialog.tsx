@@ -7,7 +7,6 @@ import {CharacterController} from './character-controller'
 import {SaveButton} from './save-button'
 
 import {CharacterData} from '../types'
-import {Content} from '../rpc'
 
 interface Props
 {
@@ -15,11 +14,10 @@ interface Props
     onCreate: () => void
     visible?: boolean
     initial?: CharacterData
-    rpc: Content
 }
 interface State
 {
-    char?: CharacterData
+    char: CharacterData
     saving?: Promise<void>
 }
 export class NewCharacterDialog extends React.Component<Props, State>
@@ -30,7 +28,6 @@ export class NewCharacterDialog extends React.Component<Props, State>
         this.state = {
             char: props.initial || {
                 title: '',
-                body: null,
                 visible: false
             }
         }
@@ -49,7 +46,8 @@ export class NewCharacterDialog extends React.Component<Props, State>
     private _handleSubmitClicked(ev: React.MouseEvent<HTMLButtonElement>, submit: (data: CharacterData) => void)
     {
         ev.preventDefault()
-        submit(this.state.char)
+        if (this.state.char)
+            submit(this.state.char)
     }
 
     private _handleCancelClicked(ev: React.MouseEvent<HTMLButtonElement>)
@@ -62,10 +60,10 @@ export class NewCharacterDialog extends React.Component<Props, State>
     {
         return (
             <Dialog visible={this.props.visible}>
-                <CharacterController rpc={this.props.rpc} onSubmit={() => this._handleSubmit()} form={({saving, submit, errors}) => <div>
+                <CharacterController onSubmit={() => this._handleSubmit()} form={({saving, submit, errors}) => <div>
                     <div className='modal-header'>Add Character</div>
                     <div className='modal-body'>
-                        <CharacterEditor disabled={!this.props.visible || saving} rpc={this.props.rpc.media} onChange={char => this._handleChange(char)} data={this.state.char}/>
+                        <CharacterEditor disabled={!this.props.visible || saving} onChange={char => this._handleChange(char)} data={this.state.char}/>
                     </div>
                     <div className='modal-footer'>
                         <button className='btn btn-secondary pull-left' onClick={ev => this._handleCancelClicked(ev)}><i className='fa fa-ban'></i> Cancel</button>
@@ -75,12 +73,4 @@ export class NewCharacterDialog extends React.Component<Props, State>
             </Dialog>
         )
     }
-}
-
-export function ShowNewCharacterDialog(rpc: Content) {
-    const div = document.createElement('div')
-    document.body.appendChild(div)
-    const onCancel = ()=>{ReactDOM.unmountComponentAtNode(div); document.body.removeChild(div)}
-    const onCreate = ()=>{document.location.reload(true)}
-    ReactDOM.render(React.createElement(NewCharacterDialog, {rpc, onCancel, onCreate, visible: true}), div)
 }

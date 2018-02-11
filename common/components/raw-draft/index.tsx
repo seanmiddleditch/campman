@@ -88,14 +88,14 @@ function expandSections(block: ContentBlock, draft: ContentState) {
         if (action === 'begin')
         {
             if (style)
-                style.forEach(s => styles.add(s))
+                style.forEach(s => s && styles.add(s))
             else
                 entity = edge.entity
         }
         else
         {
             if (style)
-                style.forEach(s => styles.delete(s))
+                style.forEach(s => s && styles.delete(s))
             else if (entity === edge.entity)
                 entity = undefined
         }
@@ -122,6 +122,7 @@ function renderSections(sections: {styles: Set<string>, entity: any | undefined,
 
 function renderBasicBlock(block: ContentBlock, draft: ContentState) {
     const render = elementMap[block.getType()]
+    if (!render) return <div/>
 
     const sections = expandSections(block, draft)
     const text = renderSections(sections)
@@ -129,18 +130,26 @@ function renderBasicBlock(block: ContentBlock, draft: ContentState) {
     return render({children: text})
 }
 
-export const RawDraft = ({raw}: {raw: any}) => {
-    const state = convertFromRaw(raw)
+export const RawDraft = ({document}: {document: any}) => {
+    try
+    {
+        const state = convertFromRaw(document)
+        const blockMap = state.getBlockMap().map((block, key) => {
+            if (!block || !key) return <div/>
+            switch (block.getType())
+            {
+                case 'atomic': return <div key={key}>{renderAtomicBlock(block, state)}</div>
+                default: return <div key={key}>{renderBasicBlock(block, state)}</div>
+            }
+        })
+    
+        const blocks = blockMap.toIndexedSeq().toArray()
+    
+        return <div>{blocks}</div>
+    }
+    catch (err)
+    {
+        return <div/>
+    }
 
-    const blockMap = state.getBlockMap().map((block, key) => {
-        switch (block.getType())
-        {
-            case 'atomic': return <div key={key}>{renderAtomicBlock(block, state)}</div>
-            default: return <div key={key}>{renderBasicBlock(block, state)}</div>
-        }
-    })
-
-    const blocks = blockMap.toIndexedSeq().toArray()
-
-    return <div>{blocks}</div>
 }

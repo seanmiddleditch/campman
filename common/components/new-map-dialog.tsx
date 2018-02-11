@@ -54,7 +54,7 @@ export class NewMapDialog extends React.Component<Props, State>
             data.append('slug', this.state.slug)
             data.append('title', this.state.title)
             //data.append('visibility', this.state.visibility)
-            data.append('file', this.state.file)
+            if (this.state.file) data.append('file', this.state.file)
             const saving = fetch('/maps', {
                 method: 'POST',
                 mode: 'same-origin',
@@ -93,9 +93,9 @@ export class NewMapDialog extends React.Component<Props, State>
         // this.setState({visibility, visDropDownOpen: false})
     }
 
-    private _handleImageSelected(file: File)
+    private _handleImageSelected(file: File|null)
     {
-        this.setState({file})
+        this.setState({file: file || undefined})
     }
 
     render()

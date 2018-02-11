@@ -11,7 +11,7 @@ export class ContentAPI implements CharacterContent
         if (char.title) body.append('title', char.title)
         if ('visible' in char) body.append('visible', char.visible ? 'visible' : '')
         if (char.portrait instanceof File) body.append('portrait', char.portrait)
-        if (char.body) body.append('rawbody', char.body ? JSON.stringify(char.body) : '')
+        if (char.rawbody) body.append('rawbody', char.rawbody ? JSON.stringify(char.rawbody) : '')
 
         const response = await fetch('/chars', {
             method: 'POST',

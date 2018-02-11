@@ -1,7 +1,7 @@
 import * as React from 'react'
-import {MarkEditor} from './mark-editor'
-import {SaveButton} from './save-button'
-import {Content} from '../rpc'
+import {MarkEditor} from '../mark-editor'
+import {SaveButton} from '../save-button'
+import {RawDraft} from '../raw-draft'
 
 interface WikiPageEditorProps
 {
@@ -10,7 +10,7 @@ interface WikiPageEditorProps
     slug?: string
     body: {}|null
     visibility: string
-    rpc: Content
+    editable?: boolean
 }
 interface WikiPageEditorState
 {
@@ -21,8 +21,9 @@ interface WikiPageEditorState
     visibility: 'Public'|'Hidden'
     visDropDownOpen: boolean
     saving?: Promise<void>
+    editing: boolean
 }
-export class WikiPageEditor extends React.Component<WikiPageEditorProps, WikiPageEditorState>
+export class ViewWiki extends React.Component<WikiPageEditorProps, WikiPageEditorState>
 {
     constructor(props: WikiPageEditorProps)
     {
@@ -30,16 +31,24 @@ export class WikiPageEditor extends React.Component<WikiPageEditorProps, WikiPag
         this.state = {
             title: props.title,
             tags: props.tags,
-            slug: props.slug || WikiPageEditor._makeSlug(props.title),
+            slug: props.slug || ViewWiki._makeSlug(props.title),
             document: props.body,
             visibility: props.visibility === 'Public' ? 'Public' : 'Hidden',
-            visDropDownOpen: false
+            visDropDownOpen: false,
+            editing: false
         }
     }
 
     private static _makeSlug(str: string)
     {
         return str.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/ +/g, ' ').trim().replace(/ /g, '-')
+    }
+
+    private _handleEditClicked(ev: React.MouseEvent<HTMLButtonElement>)
+    {
+        ev.preventDefault()
+        if (this.props.editable)
+            this.setState({editing: true})
     }
 
     private _handleTitleChanged(ev: React.ChangeEvent<HTMLInputElement>)
@@ -81,7 +90,7 @@ export class WikiPageEditor extends React.Component<WikiPageEditorProps, WikiPag
                 body: JSON.stringify({
                     slug: this.state.slug,
                     title: this.state.title,
-                    labels: this.state.tags,
+                    tags: this.state.tags,
                     visibility: this.state.visibility,
                     rawbody: this.state.document
                 })
@@ -135,35 +144,49 @@ export class WikiPageEditor extends React.Component<WikiPageEditorProps, WikiPag
 
     render()
     {
-        return (
-            <form id='page-form' method='post' action='/wiki'>
-                <div className='form-group mb-2'>
-                    <div className='input-group'>
-                        <input type='text' className='form-control' value={this.state.title} placeholder='Page Title' onChange={ev => this._handleTitleChanged(ev)}/>
-                    </div>
-                </div>
-                <div className='form-group mb-2'>
-                    <div className='input-group'>
-                        <div className='input-group-prepend'>
-                            <span className='input-group-text'><i className='fa fa-tag'></i></span>
+        if (this.state.editing)
+            return (
+                <form id='page-form' method='post' action='/wiki'>
+                    <div className='form-group mb-2'>
+                        <div className='input-group'>
+                            <input type='text' className='form-control' value={this.state.title} placeholder='Page Title' onChange={ev => this._handleTitleChanged(ev)}/>
                         </div>
-                        <input type='text' className='form-control' name='labels' value={this.state.tags} placeholder='Comma-separated labels'  onChange={ev => this._handleTagsChanged(ev)}/>
                     </div>
-                </div>
-                {this.props.slug ? null : (
-                <div className='form-group mb-2'>
-                    <div className='input-group'>
-                        <div className='input-group-prepend'>
-                            <span className='input-group-text'>/wiki/p/</span>
+                    <div className='form-group mb-2'>
+                        <div className='input-group'>
+                            <div className='input-group-prepend'>
+                                <span className='input-group-text'><i className='fa fa-tag'></i></span>
+                            </div>
+                            <input type='text' className='form-control' value={this.state.tags} placeholder='Comma-separated tags'  onChange={ev => this._handleTagsChanged(ev)}/>
                         </div>
-                        <input type='text' className='form-control' placeholder={WikiPageEditor._makeSlug(this.state.title)} onChange={ev => this._handleSlugChanged(ev)}/>
                     </div>
-                    <small className='form-text text-muted'>May only contain letters, numbers, and dashes.</small>
-                </div>)}
-                <div className='form-group mb-2'>
-                    <MarkEditor document={this.state.document} rpc={this.props.rpc.media} onChange={ev => this._handleBodyChanged(ev)} buttons={() => this._editorButtons()}/>
+                    {this.props.slug ? null : (
+                    <div className='form-group mb-2'>
+                        <div className='input-group'>
+                            <div className='input-group-prepend'>
+                                <span className='input-group-text'>/wiki/p/</span>
+                            </div>
+                            <input type='text' className='form-control' placeholder={ViewWiki._makeSlug(this.state.title)} onChange={ev => this._handleSlugChanged(ev)}/>
+                        </div>
+                        <small className='form-text text-muted'>May only contain letters, numbers, and dashes.</small>
+                    </div>)}
+                    <div className='form-group mb-2'>
+                        <MarkEditor document={this.state.document} onChange={ev => this._handleBodyChanged(ev)} buttons={() => this._editorButtons()}/>
+                    </div>
+                </form>
+            )
+        else
+            return (
+                <div>
+                    <h1>
+                        {this.state.title}
+                        {this.props.editable && <button className='btn btn-link' onClick={ev => this._handleEditClicked(ev)}><i className='fa fa-pencil'></i></button>}
+                    </h1>
+                    <div>
+                        <i className='fa fa-tags'></i> {this.state.tags ? this.state.tags : <span className='text-muted'>no tags</span>}
+                    </div>
+                    <RawDraft document={this.state.document}/>
                 </div>
-            </form>
-        )
+            )
     }
 }

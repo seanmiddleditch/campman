@@ -6,6 +6,9 @@ import {URL} from 'url'
 import {checkAccess} from '../../auth'
 import {scrubDraftSecrets} from '../../util/scrub-draft-secrets'
 import * as slugUtils from '../../util/slug-utils'
+import {RenderReact} from '../../util/react-ssr'
+import {ViewWiki} from '../../../common/components/pages/view-wiki'
+import {ListWiki} from '../../../common/components/pages/list-wiki'
 
 export function wiki() {
     const router = PromiseRouter()
@@ -20,18 +23,19 @@ export function wiki() {
 
         const canCreate = checkAccess('page:create', {profileId: req.profileId, role: req.campaignRole})
 
-        res.render('list-pages', {
-            pages: all.filter(page => checkAccess('page:view', {
-                profileId: req.profileId,
-                role: req.campaignRole,
-                ownerId: page.authorId,
-                hidden: page.visibility !== PageVisibility.Public
-            })).map(page => ({
-                ...page,
-                editable: checkAccess('page:edit', {profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public})
-            })),
-            canCreate
-        })
+        const pages = all.filter(page => checkAccess('page:view', {
+            profileId: req.profileId,
+            role: req.campaignRole,
+            ownerId: page.authorId,
+            hidden: page.visibility !== PageVisibility.Public
+        })).map(page => ({
+            ...page,
+            editable: checkAccess('page:edit', {profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public})
+        }))
+
+        const props = {editable: canCreate, pages}
+
+        RenderReact(res, ListWiki, props)
     })
 
     router.get('/wiki/new', async (req, res, next) => {
@@ -45,31 +49,6 @@ export function wiki() {
         }
 
         res.render('edit-page', {page: {}})
-    })
-
-    router.get('/wiki/p/:slug/edit', async (req, res, next) => {
-        if (!req.campaign)
-            throw new Error('Missing campaign')
-
-        const inSlug = req.params['slug'];
-
-        const page = await pageRepository.fetchBySlug({slug: inSlug, campaignId: req.campaign.id})
-        if (!page)
-        {
-            res.status(404)
-            return res.render('not-found')
-        }
-
-        if (!checkAccess('page:edit', {profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public}))
-        {
-            res.status(403).render('access-denied')
-            return
-        }
-
-        const {slug, title, rawbody, tags, visibility} = page
-        res.render('edit-page', {
-            page: {slug, title, rawbody, tags, visibility}
-        })
     })
 
     router.get('/wiki/p/:slug', async (req, res, next) => {
@@ -106,9 +85,11 @@ export function wiki() {
             hidden: page.visibility !== PageVisibility.Public
         })
 
-        res.render('view-page', {
-            page: {slug, title, rawbody: scrubDraftSecrets(rawbody, secrets), tags, visibility, editable}
-        })
+        const props = {
+            slug: slug || '', title, body: scrubDraftSecrets(rawbody, secrets), tags, visibility,
+            editable
+        }
+        RenderReact(res, ViewWiki, props)
     })
 
     router.post('/wiki', async (req, res, next) => {
@@ -133,7 +114,7 @@ export function wiki() {
         
         const rawbody = req.body['rawbody']
 
-        const labels = 'labels' in req.body ? tagRepository.fromString(req.body['labels']) : []
+        const tags = 'tags' in req.body ? tagRepository.fromString(req.body['tags']) : []
 
         if (page)
         {
@@ -148,7 +129,7 @@ export function wiki() {
                 campaignId,
                 title: title || page.title,
                 rawbody: rawbody || '',
-                labels,
+                tags,
                 visibility: visibility || page.visibility
             })
 
@@ -183,7 +164,7 @@ export function wiki() {
                 campaignId,
                 title,
                 rawbody,
-                labels,
+                tags,
                 visibility: visibility || PageVisibility.Public
             })
 

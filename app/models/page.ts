@@ -82,7 +82,7 @@ export class PageRepository extends Repository<PageModel>
             }))
     }
 
-    public async updatePage(options: {slug: string, campaignId: number, title?: string, rawbody?: string, visibility?: PageVisibility, labels?: string[]})
+    public async updatePage(options: {slug: string, campaignId: number, title?: string, rawbody?: string, visibility?: PageVisibility, tags?: string[]})
     {
         const {slug, campaignId, title, rawbody, visibility} = options
         await this.createQueryBuilder('note')
@@ -97,7 +97,7 @@ export class PageRepository extends Repository<PageModel>
         //labels: req.body['labels'],
     }
 
-    public async createPage(options: {slug: string, authorID: number, campaignId: number, title?: string, rawbody?: string, visibility?: PageVisibility, labels?: string[]})
+    public async createPage(options: {slug: string, authorID: number, campaignId: number, title?: string, rawbody?: string, visibility?: PageVisibility, tags?: string[]})
     {
         const {slug, authorID, campaignId, title, rawbody, visibility} = options
         const page = await this.create({

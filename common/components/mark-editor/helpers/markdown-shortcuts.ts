@@ -1,4 +1,4 @@
-import Draft, {Editor, EditorState, ContentState, ContentBlock, RichUtils, SelectionState, Modifier, CompositeDecorator, AtomicBlockUtils, genKey} from 'draft-js'
+import {Editor, EditorState, ContentState, ContentBlock, RichUtils, SelectionState, Modifier, CompositeDecorator, AtomicBlockUtils, genKey} from 'draft-js'
 
 const LINK_REGEX = /\[\[(.*)\]\]$/
 const STRONG_REGEX = /\*\*([^*]+)\*\*$/
@@ -33,6 +33,10 @@ function matchLineInput(text: string, editorState: EditorState, regex: RegExp, c
 
         return callback(match, lineSelection, activeBlock)
     }
+    else
+    {
+        return editorState
+    }
 }
 
 function linkifyBeforeInput(text: string, editorState: EditorState)
@@ -42,7 +46,7 @@ function linkifyBeforeInput(text: string, editorState: EditorState)
         const contentStateWithEntity = contentState.createEntity('wiki-link', 'MUTABLE', {target: match[1]})
         const entityKey = contentState.getLastCreatedEntityKey()
 
-        const contentStateReplaced = Modifier.replaceText(contentStateWithEntity, selection, match[1], null, entityKey)
+        const contentStateReplaced = Modifier.replaceText(contentStateWithEntity, selection, match[1], undefined, entityKey)
         const editorStateReplaced = EditorState.push(editorState, contentStateReplaced, 'apply-entity')
 
         const newSelection = contentStateReplaced.getSelectionAfter()
@@ -65,6 +69,10 @@ function blockStyleBeforeInput(text: string, editorState: EditorState, regex: Re
 
             const cleanState = RichUtils.toggleBlockType(editorStateSelection, type)
             return cleanState
+        }
+        else
+        {
+            return editorState
         }
     })
 }

@@ -23,7 +23,7 @@ import * as models from './models'
 
 (async () => {
 
-    const root = path.join(__dirname, '..', '..')
+    const root = path.join(__dirname, '..', '..', '..')
     const staticRoot = path.join(root, 'static')
     const clientRoot = path.join(root, 'client')
     const viewsRoot = path.join(root, 'views')

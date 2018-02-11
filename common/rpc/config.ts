@@ -1,4 +1,4 @@
 export interface Config
 {
-    readonly publicURL: URL
+    readonly publicURL: string
 }

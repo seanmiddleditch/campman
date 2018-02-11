@@ -1,4 +1,5 @@
 import * as React from 'react'
+import * as PropTypes from 'prop-types'
 import {CharacterData} from '../types'
 import {Content, ContentError} from '../rpc'
 
@@ -10,7 +11,6 @@ interface Props
     onSubmit: () => void
     form: (props: {saving: boolean, submit: (data: CharacterData) => void, errors?: Errors, props?: any}) => any
     props?: any
-    rpc: Content
 }
 interface State
 {
@@ -19,6 +19,13 @@ interface State
 }
 export class CharacterController extends React.Component<Props, State>
 {
+    context: {
+        rpc: Content
+    }
+    static contextTypes = {
+        rpc: PropTypes.object
+    }
+
     constructor(props: Props)
     {
         super(props)
@@ -29,7 +36,7 @@ export class CharacterController extends React.Component<Props, State>
     {
         if (!this.state.saving)
         {
-            const saving = this.props.rpc.characters.saveCharacter({...data, id: this.props.id})
+            const saving = this.context.rpc.characters.saveCharacter({...data, id: this.props.id})
             this.setState({saving})
             saving.then(char => {
                 this.setState({saving: undefined}, () => this.props.onSubmit())

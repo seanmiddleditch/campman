@@ -1,15 +1,19 @@
 
 export function scrubDraftSecrets(rawbody: string, secrets: boolean = false)
 {
+    if (rawbody.length === 0)
+        return null
+
+    const body = JSON.parse(rawbody)
+
     if (!secrets)
     {
-        const body = JSON.parse(rawbody)
         if (body && body.length !== 0)
         {
             const blocks = body.blocks.filter((b: any) => b.type !== 'secret')
-            return JSON.stringify({...body, blocks})
+            return {...body, blocks}
         }
     }
 
-    return rawbody
+    return body
 }

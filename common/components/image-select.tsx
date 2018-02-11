@@ -5,7 +5,7 @@ interface Props
     className?: string
     preview?: boolean
     disabled?: boolean
-    onImageSelected: (file: File) => void
+    onImageSelected: (file: File|null) => void
     onPathChanged?: (path: string) => void
     size?: number|string
     fallback?: () => any
@@ -82,7 +82,7 @@ export class ImageSelect extends React.Component<Props, State>
     {
         ev.preventDefault()
         const path = ev.target.value
-        this.setState({path}, () => this.props.onPathChanged(path))
+        this.setState({path}, () => this.props.onPathChanged && this.props.onPathChanged(path))
     }
 
     private _onFileChanged(ev: React.ChangeEvent<HTMLInputElement>)
@@ -90,7 +90,7 @@ export class ImageSelect extends React.Component<Props, State>
         if (this.state.objectURL)
             URL.revokeObjectURL(this.state.objectURL)
 
-        if (ev.target.files.length == 1)
+        if (ev.target.files && ev.target.files.length == 1)
         {
             const file = ev.target.files[0]
             this.setState({

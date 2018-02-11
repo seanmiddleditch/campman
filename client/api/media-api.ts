@@ -1,4 +1,3 @@
-import {config} from './config'
 import {MediaFile} from '../../common/types'
 import {MediaContent} from '../../common/rpc/media-content'
 
@@ -34,7 +33,7 @@ export class MediaAPI implements MediaContent
         }
     }
 
-    async listFiles(path) : Promise<MediaFile[]>
+    async listFiles(path: string) : Promise<MediaFile[]>
     {
         if (path.length === 0 || path.charAt(0) !== '/')
             path = `/${path}`
@@ -56,7 +55,7 @@ export class MediaAPI implements MediaContent
         return body.body['files']
     }
 
-    async deleteFile(path)
+    async deleteFile(path: string)
     {
         const result = await fetch(`/files${path}`, {
             method: 'DELETE',
@@ -74,15 +73,11 @@ export class MediaAPI implements MediaContent
 
     getImageURL(hash: string, ext: string)
     {
-        const url = new URL(`/img/full/${hash}.${ext}`, config.publicURL.toString())
-        url.hostname = `media.${url.hostname}`
-        return url.toString()
+        return `/media/img/full/${hash}.${ext}`
     }
 
     getThumbURL(hash: string, size: number)
     {
-        const url = new URL(`/img/thumb/${size}/${hash}.png`, config.publicURL.toString())
-        url.hostname = `media.${url.hostname}`
-        return url.toString()
+        return `/media/img/thumb/${size}/${hash}.png`
     }
 }

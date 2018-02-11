@@ -33,6 +33,8 @@ export function handleReturn(editorState: EditorState)
 
         return editorStatePlain
     }
+
+    return editorState
 }
 
 type DraftBlockRenderer = {component: any, editable?: boolean, props?: any}
@@ -49,6 +51,8 @@ function matchAtomicBlockTypes(block: ContentBlock, contentState: ContentState, 
         if (entityType === type)
             return callback(entity)
     }
+
+    return undefined
 }
 
 const blockMap = new Map<string, MatchAtomicBlockTypeCallback>([
@@ -69,7 +73,7 @@ export function blockRenderer(block: ContentBlock, editorState: EditorState)
     const blockType = block.getType() as string
     
     if (blockType === 'atomic')
-    {
         return matchAtomicBlockTypes(block, contentState, blockMap)
-    }
+    else
+        return undefined
 }

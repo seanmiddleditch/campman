@@ -5,7 +5,6 @@ import {CharacterController} from '../character-controller'
 import {ImageThumb} from '../image-thumb'
 import {SaveButton} from '../save-button'
 import {RawDraft} from '../raw-draft'
-import {Content} from '../../rpc'
 import {CharacterData} from '../../types'
 
 interface Props
@@ -13,7 +12,6 @@ interface Props
     id?: number
     char: CharacterData,
     editable: boolean
-    rpc: Content
 }
 interface State
 {
@@ -54,8 +52,8 @@ export class ViewCharacter extends React.Component<Props, State>
     {
         if (this.state.editing)
             return (
-                <CharacterController rpc={this.props.rpc} id={this.props.id} onSubmit={() => this._handleSubmitClicked()} form={({saving, submit}) => (
-                    <CharacterEditor data={this.state.char} rpc={this.props.rpc.media} disabled={saving} onChange={char => this._handleChange(char)} buttons={() => (
+                <CharacterController id={this.props.id} onSubmit={() => this._handleSubmitClicked()} form={({saving, submit}) => (
+                    <CharacterEditor data={this.state.char} disabled={saving} onChange={char => this._handleChange(char)} buttons={() => (
                         <div className='ml-sm-2 float-right'>
                             <SaveButton disabled={saving} saving={saving} onClick={() => submit(this.state.char)}/>
                         </div>
@@ -67,9 +65,9 @@ export class ViewCharacter extends React.Component<Props, State>
                 <div>
                     <h1>{this.state.char.title}{this.props.editable && <button className='btn btn-link' onClick={ev => this._handleEditClicked(ev)}><i className='fa fa-pencil'></i> edit</button>}</h1>
                     <div className='pull-right'>
-                        {this.state.char.portrait && !(this.state.char.portrait instanceof File) && <ImageThumb hash={this.state.char.portrait.hash} size={200}/>}
+                        {this.state.char.portrait && 'hash' in this.state.char.portrait && <ImageThumb hash={(this.state.char.portrait as any).hash} size={200}/>}
                     </div>
-                    <RawDraft raw={this.state.char.body}/>
+                    <RawDraft document={this.state.char.rawbody}/>
                 </div>
             )
     }

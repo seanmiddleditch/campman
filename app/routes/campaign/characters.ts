@@ -10,6 +10,10 @@ import * as slugUtils from '../../util/slug-utils'
 import * as multer from 'multer'
 import {insertMedia} from '../../util/insert-media'
 
+import {RenderReact} from '../../util/react-ssr'
+import {ViewCharacter} from '../../../common/components/pages/view-character'
+import {ListCharacters}  from '../../../common/components/pages/list-characters'
+
 export function characters() {
     const router = PromiseRouter()
     const characterRepository = connection().getCustomRepository(CharacterRepository)
@@ -27,10 +31,7 @@ export function characters() {
 
         const canCreate = checkAccess('character:view', {profileId: req.profileId, role: req.campaignRole})
 
-        res.render('campaign/characters/list', {
-            characters: filtered,
-            canCreate
-        })
+        RenderReact(res, ListCharacters, {chars: filtered, editable: canCreate})
     })
 
     const serveCharacter = (req: Request, res: Response, char: CharacterModel|undefined) => {
@@ -50,7 +51,12 @@ export function characters() {
 
         const editable = checkAccess('character:edit', {profileId: req.profileId, role: req.campaignRole})
 
-        res.render('campaign/characters/view', {char: {...char, rawbody: scrubDraftSecrets(char.rawbody, secrets), editable}})
+        const props = {
+            id: char.id,
+            char: {...char, rawbody: scrubDraftSecrets(char.rawbody, secrets)},
+            editable
+        }
+        RenderReact(res, ViewCharacter, props)
     }
 
     router.get('/chars/c/:id(\\d+)/', async (req, res, next) =>

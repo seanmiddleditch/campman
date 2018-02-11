@@ -1,16 +1,16 @@
 import * as React from 'react'
+import * as PropTypes from 'prop-types'
 import * as ReactDOM from 'react-dom'
-import {MediaFile} from '../types'
-import {MediaContent} from '../rpc/media-content'
-import {Dialog} from './dialog'
-import {ImageSelect} from './image-select'
-import {SaveButton} from './save-button'
+import { MediaFile } from '../types'
+import { Content } from '../rpc'
+import { Dialog } from './dialog'
+import { ImageSelect } from './image-select'
+import { SaveButton } from './save-button'
 
 interface Props {
     onCancel: () => void
     onUpload: (media: MediaFile) => void
     visible?: boolean
-    rpc: MediaContent
 }
 interface State {
     file?: File
@@ -21,21 +21,28 @@ interface State {
 }
 export class MediaUploadDialog extends React.Component<Props, State>
 {
+    context: {
+        rpc: Content
+    }
+    static contextTypes = {
+        rpc: PropTypes.object
+    }
+
     constructor(props: Props) {
         super(props)
         this.state = {}
     }
 
-    private _onImageSelected(file: File) {
-        this.setState({file})
+    private _onImageSelected(file: File | null) {
+        this.setState({ file: file || undefined })
     }
 
     private _onPathChanged(path: string) {
-        this.setState({path})
+        this.setState({ path })
     }
 
     private _onCaptionChanged(ev: React.ChangeEvent<HTMLInputElement>) {
-        this.setState({caption: ev.target.value || undefined})
+        this.setState({ caption: ev.target.value || undefined })
     }
 
     private _onCancelClicked(ev: React.MouseEvent<HTMLButtonElement>) {
@@ -44,17 +51,19 @@ export class MediaUploadDialog extends React.Component<Props, State>
     }
 
     private _onUploadClicked() {
-        const {file, path, caption} = this.state
-        const upload = this.props.rpc.uploadFile({file, path, caption}).then(result => {
-            this.setState({upload: undefined})
-            this.props.onUpload(result)
-        }).catch(e => {
-            this.setState({
-                upload: undefined,
-                error: e.toString()
+        const { file, path, caption } = this.state
+        if (file) {
+            const upload = this.context.rpc.media.uploadFile({ file, path, caption }).then(result => {
+                this.setState({ upload: undefined })
+                this.props.onUpload(result)
+            }).catch((e: Error) => {
+                this.setState({
+                    upload: undefined,
+                    error: e.toString()
+                })
             })
-        })
-        this.setState({upload})
+            this.setState({ upload })
+        }
     }
 
     render() {
@@ -65,25 +74,25 @@ export class MediaUploadDialog extends React.Component<Props, State>
                     {this.state.error && (<div className='form-group'>
                         <span className='error text-danger'><i className='fa fa-exclamation-triangle'></i> {this.state.error}</span>
                     </div>)}
-                    <ImageSelect className='form-group' onImageSelected={file => this._onImageSelected(file)} onPathChanged={path => this._onPathChanged(path)}/>
+                    <ImageSelect className='form-group' onImageSelected={file => this._onImageSelected(file)} onPathChanged={path => this._onPathChanged(path)} />
                     <div className='form-group'>
                         <label htmlFor='caption'>Caption</label>
-                        <input className='form-control' type='text' placeholder='Description of file' disabled={!!this.state.upload} onChange={ev => this._onCaptionChanged(ev)}/>
+                        <input className='form-control' type='text' placeholder='Description of file' disabled={!!this.state.upload} onChange={ev => this._onCaptionChanged(ev)} />
                     </div>
                 </div>
                 <div className='modal-footer'>
                     <button className='btn btn-secondary' disabled={!!this.state.upload} onClick={ev => this._onCancelClicked(ev)}>Cancel</button>
-                    <SaveButton icon='cloud-upload' title='Upload' working='Uploading' disabled={!this.state.file || !!this.state.upload} saving={!!this.state.upload} onClick={() => this._onUploadClicked()}/>
+                    <SaveButton icon='cloud-upload' title='Upload' working='Uploading' disabled={!this.state.file || !!this.state.upload} saving={!!this.state.upload} onClick={() => this._onUploadClicked()} />
                 </div>
             </Dialog>
         )
     }
 }
 
-export function ShowMediaUploadDialog(rpc: MediaContent) {
+export function ShowMediaUploadDialog() {
     const div = document.createElement('div')
     document.body.appendChild(div)
-    const onCancel = ()=>{ReactDOM.unmountComponentAtNode(div); document.body.removeChild(div)}
-    const onUpload = ()=>{document.location.reload(true)}
-    ReactDOM.render(React.createElement(MediaUploadDialog, {onCancel, onUpload, rpc, visible: true}), div)
+    const onCancel = () => { ReactDOM.unmountComponentAtNode(div); document.body.removeChild(div) }
+    const onUpload = () => { document.location.reload(true) }
+    ReactDOM.render(React.createElement(MediaUploadDialog, { onCancel, onUpload, visible: true }), div)
 }
