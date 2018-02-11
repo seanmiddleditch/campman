@@ -19,7 +19,7 @@ interface State
 }
 export class CharacterController extends React.Component<Props, State>
 {
-    context: {
+    context!: {
         rpc: Content
     }
     static contextTypes = {

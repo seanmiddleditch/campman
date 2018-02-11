@@ -38,19 +38,6 @@ export function wiki() {
         RenderReact(res, ListWiki, props)
     })
 
-    router.get('/wiki/new', async (req, res, next) => {
-        if (!req.campaign)
-            throw new Error('Missing campaign')
-
-        if (!checkAccess('page:create', {profileId: req.profileId, role: req.campaignRole}))
-        {
-            res.status(403).render('access-denied')
-            return
-        }
-
-        res.render('edit-page', {page: {}})
-    })
-
     router.get('/wiki/p/:slug', async (req, res, next) => {
         if (!req.campaign)
             throw new Error('Missing campaign')

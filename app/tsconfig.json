@@ -1,6 +1,7 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
+        "strictPropertyInitialization": false,
         "noImplicitAny": true,
         "noImplicitThis": true,
         "noFallthroughCasesInSwitch": true,

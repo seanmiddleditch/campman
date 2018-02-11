@@ -50,7 +50,7 @@ interface State
 }
 export class MediaSelectDialog extends React.Component<Props, State>
 {
-    context: {
+    context!: {
         rpc: Content
     }
     static contextTypes = {

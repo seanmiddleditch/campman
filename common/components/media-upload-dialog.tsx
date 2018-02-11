@@ -21,7 +21,7 @@ interface State {
 }
 export class MediaUploadDialog extends React.Component<Props, State>
 {
-    context: {
+    context!: {
         rpc: Content
     }
     static contextTypes = {
