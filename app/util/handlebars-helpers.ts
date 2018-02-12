@@ -1,6 +1,8 @@
 import {config} from '../config'
 import {URL} from 'url'
 import {SafeString} from 'handlebars'
+import {RenderReactString} from './react-ssr'
+import * as components from '../../common/components'
 
 export function json(context: any)
 {
@@ -23,4 +25,11 @@ export function thumb_url(params: {hash: {hash: string|undefined, size: number|u
     const url = new URL(`/img/thumb/${size}/${hash}.png`, config.publicURL)
     url.hostname = `media.${url.hostname}`
     return url.toString()
+}
+
+export function react(params: {data: {root: any}, hash: any})
+{
+    const componentName = params.hash.component
+    const component = (components as any)[componentName]
+    return RenderReactString(component, params.data.root, params.hash)
 }

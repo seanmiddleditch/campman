@@ -40,7 +40,7 @@ export class ListCharacters extends React.Component<Props, State>
     {
         const {chars, editable} = this.props
         return <div>
-            <NewCharacterDialog visible={this.state.showAdd} onCancel={() => this._handleCancelAdd()} onCreate={() => this._handleCreated()}/>
+            {this.state.showAdd && <NewCharacterDialog visible={true} onCancel={() => this._handleCancelAdd()} onCreate={() => this._handleCreated()}/>}
             <h1>Characters</h1>
             {editable && <button onClick={ev => this._handleAddClicked(ev)} className='btn btn-primary'><i className='fa fa-plus'></i> Add Character</button>}
             <div className='clearfix'>

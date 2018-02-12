@@ -41,11 +41,11 @@ function resolveCampaign()
             req.campaign = await campaignRepository.findBySlug({slug})
             if (req.campaign)
             {
-                domainCache.set(req.hostname, req.campaign || null)
                 req.campaign.id = req.campaign ? req.campaign.id : 0
-                res.locals.campaign = req.campaign
                 res.locals.campaignURL = new URL('', config.publicURL)
                 res.locals.campaignURL.host = campaignHost
+                res.locals.campaign = {...req.campaign, url: res.locals.campaignURL}
+                domainCache.set(req.hostname, res.locals.campaign)
     
                 return next()
             }

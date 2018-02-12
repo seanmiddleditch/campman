@@ -6,7 +6,7 @@
 {{#*inline "content"}}
 <div id='react-content'>{{{content}}}</div>
 <script>
-    ReactDOM.hydrate(React.createElement(Application, null, React.createElement({{component}}, {...{{{json props}}}, rpc: api})), document.getElementById('react-content'))
+    ReactDOM.hydrate(React.createElement(Application, {rpc: api}, React.createElement({{component}}, {...{{{json props}}} })), document.getElementById('react-content'))
 </script>
 {{/inline}}
 

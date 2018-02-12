@@ -43,7 +43,9 @@
         {{/scripts}}
         <script src="/js/bundle.js"></script>        
         <script>
-            api.config.publicURL = new URL('{{config.publicURL}}')
+            api.config.publicURL = '{{{config.publicURL}}}'
+            {{#if campaign}}api.config.campaign = {title: '{{campaign.title}}', url: '{{{campaign.url}}}'}{{/if}}
+            {{#if profile}}api.config.profile = {nickname: '{{profile.nickname}}', photoURL: '{{{profile.photoURL}}}'}{{/if}}
         </script>
         {{#>body}}
             {{! Body content goes here }}

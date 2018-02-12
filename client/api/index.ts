@@ -9,7 +9,7 @@ export class API implements Content
 {
     readonly config: Config
     readonly media: MediaContent
-    readonly login: LoginSession
+    readonly session: LoginSession
     readonly characters: CharacterContent
 
     constructor()
@@ -18,7 +18,7 @@ export class API implements Content
             publicURL: ''
         }
         this.media = new MediaAPI()
-        this.login = new LoginSession(this.config)
+        this.session = new LoginSession(this.config)
         this.characters = new ContentAPI()
     }
 }

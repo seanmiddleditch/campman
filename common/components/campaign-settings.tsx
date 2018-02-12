@@ -73,12 +73,11 @@ export class CampaignSettings extends React.Component<Props, State>
                 slug: this.state.campaign.slug,
                 visibility: this.state.campaign.visibility
             })
-        }).then(response => {
+        }).then(async (response) => {
             if (!response.ok)
                 this.setState({message: {type: 'danger', text: 'Failed to save changes'}})
-            else
-                return response.json()
-        }).then(body => {
+            
+            const body = await response.json()
             if (body.status === 'success')
             {
                 this.setState({saving: undefined, message: {type: 'success', text: 'Changes saved'}, errors: {}})
