@@ -13,7 +13,7 @@ module.exports = {
     database: connectionString.database,
     username: connectionString.user,
     password: connectionString.password,
-    migrations: [path.join(path.resolve('app'), 'dist', 'db', 'migrations', '*.js')],
-    entities: [path.join(path.resolve('app'), 'dist', 'models', '*.js')],
+    migrations: [path.join(path.resolve('app'), 'dist', 'app', 'db', 'migrations', '*.js')],
+    entities: [path.join(path.resolve('app'), 'dist', 'app', 'models', '*.js')],
     ssl: true
 }
