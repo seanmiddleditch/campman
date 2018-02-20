@@ -3,8 +3,8 @@ import {MigrationInterface, QueryRunner} from "typeorm";
 export class MediaCleanup1517799113802 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<any> {
-        console.log('Dropping state column from media')
-        await queryRunner.query(`ALTER TABLE media DROP COLUMN state`)
+        console.log('Dropping state column from media_storage')
+        await queryRunner.query(`ALTER TABLE media_storage DROP COLUMN state`)
 
         console.log('Dropping enum mediastate')
         await queryRunner.query(`DROP TYPE mediastate`)
