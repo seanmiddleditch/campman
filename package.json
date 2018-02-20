@@ -4,7 +4,7 @@
   "description": "Campaign management software for RPGs",
   "main": "app/dist/server.js",
   "scripts": {
-    "start": "node app/dist/server.js",
+    "start": "node app/dist/app/server.js",
     "serve": "nf start -x 8080",
     "clean": "rimraf \"app/dist/*\" \"client/dist/*\"",
     "build": "tsc -p app/tsconfig.json",
