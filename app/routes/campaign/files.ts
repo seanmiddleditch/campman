@@ -10,6 +10,8 @@ import * as mime from 'mime'
 import {URL} from 'url'
 import * as multer from 'multer'
 import {insertMedia} from '../../util/insert-media'
+import {ListFiles} from '../../../common/components/pages/list-files'
+import {RenderReact} from '../../util/react-ssr'
 
 export function files()
 {
@@ -125,12 +127,12 @@ export function files()
         const canUpload = checkAccess('media:upload', {hidden: false, profileId: req.profileId, role: req.campaignRole});
         const canDelete = checkAccess('media:delete', {hidden: false, profileId: req.profileId, role: req.campaignRole});
 
-        const media = await mediaRepository.findByCampaign({campaignId: req.campaign.id})
+        const files = await mediaRepository.findByCampaign({campaignId: req.campaign.id})
 
         if (req.accepts('text/html'))
         {
-            res.render('media-browser', {
-                media: media.map(m => ({
+            RenderReact(res, ListFiles, {
+                files: files.map(m => ({
                     path: m.path,
                     contentMD5: m.contentMD5,
                     extension: m.extension,
@@ -146,7 +148,7 @@ export function files()
             res.json({
                 status: 'success',
                 body: {
-                    files: media.map(m => ({
+                    files: files.map(m => ({
                         path: m.path,
                         contentMD5: m.contentMD5,
                         extension: m.extension,
