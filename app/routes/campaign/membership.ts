@@ -8,6 +8,8 @@ import {URL} from 'url'
 import {QueryFailedError} from 'typeorm'
 import * as shortid from 'shortid'
 import * as mailgun from 'mailgun-js'
+import {CampaignMembership} from '../../../common/components/pages/campaign-membership'
+import {RenderReact} from '../../util/react-ssr'
 
 export function membership() {
     const router = PromiseRouter()
@@ -27,7 +29,7 @@ export function membership() {
 
         const all = await membershipRepository.findForCampaign({campaignId: req.campaign.id})
 
-        res.render('campaign/membership', {members: all})
+        RenderReact(res, CampaignMembership, {members: all})
     })
 
     router.post('/membership', async (req, res, next) => {

@@ -10,7 +10,7 @@ interface WikiPageEditorProps
     title: string
     tags: string
     slug?: string
-    body: object
+    rawbody: object
     visibility: 'Public'|'Hidden'
     editable?: boolean
 }
@@ -27,7 +27,7 @@ export class ViewWiki extends React.Component<WikiPageEditorProps, WikiPageEdito
         this.state = {
             data: {
                 title: this.props.title,
-                rawbody: this.props.body,
+                rawbody: this.props.rawbody,
                 slug: this.props.slug,
                 tags: this.props.tags,
                 visibility: this.props.visibility

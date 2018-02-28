@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {SaveButton} from './save-button'
+import {SaveButton} from '../save-button'
 
 interface Member
 {

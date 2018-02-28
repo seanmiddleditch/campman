@@ -16,3 +16,10 @@ export interface WikiData
     tags: string
     visibility: 'Public'|'Hidden'
 }
+
+export interface CampaignData
+{
+    slug: string
+    title: string
+    url: string
+}

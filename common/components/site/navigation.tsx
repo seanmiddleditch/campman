@@ -21,11 +21,11 @@ export class Navigation extends React.Component
             <nav className='navbar sticky-top navbar-expand-lg navbar-light bg-light justify-content-between' style={{minHeight: 60}}>
                 {campaign ? (
                     <div className='navbar-brand'>
-                        <a href={publicURL}><i className='fa fa-home'></i> </a>
-                        <a href={campaign.url}>{campaign.title}</a>
+                        <a href={publicURL.toString()}><i className='fa fa-home'></i> </a>
+                        <a href={campaign.url.toString()}>{campaign.title}</a>
                     </div>
                 ) : (
-                    <div className='navbar-brand'><a href={publicURL}><i className='fa fa-home'></i> Campaign Manager</a></div>
+                    <div className='navbar-brand'><a href={publicURL.toString()}><i className='fa fa-home'></i> Campaign Manager</a></div>
                 )}
 
                 <button className='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbar-links' aria-controls='navbar-links' aria-expanded='false' aria-label='Toggle navigation'>
@@ -69,7 +69,7 @@ export class Navigation extends React.Component
                             <button className='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
                                 <span>{profile.nickname}</span>
                                 {profile.photoURL ? (
-                                    <img width={24} height={24} src={profile.photoURL}/>
+                                    <img width={24} height={24} src={profile.photoURL.toString()}/>
                                 ) : (
                                     <i className='navigation-bar-profile-photo fa fa-user-circle-o'></i>
                                 )}

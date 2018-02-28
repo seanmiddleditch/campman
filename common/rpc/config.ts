@@ -1,12 +1,12 @@
 export interface Config
 {
-    readonly publicURL: string
+    readonly publicURL: URL
     readonly campaign?: {
         title: string
-        url: string
+        url: URL
     }
     readonly profile?: {
         nickname: string
-        photoURL?: string
+        photoURL?: URL
     }
 }

@@ -9,6 +9,7 @@ import * as slugUtils from '../../util/slug-utils'
 import {RenderReact} from '../../util/react-ssr'
 import {ViewWiki} from '../../../common/components/pages/view-wiki'
 import {ListWiki} from '../../../common/components/pages/list-wiki'
+import {WikiData} from '../../../common/types/content'
 
 export function wiki() {
     const router = PromiseRouter()
@@ -30,10 +31,14 @@ export function wiki() {
             hidden: page.visibility !== PageVisibility.Public
         })).map(page => ({
             ...page,
+            rawbody: {},
+            tags: '',
             editable: checkAccess('page:edit', {profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public})
         }))
 
-        const props = {editable: canCreate, pages}
+        const pages2: WikiData[] = pages
+
+        const props = {editable: canCreate, pages: pages2}
 
         RenderReact(res, ListWiki, props)
     })
@@ -73,7 +78,11 @@ export function wiki() {
         })
 
         const props = {
-            slug: slug || '', title, body: scrubDraftSecrets(rawbody, secrets), tags, visibility,
+            slug: slug || '',
+            title,
+            rawbody: scrubDraftSecrets(rawbody, secrets),
+            tags,
+            visibility,
             editable
         }
         RenderReact(res, ViewWiki, props)

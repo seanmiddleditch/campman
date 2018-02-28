@@ -1,5 +1,7 @@
 import * as React from 'react'
-import {SaveButton} from './save-button'
+import {SaveButton} from '../save-button'
+import {Content} from '../../rpc'
+import * as PropTypes from 'prop-types'
 
 interface Campaign
 {
@@ -10,8 +12,6 @@ interface Campaign
 interface Props
 {
     campaign: Campaign
-    onChange: (campaign: Campaign) => void
-    publicURL: string
 }
 interface State
 {
@@ -28,6 +28,14 @@ interface State
 }
 export class CampaignSettings extends React.Component<Props, State>
 {
+    context: {
+        rpc: Content
+    }
+    static contextTypes = {
+        rpc: PropTypes.object
+    }
+
+
     constructor(props: Props)
     {
         super(props)
@@ -113,11 +121,11 @@ export class CampaignSettings extends React.Component<Props, State>
                     <label htmlFor='campaign-slug'>Website Address</label>
                     <div className='input-group'>
                         <div className='input-group-prepend'>
-                            <span className='input-group-text'>{new URL(this.props.publicURL).protocol}//</span>
+                            <span className='input-group-text'>{this.context.rpc.config.publicURL.protocol}//</span>
                         </div>
                         <input type='text' className='form-control' id='campaign-slug' name='slug' value={this.state.campaign.slug} onChange={ev => this._handleSlugChanged(ev)}/>
                         <div className='input-group-append'>
-                            <span className='input-group-text'>.{new URL(this.props.publicURL).hostname}</span>
+                            <span className='input-group-text'>.{this.context.rpc.config.publicURL.hostname}</span>
                         </div>
                     </div>
                     {this.state.errors.slug ? <small className='form-text text-danger'>{this.state.errors.slug}</small> : <span/>}
