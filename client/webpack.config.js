@@ -1,15 +1,17 @@
 const webpack = require('webpack')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const path = require('path')
 
 module.exports = {
-    entry: __dirname + '/client.ts',
+    entry: path.join(__dirname, 'client.ts'),
     output: {
         filename: 'bundle.js',
-        path: __dirname + '/dist',
-        publicPath: '/dist/',
+        path: path.join(__dirname, 'dist'),
+        publicPath: '/js/',
         libraryTarget: 'window'
     },
+
+    mode: 'production',
 
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.json'],
@@ -17,21 +19,12 @@ module.exports = {
 
     module: {
         rules: [
-            // CSS loaders
-            {
-                test: /\.css$/,
-                loader: ExtractTextPlugin.extract({
-                    fallback: 'style-loader',
-                    use: ['css-loader']
-                })
-            },
-
             // Typescript
             {
                 test: /\.tsx?$/,
                 loader: 'awesome-typescript-loader',
                 options: {
-                    configFileName: __dirname + '/tsconfig.json',
+                    configFileName: path.join(__dirname, 'tsconfig.json'),
                     transpileOnly: true
                 }
             },
@@ -52,10 +45,6 @@ module.exports = {
     },
 
     plugins: [
-        new ExtractTextPlugin({
-            filename: "style.css",
-            allChunks: true
-        }),
         new UglifyJsPlugin({
             parallel: true,
             sourceMap: true

@@ -10,6 +10,7 @@ import * as passport from 'passport'
 import * as session from 'express-session'
 import * as redis from 'connect-redis'
 import * as cors from 'cors'
+import * as os from 'os'
 import { CorsOptions } from 'cors'
 import { Connection } from 'typeorm'
 import { URL } from 'url'
@@ -65,10 +66,21 @@ import * as models from './models'
     app.use(favicon(path.join(staticRoot, 'images', 'favicon.ico')))
     app.use(express.static(staticRoot))
 
-    app.use('/css/style.css', express.static(path.join(clientRoot, 'dist', 'style.css')))
-    app.use('/js/bundle.js', express.static(path.join(clientRoot, 'dist', 'bundle.js')))
-    if (!config.production)
-        app.use('/js/main.js.map', express.static(path.join(clientRoot, 'dist', 'main.js.map')))
+    if (config.production)
+    {
+        app.use('/js/bundle.js', express.static(path.join(clientRoot, 'dist', 'bundle.js')))
+    }
+    else if (os.type() !== 'Windows_NT' || !!process.env.USE_WEBPACK_DEV_MIDDLEWARE)
+    {
+        const webpack = require('webpack')
+        const webpackDevMiddleware = require('webpack-dev-middleware')
+        const webpackConfig = require(path.join(root, 'client', 'webpack.config.js'))
+        webpackConfig.mode = 'development'
+        const compiler = webpack(webpackConfig)
+        app.use(webpackDevMiddleware(compiler, {
+            publicPath: webpackConfig.output.publicPath
+        }))
+    }
 
     const corsOptions: CorsOptions = {
         origin: (origin, callback) => {
