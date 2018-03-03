@@ -41,6 +41,7 @@ module.exports = {
     externals: {
         'react': 'React',
         'react-dom': 'ReactDOM',
+        'draft-js': 'draft-js',
         'jquery': '$'
     },
 
