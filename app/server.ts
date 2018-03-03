@@ -70,7 +70,7 @@ import * as models from './models'
     {
         app.use('/js/bundle.js', express.static(path.join(clientRoot, 'dist', 'bundle.js')))
     }
-    else if (os.type() !== 'Windows_NT' || !!process.env.USE_WEBPACK_DEV_MIDDLEWARE)
+    else
     {
         const webpack = require('webpack')
         const webpackDevMiddleware = require('webpack-dev-middleware')
