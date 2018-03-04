@@ -39,7 +39,7 @@ export function routes()
         const hash = req.params.hash
 
         // allowed sizes
-        if (size != 32 && size != 75 && size != 100 && size != 200)
+        if (size != 32 && size != 75 && size != 100 && size != 200 && size != 400)
         {
             res.status(404).send('Unsupported size')
             return

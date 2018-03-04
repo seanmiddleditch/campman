@@ -3,6 +3,8 @@ import {checkAccess} from '../../auth'
 import {TagRepository} from '../../models'
 import {connection} from '../../db'
 import PromiseRouter = require('express-promise-router')
+import {ListTags} from '../../../common/components/pages/list-tags'
+import {RenderReact} from '../../util/react-ssr'
 
 export function tags()
 {
@@ -22,7 +24,7 @@ export function tags()
             role: req.campaignRole
         }))
 
-        res.render('tags', {tags: filtered})
+        RenderReact(res, ListTags, {tags: filtered})
     })
 
     return router

@@ -5,6 +5,11 @@ import {connection} from '../../db'
 import PromiseRouter = require('express-promise-router')
 import * as multer from 'multer'
 import {insertMedia} from '../../util/insert-media'
+import {RenderReact} from '../../util/react-ssr'
+import {ListMaps} from '../../../common/components/pages/list-maps'
+import {NewMap} from '../../../common/components/pages/new-map'
+import {ViewMap} from '../../../common/components/pages/view-map'
+import * as slugUtils from '../../util/slug-utils'
 
 export function maps()
 {
@@ -25,12 +30,37 @@ export function maps()
             role: req.campaignRole
         }))
 
-        const canCreate = checkAccess('map:view', {
+        const canCreate = checkAccess('map:create', {
             profileId: req.profileId,
             role: req.campaignRole
         })
 
-        res.render('campaign/maps/list', {maps: filtered, canCreate})
+        RenderReact(res, ListMaps, {maps: filtered, canCreate})
+    })
+
+    router.get('/new-map', async (req, res, next) =>
+    {
+        if (!req.campaign)
+            throw new Error('Missing campaign')
+
+        const all = await mapRepository.findByCampaign({campaignId: req.campaign.id})
+        if (!all)
+            return res.status(404).render('not-found')
+
+        const filtered = all.filter(map => checkAccess('map:view', {
+            profileId: req.profileId,
+            role: req.campaignRole
+        }))
+
+        if (!checkAccess('map:create', {
+            profileId: req.profileId,
+            role: req.campaignRole
+        }))
+        {
+            return res.status(403).render('access-denied')
+        }
+
+        RenderReact(res, NewMap, {})
     })
 
     router.get('/maps/m/:slug', async (req, res, next) =>
@@ -53,7 +83,7 @@ export function maps()
             return
         }
 
-        res.render('campaign/maps/view', {map})
+        RenderReact(res, ViewMap, {map})
     })
 
     router.post('/maps', multer({limits: {fileSize: 5*1024*1024}}).single('file'), async (req, res, next) =>
@@ -63,15 +93,37 @@ export function maps()
 
         if (!checkAccess('map:create', {profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403).render('access-denied')
+            res.status(403).json({status: 'error', message: 'Access denied'})
             return
         }
 
+
+        const title = req.body['title'] || undefined
+        if (typeof title !== 'string' || title.length === 0)
+        {
+            res.status(400).json({status: 'error', message: 'Please correct the errors', fields: {title: 'Required'}})
+            return
+        }
+
+        const slug = req.body['slug'] || slugUtils.sanitize(title)
+        if (typeof slug !== 'string' || !slugUtils.isValid(slug))
+        {
+            res.status(400).json({status: 'error', message: 'Please correct the errors', fields: {slug: 'Required'}})
+            return
+        }
+
+        if (!req.file)
+        {
+            res.status(400).json({status: 'error', message: 'A file is required', fields: {file: 'Required'}})
+            return
+        }
+        
         const {storageId} = await insertMedia(req.file.buffer)
 
         const map = mapRepository.create({
             campaignId: req.campaign.id,
-            title: req.body['title'] || 'Map',
+            title,
+            slug,
             storageId,
             rawbody: ''
         })
