@@ -50,7 +50,7 @@ export class CampaignRepository extends Repository<CampaignModel>
                     slug: row.library_slug as string,
                     title: row.library_title as string,
                     visibility: row.library_visibility as CampaignVisibility,
-                    role: row.membership_role as CampaignRole
+                    role: row.membership_role as CampaignRole || CampaignRole.Visitor
                 })))
     }
 
