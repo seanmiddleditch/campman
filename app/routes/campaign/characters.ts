@@ -12,6 +12,8 @@ import {insertMedia} from '../../util/insert-media'
 
 import {render} from '../../util/react-ssr'
 import {ViewCharacter} from '../../../common/components/pages/view-character'
+import {EditCharacter} from '../../../common/components/pages/edit-character'
+import {NewCharacter} from '../../../common/components/pages/new-character'
 import {ListCharacters}  from '../../../common/components/pages/list-characters'
 import {AccessDenied} from '../../../common/components/pages/access-denied'
 import {NotFound} from '../../../common/components/pages/not-found'
@@ -36,7 +38,17 @@ export function characters() {
         render(res, ListCharacters, {chars: filtered, editable: canCreate})
     })
 
-    const serveCharacter = (req: Request, res: Response, char: CharacterModel|undefined) => {
+    router.get('/new-char', async (req, res, next) => {
+        if (!checkAccess('character:view', {profileId: req.profileId, role: req.campaignRole}))
+        {
+            render(res.status(403), AccessDenied, {})
+            return
+        }
+
+        render(res, NewCharacter, {})
+    })
+
+    const serveCharacter = (req: Request, res: Response, char: CharacterModel|undefined, edit: boolean) => {
         if (!char)
         {
             render(res.status(404), NotFound, {})
@@ -53,12 +65,28 @@ export function characters() {
 
         const editable = checkAccess('character:edit', {profileId: req.profileId, role: req.campaignRole})
 
-        const props = {
-            id: char.id,
-            char: {...char, rawbody: scrubDraftSecrets(char.rawbody, secrets)},
-            editable
+        if (edit)
+        {
+            if (!editable)
+            {
+                render(res.status(403), AccessDenied, {})
+                return
+            }
+
+            const props = {
+                initial: {...char, rawbody: JSON.parse(char.rawbody)},
+            }
+            render(res, EditCharacter, props)
         }
-        render(res, ViewCharacter, props)
+        else
+        {
+            const props = {
+                id: char.id,
+                char: {...char, rawbody: scrubDraftSecrets(char.rawbody, secrets)},
+                editable
+            }
+            render(res, ViewCharacter, props)
+        }
     }
 
     router.get('/chars/c/:id(\\d+)/', async (req, res, next) =>
@@ -67,8 +95,9 @@ export function characters() {
             throw new Error('Missing campaign')
 
         const id = req.params['id']
+        const edit = !!req.query['edit']
         const char = await characterRepository.fetchById({id, campaignId: req.campaign.id})
-        serveCharacter(req, res, char)
+        serveCharacter(req, res, char, edit)
     })
 
     router.get('/chars/c/:slug', async (req, res, next) =>
@@ -77,8 +106,9 @@ export function characters() {
             throw new Error('Missing campaign')
 
         const slug = req.params['slug']
+        const edit = !!req.query['edit']
         const char = await characterRepository.fetchBySlug({slug, campaignId: req.campaign.id})
-        serveCharacter(req, res, char)
+        serveCharacter(req, res, char, edit)
     })
 
     router.post('/chars', multer({limits: {fileSize: 1*1024*1024}}).single('portrait'), async (req, res, next) =>
@@ -107,7 +137,7 @@ export function characters() {
             })
             await characterRepository.save(updatedChar)
 
-            res.json({status: 'success', message: 'Character created.', body: updatedChar})
+            res.json({status: 'success', message: 'Character saved.', body: {...updatedChar, rawbody: JSON.parse(updatedChar.rawbody)}})
         }
         else
         {
@@ -129,7 +159,7 @@ export function characters() {
             })
             await characterRepository.save(newChar)
 
-            res.json({status: 'success', message: 'Character created.'})
+            res.json({status: 'success', message: 'Character created.', body: {...newChar, rawbody: JSON.parse(newChar.rawbody)}})
         }
     })
 

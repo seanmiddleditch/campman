@@ -10,7 +10,6 @@
     "build": "tsc -p app/tsconfig.json",
     "build-dev": "tsc --watch -p app/tsconfig.json",
     "webpack": "webpack-cli --config client/webpack.config.js",
-    "webpack-dev": "webpack-cli --watch --config client/webpack.config.js",
     "preinstall": "npm run clean",
     "postinstall": "npm run build && npm run webpack",
     "migrations": "typeorm migrations:run"

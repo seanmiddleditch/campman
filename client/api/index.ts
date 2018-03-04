@@ -1,4 +1,4 @@
-import {API, CharacterData, MediaFile, APIError, CampaignData} from '../../common/types'
+import {API, CharacterInput, CharacterData, MediaFile, APIError, WikiPageInput, WikiPageData, CampaignInput, CampaignData} from '../../common/types'
 
 export class ClientAPI implements API
 {
@@ -9,7 +9,7 @@ export class ClientAPI implements API
         this._publicURL = publicURL
     }
 
-    public async saveCharacter(char: CharacterData) : Promise<CharacterData>
+    public async saveCharacter(char: CharacterInput) : Promise<CharacterData>
     {
         const body = new FormData()
         if (char.id) body.append('id', char.id.toString())
@@ -39,6 +39,28 @@ export class ClientAPI implements API
         }
 
         return result.body as CharacterData
+    }
+
+    public async saveWikiPage(page: WikiPageInput) : Promise<WikiPageData>
+    {
+        const response = await fetch('/wiki', {
+            method: 'POST',
+            mode: 'same-origin',
+            credentials: 'include',
+            headers: new Headers({
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }),
+            body: JSON.stringify(page)
+        })
+        
+        const result = await response.json()
+        if (result.status !== 'success')
+        {
+            throw new APIError(result.message, result.errors)
+        }
+
+        return result.body
     }
 
     showLoginDialog() : Promise<void>
@@ -139,7 +161,7 @@ export class ClientAPI implements API
         return `/media/img/thumb/${size}/${hash}.png`
     }
 
-    private async _saveCampaign(path: string, camp: CampaignData) : Promise<void>
+    private async _saveCampaign(path: string, camp: CampaignInput) : Promise<CampaignData>
     {
         const response = await fetch(path, {
             method: 'POST',
@@ -163,15 +185,22 @@ export class ClientAPI implements API
                 slug: 'slug' in result.fields ? result.fields['slug'] as string : undefined
             }})
         }
+
+        return {
+            title: result.body.title,
+            slug: result.body.slug,
+            visibility: result.body.visibility,
+            url: result.body.url
+        }
     }
 
-    createCampaign(camp: CampaignData)
+    createCampaign(camp: CampaignInput)
     {
         return this._saveCampaign('/campaigns', camp)
     }
 
-    saveSettings(camp: CampaignData)
+    async saveSettings(camp: CampaignInput) : Promise<void>
     {
-        return this._saveCampaign('/settings', camp)
+        await this._saveCampaign('/settings', camp)
     }
 }

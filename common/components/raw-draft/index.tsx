@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { convertFromRaw, ContentState, ContentBlock, DraftInlineStyle } from 'draft-js'
+import { convertFromRaw, ContentState, ContentBlock, DraftInlineStyle, RawDraftContentState } from 'draft-js'
 import { ImageThumb } from '../image-thumb'
 
 type ElementConfig = (props: any) => any
@@ -130,10 +130,12 @@ function renderBasicBlock(block: ContentBlock, draft: ContentState) {
     return render({children: text})
 }
 
-export const RawDraft = ({document}: {document: any}) => {
+export const RawDraft = ({document}: {document: string|RawDraftContentState}) => {
     try
     {
-        const state = convertFromRaw(document)
+        const state = typeof document === 'string' ?
+            convertFromRaw(JSON.parse(document)) :
+            convertFromRaw(document)
         const blockMap = state.getBlockMap().map((block, key) => {
             if (!block || !key) return <div/>
             switch (block.getType())

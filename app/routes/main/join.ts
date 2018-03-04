@@ -17,7 +17,7 @@ export function join() {
 
         if (!req.user)
         {
-            res.render('campaign/join', {success: false, error: 'Please login to join.'})
+            render(res, JoinCampaign, {success: false, error: 'Please login to join.'})
             return
         }
 
@@ -28,9 +28,9 @@ export function join() {
                 profileId: req.user.id
             })
             if (result)
-                res.render('campaign/join', {success: true})
+                render(res, JoinCampaign, {success: true})
             else
-                res.render('campaign/join', {success: false, error: 'Expired or invalid code.'})
+                render(res, JoinCampaign, {success: false, error: 'Expired or invalid code.'})
         }
         catch (e)
         {

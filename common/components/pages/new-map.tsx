@@ -81,9 +81,9 @@ export class NewMap extends React.Component<Props, State>
         // this.setState({visibility, visDropDownOpen: false})
     }
 
-    private _handleImageSelected(file: File|null)
+    private _handleImageSelected(file: File|undefined)
     {
-        this.setState({file: file || undefined})
+        this.setState({file})
     }
 
     render()

@@ -1,11 +1,11 @@
 import * as React from 'react'
 import {WikiForm} from '../forms/wiki-form'
-import { WikiData } from '../../types';
+import { WikiPageData } from '../../types';
 
 interface Props
 {
     editable: boolean
-    pages: WikiData[]
+    pages: WikiPageData[]
 }
 interface State
 {
@@ -21,7 +21,7 @@ export class ListWiki extends React.Component<Props, State>
         }
     }
 
-    private _handleAdded(data: WikiData)
+    private _handleAdded(data: WikiPageData)
     {
         document.location.reload(true)
     }
@@ -30,7 +30,7 @@ export class ListWiki extends React.Component<Props, State>
     {
         if (this.state.adding)
             return (<div>
-                <WikiForm initial={{title: 'New Page', tags: '', rawbody: {}, visibility: 'Public'}} onSubmit={data => this._handleAdded(data)}/>
+                <WikiForm initial={{title: 'New Page', tags: '', rawbody: {entityMap: {}, blocks: []}, visibility: 'Public'}} onSubmit={data => this._handleAdded(data)}/>
             </div>)
         else
             return (<div>

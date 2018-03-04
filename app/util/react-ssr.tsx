@@ -4,7 +4,7 @@ import * as ReactDOMServer from 'react-dom/server'
 import {Application} from '../../common/components/application'
 import * as shortid from 'shortid'
 import {URL} from 'url'
-import {API, CharacterData, CampaignData, MediaFile} from '../../common/types'
+import {API, CharacterData, CampaignData, MediaFile, WikiPageData} from '../../common/types'
 
 interface RenderProps
 {
@@ -22,6 +22,7 @@ const stubAPI: API = {
     getThumbURL() { return '' },
     createCampaign() { return new Promise(r => {}) },
     saveSettings() { return new Promise(r => {}) },
+    saveWikiPage() { return new Promise<WikiPageData>(r => {}) },
 }
 
 const makeConfig = (resLocals: any, appLocals: any) => ({

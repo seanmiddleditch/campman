@@ -5,7 +5,7 @@ interface Props
     className?: string
     preview?: boolean
     disabled?: boolean
-    onImageSelected: (file: File|null) => void
+    onImageSelected: (file: File|undefined) => void
     onPathChanged?: (path: string) => void
     size?: number|string
     fallback?: () => any
@@ -100,7 +100,7 @@ export class ImageSelect extends React.Component<Props, State>
         }
         else
         {
-            this.setState({file: undefined, objectURL: undefined}, () => this.props.onImageSelected(null))
+            this.setState({file: undefined, objectURL: undefined}, () => this.props.onImageSelected(undefined))
         }
     }
 }

@@ -1,21 +1,35 @@
+import { RawDraftContentState } from 'draft-js'
+
 export interface CharacterData
+{
+    id: number
+    title: string
+    slug: string
+    portrait?: {contentMD5: string}
+    rawbody: RawDraftContentState
+    visible: boolean
+}
+export interface CharacterInput
 {
     id?: number
     title?: string
     slug?: string
     portrait?: File|{contentMD5: string}
-    rawbody?: object
+    rawbody?: RawDraftContentState
     visible?: boolean
 }
 
-export interface WikiData
+
+export interface WikiPageData
 {
-    slug?: string
+    slug: string
     title: string
-    rawbody: object
+    rawbody: RawDraftContentState
     tags: string
     visibility: 'Public'|'Hidden'
 }
+export type WikiPageInput = Partial<WikiPageData>
+
 
 export interface CampaignData
 {
@@ -23,4 +37,10 @@ export interface CampaignData
     title: string
     url: string
     visibility: 'Public'|'Hidden'
+}
+export interface CampaignInput
+{
+    slug?: string
+    title?: string
+    visibility?: 'Public'|'Hidden'
 }

@@ -1,18 +1,13 @@
 import * as React from 'react'
 import {CampaignData} from '../../types'
 import {Dialog} from '../dialog'
-import {NewCampaignForm} from '../forms/new-campaign-form'
 
 interface Props
 {
     campaigns: CampaignData[]
     canCreate: boolean
 }
-interface State
-{
-    adding: boolean
-}
-export class ListCampaigns extends React.Component<Props, State>
+export class ListCampaigns extends React.Component<Props>
 {
     constructor(props: Props)
     {
@@ -24,11 +19,6 @@ export class ListCampaigns extends React.Component<Props, State>
     {
         return (
             <div>
-                <Dialog visible={this.state.adding}>
-                    <div className='modal-body'>
-                        <NewCampaignForm/>
-                    </div>
-                </Dialog>
                 <h1>Campaigns</h1>
                 <div className='list-group'>
                     {this.props.campaigns.map(camp => (
@@ -39,9 +29,9 @@ export class ListCampaigns extends React.Component<Props, State>
                     ))}
                     {this.props.campaigns.length === 0 && <div className='list-group-item'>No campaigns found</div>}
                     {this.props.canCreate && <div className='list-group-item'>
-                        <button onClick={() => this.setState({adding: true})} className='btn btn-primary'>
+                        <a href='/new-campaign' className='btn btn-primary'>
                             <i className='fa fa-plus'></i> Start New Campaign
-                        </button>
+                        </a>
                     </div>}
                 </div>
             </div>

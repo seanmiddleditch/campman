@@ -7,6 +7,8 @@ import * as slugUtils from '../../util/slug-utils'
 import {QueryFailedError} from 'typeorm'
 import {render} from '../../util/react-ssr'
 import {ListCampaigns} from '../../../common/components/pages/list-campaigns'
+import {NewCampaign} from '../../../common/components/pages/new-campaign'
+import {AccessDenied} from '../../../common/components/pages/access-denied'
 import {checkAccess, CampaignRole} from '../../auth'
 
 export function campaigns() {
@@ -28,6 +30,18 @@ export function campaigns() {
         const canCreate = checkAccess('campaign:create', {profileId: req.profileId, role: CampaignRole.Visitor})
 
         render(res, ListCampaigns, {campaigns, canCreate})
+    })
+
+    router.get('/new-campaign', async (req, res, next) => {
+        const all = await campaignRepository.findAllForProfile({profileId: req.profileId})
+
+        if (!checkAccess('campaign:create', {profileId: req.profileId, role: CampaignRole.Visitor}))
+        {
+            render(res.status(403), AccessDenied, {})
+            return
+        }
+
+        render(res, NewCampaign, {})
     })
 
     router.post('/campaigns', async (req, res, next) => {
@@ -70,7 +84,12 @@ export function campaigns() {
             const campaign = await CampaignRepository.createNewCampaign(connection(), {slug, title, profileId: req.user.id})
             const url = new URL('/', config.publicURL)
             url.host = `${campaign.slug}.${url.host}`
-            res.json({status: 'success', message: 'Campaign created', body: {url: url.toString()}})
+            res.json({status: 'success', message: 'Campaign created', body: {
+                title: campaign.title,
+                slug: campaign.slug,
+                visibility: campaign.visibility,
+                url: url.toString()
+            }})
         }
         catch (err)
         {

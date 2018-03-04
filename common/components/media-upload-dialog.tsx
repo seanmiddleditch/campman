@@ -31,8 +31,8 @@ class MediaUpload extends React.Component<PropsWithAPI, State>
         this.state = {}
     }
 
-    private _onImageSelected(file: File | null) {
-        this.setState({ file: file || undefined })
+    private _onImageSelected(file: File|undefined) {
+        this.setState({ file })
     }
 
     private _onPathChanged(path: string) {

@@ -11,7 +11,7 @@ import {ViewWiki} from '../../../common/components/pages/view-wiki'
 import {ListWiki} from '../../../common/components/pages/list-wiki'
 import {AccessDenied} from '../../../common/components/pages/access-denied'
 import {NotFound} from '../../../common/components/pages/not-found'
-import {WikiData} from '../../../common/types/content'
+import {WikiPageData} from '../../../common/types/content'
 
 export function wiki() {
     const router = PromiseRouter()
@@ -33,12 +33,12 @@ export function wiki() {
             hidden: page.visibility !== PageVisibility.Public
         })).map(page => ({
             ...page,
-            rawbody: {},
+            rawbody: {entityMap: {}, blocks: []},
             tags: '',
             editable: checkAccess('page:edit', {profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public})
         }))
 
-        const pages2: WikiData[] = pages
+        const pages2: WikiPageData[] = pages
 
         const props = {editable: canCreate, pages: pages2}
 
