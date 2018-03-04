@@ -7,7 +7,7 @@ import {config} from '../../config'
 import PromiseRouter = require('express-promise-router')
 import * as slugUtils from '../../util/slug-utils'
 import {CampaignSettings} from '../../../common/components/pages/campaign-settings'
-import {RenderReact} from '../../util/react-ssr'
+import {render} from '../../util/react-ssr'
 
 export function settings()
 {
@@ -24,7 +24,7 @@ export function settings()
             return
         }
 
-        RenderReact(res, CampaignSettings, {campaign: req.campaign})
+        render(res, CampaignSettings, {campaign: req.campaign})
     })
 
     router.post('/settings', async (req, res, next) => {

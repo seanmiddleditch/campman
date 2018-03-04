@@ -13,6 +13,9 @@ import PromiseRouter = require('express-promise-router')
 import {connection} from '../../db'
 import {URL} from 'url'
 import {config} from '../../config'
+import {AccessDenied} from '../../../common/components/pages/access-denied'
+import {NotFound} from '../../../common/components/pages/not-found'
+import {render} from '../../util/react-ssr'
 
 function resolveCampaign()
 {
@@ -51,7 +54,7 @@ function resolveCampaign()
             }
         }
 
-        res.status(404).render('not-found')
+        render(res.status(404), NotFound, {})
     }
 }
 
@@ -86,7 +89,7 @@ function checkViewAccess()
     {
         if (!checkAccess('campaign:view', {hidden: !req.campaign || req.campaign.visibility == CampaignVisibility.Hidden, profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403).render('access-denied')
+            render(res.status(403), AccessDenied, {})
             return
         }
         next()

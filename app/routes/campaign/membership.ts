@@ -9,7 +9,8 @@ import {QueryFailedError} from 'typeorm'
 import * as shortid from 'shortid'
 import * as mailgun from 'mailgun-js'
 import {CampaignMembership} from '../../../common/components/pages/campaign-membership'
-import {RenderReact} from '../../util/react-ssr'
+import {AccessDenied} from '../../../common/components/pages/access-denied'
+import {render} from '../../util/react-ssr'
 
 export function membership() {
     const router = PromiseRouter()
@@ -23,13 +24,13 @@ export function membership() {
 
         if (!checkAccess('campaign:configure', {hidden: false, profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(404).render('access-denied')
+            render(res.status(403), AccessDenied, {})
             return
         }
 
         const all = await membershipRepository.findForCampaign({campaignId: req.campaign.id})
 
-        RenderReact(res, CampaignMembership, {members: all})
+        render(res, CampaignMembership, {members: all})
     })
 
     router.post('/membership', async (req, res, next) => {

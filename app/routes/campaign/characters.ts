@@ -10,9 +10,11 @@ import * as slugUtils from '../../util/slug-utils'
 import * as multer from 'multer'
 import {insertMedia} from '../../util/insert-media'
 
-import {RenderReact} from '../../util/react-ssr'
+import {render} from '../../util/react-ssr'
 import {ViewCharacter} from '../../../common/components/pages/view-character'
 import {ListCharacters}  from '../../../common/components/pages/list-characters'
+import {AccessDenied} from '../../../common/components/pages/access-denied'
+import {NotFound} from '../../../common/components/pages/not-found'
 
 export function characters() {
     const router = PromiseRouter()
@@ -31,19 +33,19 @@ export function characters() {
 
         const canCreate = checkAccess('character:view', {profileId: req.profileId, role: req.campaignRole})
 
-        RenderReact(res, ListCharacters, {chars: filtered, editable: canCreate})
+        render(res, ListCharacters, {chars: filtered, editable: canCreate})
     })
 
     const serveCharacter = (req: Request, res: Response, char: CharacterModel|undefined) => {
         if (!char)
         {
-            res.status(404).render('not-found')
+            render(res.status(404), NotFound, {})
             return
         }
 
         if (!checkAccess('character:view', {profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403).render('access-denied')
+            render(res.status(403), AccessDenied, {})
             return
         }
 
@@ -56,7 +58,7 @@ export function characters() {
             char: {...char, rawbody: scrubDraftSecrets(char.rawbody, secrets)},
             editable
         }
-        RenderReact(res, ViewCharacter, props)
+        render(res, ViewCharacter, props)
     }
 
     router.get('/chars/c/:id(\\d+)/', async (req, res, next) =>
@@ -90,7 +92,7 @@ export function characters() {
         {
             if (!checkAccess('character:edit', {profileId: req.profileId, role: req.campaignRole}))
             {
-                res.status(403).render('access-denied')
+                render(res.status(403), AccessDenied, {})
                 return
             }
 
@@ -111,7 +113,7 @@ export function characters() {
         {
             if (!checkAccess('character:create', {profileId: req.profileId, role: req.campaignRole}))
             {
-                res.status(403).render('access-denied')
+                render(res.status(403), AccessDenied, {})
                 return
             }
 

@@ -1,13 +1,15 @@
 import * as React from 'react'
 import {SaveButton} from '../save-button'
-import {Content} from '../../rpc'
-import * as PropTypes from 'prop-types'
+import {API, APIError} from '../../types'
+import {StateConsumer} from '../state'
+import {APIConsumer} from '../api'
 
 interface Campaign
 {
     title: string
     slug: string
     visibility: 'Public'|'Hidden'
+    url: string
 }
 interface Props
 {
@@ -28,14 +30,6 @@ interface State
 }
 export class CampaignSettings extends React.Component<Props, State>
 {
-    context: {
-        rpc: Content
-    }
-    static contextTypes = {
-        rpc: PropTypes.object
-    }
-
-
     constructor(props: Props)
     {
         super(props)
@@ -44,7 +38,8 @@ export class CampaignSettings extends React.Component<Props, State>
             campaign: {
                 title: props.campaign.title,
                 slug: props.campaign.slug,
-                visibility: props.campaign.visibility
+                visibility: props.campaign.visibility,
+                url: 'ignored'
             }
         }
     }
@@ -67,44 +62,26 @@ export class CampaignSettings extends React.Component<Props, State>
         this.setState({campaign: {...this.state.campaign, visibility: ev.target.value === 'Public' ? 'Public' : 'Hidden'}})
     }
 
-    private _handleSubmit()
+    private _handleSubmit(api: API)
     {
-        const promise = fetch('/settings', {
-            method: 'POST',
-            mode: 'cors',
-            credentials: 'include',
-            headers: new Headers({
-                'Content-Type': 'application/json'
-            }),
-            body: JSON.stringify({
-                title: this.state.campaign.title,
-                slug: this.state.campaign.slug,
-                visibility: this.state.campaign.visibility
-            })
-        }).then(async (response) => {
-            if (!response.ok)
-                this.setState({message: {type: 'danger', text: 'Failed to save changes'}})
-            
-            const body = await response.json()
-            if (body.status === 'success')
-            {
-                this.setState({saving: undefined, message: {type: 'success', text: 'Changes saved'}, errors: {}})
-            }
-            else
-            {
-                this.setState({saving: undefined, message: body.message})
-            }
+        const promise = api.saveSettings(this.state.campaign)
+        promise.then(() => {
+            this.setState({saving: promise, message: {type: 'success', text: 'Settings saved'}})
         }).catch(err => {
-            console.error(err)
-            this.setState({saving: undefined, message: {type: 'danger', text: 'Server error'}})
+            this.setState({message: {type: 'danger', text: err.message}, saving: undefined})
+            if (err instanceof APIError && err.errors)
+                this.setState({errors: {
+                    title: err.errors.title,
+                    slug: err.errors.slug
+                }})
         })
         this.setState({saving: promise, message: undefined})
     }
 
     render()
     {
-        return (
-            <form onSubmit={ev => {ev.preventDefault(); this._handleSubmit()}}>
+        return <APIConsumer render={api => <StateConsumer render={state => (
+            <form onSubmit={ev => {ev.preventDefault(); this._handleSubmit(api)}}>
                 {(this.state.message ?
                     <div className={'alert alert-' + this.state.message.type} role='alert'>
                         {this.state.message.text}
@@ -121,11 +98,11 @@ export class CampaignSettings extends React.Component<Props, State>
                     <label htmlFor='campaign-slug'>Website Address</label>
                     <div className='input-group'>
                         <div className='input-group-prepend'>
-                            <span className='input-group-text'>{this.context.rpc.config.publicURL.protocol}//</span>
+                            <span className='input-group-text'>{state.config.publicURL.protocol}//</span>
                         </div>
                         <input type='text' className='form-control' id='campaign-slug' name='slug' value={this.state.campaign.slug} onChange={ev => this._handleSlugChanged(ev)}/>
                         <div className='input-group-append'>
-                            <span className='input-group-text'>.{this.context.rpc.config.publicURL.hostname}</span>
+                            <span className='input-group-text'>.{state.config.publicURL.hostname}</span>
                         </div>
                     </div>
                     {this.state.errors.slug ? <small className='form-text text-danger'>{this.state.errors.slug}</small> : <span/>}
@@ -141,9 +118,9 @@ export class CampaignSettings extends React.Component<Props, State>
                     </div>
                 </div>
                 <div className='form-group'>
-                    <SaveButton saving={!!this.state.saving} disabled={!!this.state.saving} onClick={() => this._handleSubmit()}/>
+                    <SaveButton saving={!!this.state.saving} disabled={!!this.state.saving} onClick={() => this._handleSubmit(api)}/>
                 </div>
             </form>
-        )
+        )}/>}/>
     }
 }

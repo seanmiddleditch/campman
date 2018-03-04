@@ -1,16 +1,21 @@
 import * as React from 'react'
-import * as PropTypes from 'prop-types'
-import * as ReactDOM from 'react-dom'
 import { MediaFile } from '../types'
-import { Content } from '../rpc'
+import { API } from '../types'
 import { Dialog } from './dialog'
 import { ImageSelect } from './image-select'
 import { SaveButton } from './save-button'
+import { MediaSelectDialog } from './media-select-dialog';
+import { APIConsumer } from './api'
 
 interface Props {
     onCancel: () => void
     onUpload: (media: MediaFile) => void
     visible?: boolean
+}
+
+interface PropsWithAPI extends Props
+{
+    api: API
 }
 interface State {
     file?: File
@@ -19,16 +24,9 @@ interface State {
     path?: string
     error?: string
 }
-export class MediaUploadDialog extends React.Component<Props, State>
+class MediaUpload extends React.Component<PropsWithAPI, State>
 {
-    context!: {
-        rpc: Content
-    }
-    static contextTypes = {
-        rpc: PropTypes.object
-    }
-
-    constructor(props: Props) {
+    constructor(props: PropsWithAPI) {
         super(props)
         this.state = {}
     }
@@ -53,7 +51,7 @@ export class MediaUploadDialog extends React.Component<Props, State>
     private _onUploadClicked() {
         const { file, path, caption } = this.state
         if (file) {
-            const upload = this.context.rpc.media.uploadFile({ file, path, caption }).then(result => {
+            const upload = this.props.api.uploadFile({ file, path, caption }).then(result => {
                 this.setState({ upload: undefined })
                 this.props.onUpload(result)
             }).catch((e: Error) => {
@@ -89,10 +87,4 @@ export class MediaUploadDialog extends React.Component<Props, State>
     }
 }
 
-export function ShowMediaUploadDialog() {
-    const div = document.createElement('div')
-    document.body.appendChild(div)
-    const onCancel = () => { ReactDOM.unmountComponentAtNode(div); document.body.removeChild(div) }
-    const onUpload = () => { document.location.reload(true) }
-    ReactDOM.render(React.createElement(MediaUploadDialog, { onCancel, onUpload, visible: true }), div)
-}
+export const MediaUploadDialog = (props: Props) => <APIConsumer render={api => <MediaUpload api={api} {...props}/>}/>

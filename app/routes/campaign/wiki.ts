@@ -6,9 +6,11 @@ import {URL} from 'url'
 import {checkAccess} from '../../auth'
 import {scrubDraftSecrets} from '../../util/scrub-draft-secrets'
 import * as slugUtils from '../../util/slug-utils'
-import {RenderReact} from '../../util/react-ssr'
+import {render} from '../../util/react-ssr'
 import {ViewWiki} from '../../../common/components/pages/view-wiki'
 import {ListWiki} from '../../../common/components/pages/list-wiki'
+import {AccessDenied} from '../../../common/components/pages/access-denied'
+import {NotFound} from '../../../common/components/pages/not-found'
 import {WikiData} from '../../../common/types/content'
 
 export function wiki() {
@@ -40,7 +42,7 @@ export function wiki() {
 
         const props = {editable: canCreate, pages: pages2}
 
-        RenderReact(res, ListWiki, props)
+        render(res, ListWiki, props)
     })
 
     router.get('/wiki/p/:slug', async (req, res, next) => {
@@ -52,14 +54,14 @@ export function wiki() {
         const page = await pageRepository.fetchBySlug({slug: inSlug, campaignId: req.campaign.id})
         if (!page)
         {
-            res.status(404)
-            return res.render('not-found')
+            render(res.status(404), NotFound, {})
+            return
         }
 
         if (!checkAccess('page:view', {profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public}))
         {
-            res.status(403)
-            return res.render('access-denied')
+            render(res.status(403), AccessDenied, {})
+            return
         }
 
         const {slug, title, rawbody, tags, visibility} = page
@@ -85,7 +87,7 @@ export function wiki() {
             visibility,
             editable
         }
-        RenderReact(res, ViewWiki, props)
+        render(res, ViewWiki, props)
     })
 
     router.post('/wiki', async (req, res, next) => {

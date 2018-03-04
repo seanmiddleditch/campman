@@ -17,8 +17,7 @@ export function auth()
             next()
     })
 
-    router.use('/auth/logout', async (req, res) =>
-    {
+    router.use('/auth/logout', async (req, res) => {
         if (!req.session)
         {
             res.status(401).json({message: 'Not authenticated'})
@@ -32,20 +31,10 @@ export function auth()
 
     router.get('/auth/google/callback',
         passport.authenticate('google'),
-        (req, res) => {
-            const origin = new URL(req.session && req.session.returnURL ? req.session.returnURL : config.publicURL).origin
-            if (req.session)
-                delete req.session.returnURL
-            res.render('google-auth-callback', {origin})
-        })
+        (req, res) => res.send('<html><script>try{window.opener.postMessage({name:"login"},"*")}catch(e){console.error(e,e.stack)}window.close()</script></html>')
+    )
 
-    router.get('/auth/google/login',
-        (req, res, next) => {
-            if (req.session)
-                 req.session.returnURL = req.headers.referer
-            next()
-        },
-        passport.authenticate('google', {scope: ['email', 'profile']}))
+    router.get('/auth/google/login', passport.authenticate('google', {scope: ['email', 'profile']}))
 
     return router
 }

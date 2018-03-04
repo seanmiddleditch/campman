@@ -5,7 +5,7 @@ import {config} from '../../config'
 import {URL} from 'url'
 import * as slugUtils from '../../util/slug-utils'
 import {QueryFailedError} from 'typeorm'
-import {RenderReact} from '../../util/react-ssr'
+import {render} from '../../util/react-ssr'
 import {ListCampaigns} from '../../../common/components/pages/list-campaigns'
 import {checkAccess, CampaignRole} from '../../auth'
 
@@ -27,7 +27,7 @@ export function campaigns() {
 
         const canCreate = checkAccess('campaign:create', {profileId: req.profileId, role: CampaignRole.Visitor})
 
-        RenderReact(res, ListCampaigns, {campaigns, canCreate})
+        render(res, ListCampaigns, {campaigns, canCreate})
     })
 
     router.post('/campaigns', async (req, res, next) => {

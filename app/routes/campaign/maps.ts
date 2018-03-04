@@ -5,11 +5,13 @@ import {connection} from '../../db'
 import PromiseRouter = require('express-promise-router')
 import * as multer from 'multer'
 import {insertMedia} from '../../util/insert-media'
-import {RenderReact} from '../../util/react-ssr'
+import {render} from '../../util/react-ssr'
 import {ListMaps} from '../../../common/components/pages/list-maps'
 import {NewMap} from '../../../common/components/pages/new-map'
 import {ViewMap} from '../../../common/components/pages/view-map'
 import * as slugUtils from '../../util/slug-utils'
+import {AccessDenied} from '../../../common/components/pages/access-denied'
+import {NotFound} from '../../../common/components/pages/not-found'
 
 export function maps()
 {
@@ -23,7 +25,10 @@ export function maps()
 
         const all = await mapRepository.findByCampaign({campaignId: req.campaign.id})
         if (!all)
-            return res.status(404).render('not-found')
+        {
+            render(res.status(404), NotFound, {})
+            return
+        }
 
         const filtered = all.filter(map => checkAccess('map:view', {
             profileId: req.profileId,
@@ -35,7 +40,7 @@ export function maps()
             role: req.campaignRole
         })
 
-        RenderReact(res, ListMaps, {maps: filtered, canCreate})
+        render(res, ListMaps, {maps: filtered, canCreate})
     })
 
     router.get('/new-map', async (req, res, next) =>
@@ -57,10 +62,11 @@ export function maps()
             role: req.campaignRole
         }))
         {
-            return res.status(403).render('access-denied')
+            render(res.status(403), AccessDenied, {})
+            return
         }
 
-        RenderReact(res, NewMap, {})
+        render(res, NewMap, {})
     })
 
     router.get('/maps/m/:slug', async (req, res, next) =>
@@ -73,17 +79,17 @@ export function maps()
 
         if (!map)
         {
-            res.status(404).render('not-found')
+            render(res.status(404), NotFound, {})
             return
         }
 
         if (!checkAccess('map:view', {profileId: req.profileId, role: req.campaignRole}))
         {
-            res.status(403).render('access-denied')
+            render(res.status(403), AccessDenied, {})
             return
         }
 
-        RenderReact(res, ViewMap, {map})
+        render(res, ViewMap, {map})
     })
 
     router.post('/maps', multer({limits: {fileSize: 5*1024*1024}}).single('file'), async (req, res, next) =>

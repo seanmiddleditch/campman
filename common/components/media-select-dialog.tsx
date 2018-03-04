@@ -1,12 +1,10 @@
 import * as React from 'react'
-import * as PropTypes from 'prop-types'
-
 import {MediaUploadDialog} from './media-upload-dialog'
 import {MediaFile} from '../types'
-import {Content} from '../rpc'
+import {API} from '../types'
 import {Dialog} from './dialog'
 import {ImageThumb} from './image-thumb'
-
+import {APIConsumer} from './api'
 
 function MediaList({media, selected, filter, onClick, onDoubleClick, loading}: {media?: MediaFile[], selected?: MediaFile, loading: boolean, filter: (f: MediaFile) => boolean, onClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void, onDoubleClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void})
 {
@@ -38,6 +36,11 @@ interface Props
     onSelect: (media: MediaFile) => void
     onCancel: () => void
 }
+
+interface PropsWithAPI extends Props
+{
+    api: API
+}
 interface State
 {
     uploadDialogOpen: boolean
@@ -48,16 +51,9 @@ interface State
     error?: string
     selected?: MediaFile
 }
-export class MediaSelectDialog extends React.Component<Props, State>
+class MediaSelect extends React.Component<PropsWithAPI, State>
 {
-    context!: {
-        rpc: Content
-    }
-    static contextTypes = {
-        rpc: PropTypes.object
-    }
-
-    constructor(props: Props)
+    constructor(props: PropsWithAPI)
     {
         super(props)
         this.state = {
@@ -69,10 +65,10 @@ export class MediaSelectDialog extends React.Component<Props, State>
     {
         if (!this.state.fetch)
         {
-            const fetch = this.context.rpc.media.listFiles(path).then(file => {
-                this.setState({media: file, error: undefined, fetch: undefined})
-            }).catch(e => {
-                this.setState({error: e.toString(), fetch: undefined})
+            const fetch = this.props.api.listFiles(path).then(files => {
+                this.setState({media: files, error: undefined, fetch: undefined})
+            }).catch((e: Error) => {
+                this.setState({error: e.message, fetch: undefined})
             })
             this.setState({fetch})
         }
@@ -201,3 +197,5 @@ export class MediaSelectDialog extends React.Component<Props, State>
         )
     }
 }
+
+export const MediaSelectDialog = (props: Props) => <APIConsumer render={api => <MediaSelect api={api} {...props}/>}/>

@@ -1,13 +1,17 @@
-{{#>layouts/page title=title}}
+{{#>layouts/essential title=title}}
 
-{{#*inline "page_header"}}
-{{/inline}}
-
-{{#*inline "content"}}
+{{#*inline "body"}}
 <div id='react-content'>{{{content}}}</div>
 <script>
-    ReactDOM.hydrate(React.createElement(Application, {rpc: api}, React.createElement({{component}}, {...{{{json props}}} })), document.getElementById('react-content'))
+    const config = {
+        publicURL: new URL('{{config.publicURL}}'),
+        {{#if campaign}}campaign: {title: '{{campaign.title}}', url: new URL('{{{campaign.url}}}')},{{/if}}
+        {{#if profile}}profile: {nickname: '{{profile.nickname}}', photoURL: new URL('{{{profile.photoURL}}}')},{{/if}}
+    }
+    const api = new ClientAPI(config.publicURL.toString())
+    ReactDOM.hydrate(React.createElement(Application, {api, config}, React.createElement({{component}}, {...{{{json props}}} })),
+    document.getElementById('react-content'))
 </script>
 {{/inline}}
 
-{{/layouts/page}}
+{{/layouts/essential}}

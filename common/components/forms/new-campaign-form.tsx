@@ -1,8 +1,9 @@
 import * as React from 'react'
-import * as PropTypes from 'prop-types'
-import {Content} from '../../rpc'
+import {API} from '../../types'
 import {URL} from 'url'
 import {SaveButton} from '../save-button'
+import {StateConsumer} from '../state'
+import {APIConsumer} from '../api'
 
 interface Props
 {
@@ -21,13 +22,6 @@ interface State
 }
 export class NewCampaignForm extends React.Component<Props, State>
 {
-    context: {
-        rpc: Content
-    }
-    static contextTypes = {
-        rpc: PropTypes.object
-    }
-
     constructor(props: Props)
     {
         super(props)
@@ -38,7 +32,7 @@ export class NewCampaignForm extends React.Component<Props, State>
         }
     }
 
-    private _handleSubmit()
+    private _handleSubmit(api: API)
     {
         const promise = fetch('/campaigns', {
             method: 'POST',
@@ -81,11 +75,9 @@ export class NewCampaignForm extends React.Component<Props, State>
             slug: ''
         }
         const errors = this.state.errors
-        const config = this.context.rpc.config
-        const publicURL = config.publicURL
 
         return (
-            <div>
+            <APIConsumer render={api => <StateConsumer render={state => <div>
                 {errors.message && <div className='alert alert-danger'>{errors.message}</div>}
                 <label className='form-group mb-2'>
                     <span>Name of Your Campaign</span>
@@ -97,20 +89,20 @@ export class NewCampaignForm extends React.Component<Props, State>
                     <span>Website Address</span>
                     <div className='input-group'>
                         <div className='input-group-prepend'>
-                            <span className='input-group-text'>{publicURL.protocol}//</span>
+                            <span className='input-group-text'>{state.config.publicURL.protocol}//</span>
                         </div>
                         <input type='text' className={`form-control is-${errors.slug && 'in'}valid`} id='campaign-slug' name='slug' value={this.state.slug} onChange={ev => this.setState({slug: ev.target.value})} placeholder={this.state.title}/>
                         <div className='input-group-append'>
-                            <span className='input-group-text'>.{publicURL.hostname}</span>
+                            <span className='input-group-text'>.{state.config.publicURL.hostname}</span>
                         </div>
                     </div>
                     {errors.slug && <small className='invalid-feedback'>{errors.slug}</small>}
                     <small className='form-text text-muted'>The unique web address your new campaign can be found at. May only contain letters, numbers, and dashes.</small>
                 </label>
                 <div className='form-group'>
-                    <SaveButton saving={!!this.state.promise} title='Get Started' onClick={() => this._handleSubmit()}/>
+                    <SaveButton saving={!!this.state.promise} title='Get Started' onClick={() => this._handleSubmit(api)}/>
                 </div>
-            </div>
+            </div>}/>}/>
         )
     }
 }

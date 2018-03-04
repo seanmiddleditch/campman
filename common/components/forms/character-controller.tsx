@@ -1,7 +1,6 @@
 import * as React from 'react'
-import * as PropTypes from 'prop-types'
-import {CharacterData} from '../../types'
-import {Content, ContentError} from '../../rpc'
+import {API, APIError, CharacterData} from '../../types'
+import {APIConsumer} from '../api'
 
 type Errors = {[key: string]: string|undefined}
 
@@ -19,29 +18,22 @@ interface State
 }
 export class CharacterController extends React.Component<Props, State>
 {
-    context!: {
-        rpc: Content
-    }
-    static contextTypes = {
-        rpc: PropTypes.object
-    }
-
     constructor(props: Props)
     {
         super(props)
         this.state = {}
     }
 
-    private _submit(data: CharacterData)
+    private _submit(data: CharacterData, api: API)
     {
         if (!this.state.saving)
         {
-            const saving = this.context.rpc.characters.saveCharacter({...data, id: this.props.id})
+            const saving = api.saveCharacter({...data, id: this.props.id})
             this.setState({saving})
             saving.then(char => {
                 this.setState({saving: undefined}, () => this.props.onSubmit())
             }).catch(err => {
-                if (err instanceof ContentError)
+                if (err instanceof APIError)
                 console.error(err)
                 alert(err)
                 this.setState({saving: undefined})
@@ -51,11 +43,11 @@ export class CharacterController extends React.Component<Props, State>
 
     public render()
     {
-        return this.props.form({
+        return <APIConsumer render={api => this.props.form({
             saving: !!this.state.saving,
             errors: this.state.errors,
             props: this.props.props,
-            submit: (data: CharacterData) => this._submit(data)
-        })
+            submit: (data: CharacterData) => this._submit(data, api)
+        })}/>
     }
 }

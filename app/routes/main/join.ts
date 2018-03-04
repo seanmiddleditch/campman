@@ -6,7 +6,7 @@ import {config} from '../../config'
 import {URL} from 'url'
 import {QueryFailedError} from 'typeorm'
 import {JoinCampaign} from '../../../common/components/pages/join-campaign'
-import {RenderReact} from '../../util/react-ssr'
+import {render} from '../../util/react-ssr'
 
 export function join() {
     const router = PromiseRouter()
@@ -35,7 +35,7 @@ export function join() {
         catch (e)
         {
             console.error(e)
-            RenderReact(res, JoinCampaign, {success: false, error: 'Expired or invalid code.'})
+            render(res, JoinCampaign, {success: false, error: 'Expired or invalid code.'})
         }
     })
 

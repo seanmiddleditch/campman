@@ -2,6 +2,9 @@ import {auth} from './auth'
 import {campaigns} from './campaigns'
 import {join} from './join'
 import PromiseRouter = require('express-promise-router')
+import {SiteHome} from '../../../common/components/pages/site-home'
+import {NotFound} from '../../../common/components/pages/not-found'
+import {render} from '../../util/react-ssr'
 
 export function routes()
 {
@@ -11,9 +14,9 @@ export function routes()
     router.use(join())
     router.use('/', (req, res) => {
         if (req.url === '/')
-            res.render('index')
+            render(res, SiteHome, {})
         else
-            res.render('not-found')
+            render(res, NotFound, {})
     })
     return router
 }

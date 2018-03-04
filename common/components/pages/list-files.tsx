@@ -1,8 +1,8 @@
 import * as React from 'react'
-import * as PropTypes from 'prop-types'
-import {Content} from '../../rpc'
+import {API} from '../../types'
 import {ImageThumb} from '../image-thumb'
 import {MediaUploadDialog} from '../media-upload-dialog'
+import {APIConsumer} from '../api'
 
 interface Props
 {
@@ -16,13 +16,6 @@ interface State
 }
 export class ListFiles extends React.Component<Props, State>
 {
-    context: {
-        rpc: Content
-    }
-    static contextTypes = {
-        rpc: PropTypes.object
-    }
-
     state = {
         uploadDialog: false
     }
@@ -32,18 +25,17 @@ export class ListFiles extends React.Component<Props, State>
         this.setState({uploadDialog: true})
     }
 
-    private _handleDeleteClicked(path: string)
+    private _handleDeleteClicked(path: string, api: API)
     {
-        const media = this.context.rpc.media
         if (confirm('Are you sure you want to delete this file?'))
-            media.deleteFile(path)
+            api.deleteFile(path)
                 .then(() => window.location.reload(true))
                 .catch(err => alert(err))
     }
 
     public render()
     {
-        return <div>
+        return <APIConsumer render={api => <div>
             <MediaUploadDialog visible={!!this.state.uploadDialog} onCancel={() => this.setState({uploadDialog: false})} onUpload={() => document.location.reload(true)}/>
             {!!this.props.canUpload && <button className='btn btn-primary' onClick={() => this._handleUploadClicked()}><i className='fa fa-upload'></i> Upload</button>}
             <div className='clearfix'>
@@ -54,12 +46,12 @@ export class ListFiles extends React.Component<Props, State>
                             <h5 className='card-title'>{file.caption ? file.caption : file.path}</h5>
                             <a href={file.url} className='btn btn-link'><i className='fa fa-search-plus'></i></a>
                             <button disabled className='btn btn-link'><i className='fa fa-pencil'></i></button>
-                            {!!this.props.canDelete && <button disabled={!!this.state.uploadDialog} className='btn btn-link pull-right' onClick={() => this._handleDeleteClicked(file.path)}><i className='fa fa-trash-o'></i></button>}
+                            {!!this.props.canDelete && <button disabled={!!this.state.uploadDialog} className='btn btn-link pull-right' onClick={() => this._handleDeleteClicked(file.path, api)}><i className='fa fa-trash-o'></i></button>}
                         </div>
                     </div>
                 ))}
             </div>
             {!this.props.files && <div className='alert alert-warning'>No results</div>}
-        </div>
+        </div>}/>
     }
 }

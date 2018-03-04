@@ -22,4 +22,5 @@ export interface CampaignData
     slug: string
     title: string
     url: string
+    visibility: 'Public'|'Hidden'
 }

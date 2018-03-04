@@ -11,7 +11,7 @@ import {URL} from 'url'
 import * as multer from 'multer'
 import {insertMedia} from '../../util/insert-media'
 import {ListFiles} from '../../../common/components/pages/list-files'
-import {RenderReact} from '../../util/react-ssr'
+import {render} from '../../util/react-ssr'
 
 export function files()
 {
@@ -131,7 +131,7 @@ export function files()
 
         if (req.accepts('text/html'))
         {
-            RenderReact(res, ListFiles, {
+            render(res, ListFiles, {
                 files: files.map(m => ({
                     path: m.path,
                     contentMD5: m.contentMD5,
