@@ -99,6 +99,7 @@
     "spark-md5": "3.0.0",
     "sqlite3": "3.1.8",
     "style-loader": "0.18.2",
+    "ts-loader": "4.0.1",
     "typeorm": "0.1.9",
     "typescript": "2.7.1",
     "uglifyjs-webpack-plugin": "1.2.2",
@@ -106,6 +107,7 @@
     "webpack-cli": "2.0.9"
   },
   "devDependencies": {
+    "hard-source-webpack-plugin": "0.6.1",
     "webpack-dev-middleware": "git+https://github.com/seanmiddleditch/webpack-dev-middleware.git#1df42871ea6c"
   }
 }

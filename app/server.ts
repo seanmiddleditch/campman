@@ -20,7 +20,6 @@ import { connectToDatabase } from './db'
 import * as handlebarsHelpers from './util/handlebars-helpers'
 
 import * as routes from './routes'
-import * as models from './models'
 
 (async () => {
 
@@ -37,9 +36,6 @@ import * as models from './models'
     }
 
     const connection = await connectToDatabase(config.databaseURL)
-
-    const userRepository = connection.getCustomRepository(models.ProfileRepository)
-    const membershipRepository = connection.getCustomRepository(models.MembershipRepository)
 
     const app = express()
     app.engine('handlebars', exphbs({
@@ -74,8 +70,7 @@ import * as models from './models'
     {
         const webpack = require('webpack')
         const webpackDevMiddleware = require('webpack-dev-middleware')
-        const webpackConfig = require(path.join(root, 'client', 'webpack.config.js'))
-        webpackConfig.mode = 'development'
+        const webpackConfig = require(path.join(root, 'client', 'webpack.dev.config.js'))
         const compiler = webpack(webpackConfig)
         app.use(webpackDevMiddleware(compiler, {
             publicPath: webpackConfig.output.publicPath
@@ -101,7 +96,7 @@ import * as models from './models'
     app.use(BodyParser.json({type: 'application/json'}))
 
     passport.use(googleAuth(connection, config.publicURL.toString(), config.googleClientID, config.googleAuthSecret))
-    passport.serializeUser((user: models.ProfileModel, done) => done(null, user))
+    passport.serializeUser((user: any, done) => done(null, user))
     passport.deserializeUser((user: any, done) => done(null, user))
 
     const RedisStore = redis(session)
