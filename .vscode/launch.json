@@ -8,11 +8,11 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceRoot}/app/dist/app/server.js",
+            "program": "${workspaceRoot}/dist/app/server.js",
             "sourceMaps": true,
             "envFile": "${workspaceRoot}/.env",
             "outFiles": [
-                "${workspaceRoot}/server/dist/**/*.js"
+                "${workspaceRoot}/dist/**/*.js"
             ]
         }
     ]
