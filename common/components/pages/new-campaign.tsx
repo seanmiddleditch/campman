@@ -2,8 +2,8 @@ import * as React from 'react'
 import { API, APIError } from '../../types'
 import { URL } from 'url'
 import { SaveButton } from '../save-button'
-import { StateConsumer } from '../state'
-import { APIConsumer } from '../api'
+import { StateConsumer } from '../state-context'
+import { APIConsumer } from '../api-context'
 
 interface Props
 {

@@ -5,7 +5,7 @@ import { Dialog } from './dialog'
 import { ImageSelect } from './image-select'
 import { SaveButton } from './save-button'
 import { MediaSelectDialog } from './media-select-dialog';
-import { APIConsumer } from './api'
+import { APIConsumer } from './api-context'
 
 interface Props {
     onCancel: () => void

@@ -1,8 +1,8 @@
 import * as React from 'react'
 import {SaveButton} from '../save-button'
 import {API, APIError} from '../../types'
-import {StateConsumer} from '../state'
-import {APIConsumer} from '../api'
+import {StateConsumer} from '../state-context'
+import {APIConsumer} from '../api-context'
 
 interface Campaign
 {

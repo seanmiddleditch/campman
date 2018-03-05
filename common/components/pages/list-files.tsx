@@ -2,7 +2,7 @@ import * as React from 'react'
 import {API} from '../../types'
 import {ImageThumb} from '../image-thumb'
 import {MediaUploadDialog} from '../media-upload-dialog'
-import {APIConsumer} from '../api'
+import {APIConsumer} from '../api-context'
 
 interface Props
 {

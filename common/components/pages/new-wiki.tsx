@@ -4,7 +4,7 @@ import { SaveButton } from '../save-button'
 import { WikiPageInput, WikiPageData } from '../../types/content'
 import { API, APIError } from '../../types/api'
 import { RawDraftContentState } from 'draft-js'
-import { APIConsumer } from '../api'
+import { APIConsumer } from '../api-context'
 import { FormInput, DropButton } from '../form-utils'
 
 interface State

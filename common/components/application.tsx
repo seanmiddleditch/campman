@@ -1,7 +1,7 @@
 import * as React from 'react'
 import {API, Config} from '../types'
-import {StateProvider} from './state'
-import {APIProvider} from './api'
+import {StateProvider} from './state-context'
+import {APIProvider} from './api-context'
 import {Navigation} from './site/navigation'
 
 interface Props

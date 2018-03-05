@@ -8,7 +8,7 @@ import { FormInput } from '../form-utils'
 import { RawDraft } from '../raw-draft'
 import { API, APIError, CharacterData, CharacterInput } from '../../types'
 import { RawDraftContentState } from 'draft-js'
-import { APIConsumer } from '../api'
+import { APIConsumer } from '../api-context'
 
 interface State
 {

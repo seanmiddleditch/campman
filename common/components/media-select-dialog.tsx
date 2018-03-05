@@ -4,7 +4,7 @@ import {MediaFile} from '../types'
 import {API} from '../types'
 import {Dialog} from './dialog'
 import {ImageThumb} from './image-thumb'
-import {APIConsumer} from './api'
+import {APIConsumer} from './api-context'
 
 function MediaList({media, selected, filter, onClick, onDoubleClick, loading}: {media?: MediaFile[], selected?: MediaFile, loading: boolean, filter: (f: MediaFile) => boolean, onClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void, onDoubleClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void})
 {

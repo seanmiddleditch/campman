@@ -1,5 +1,5 @@
 import * as React from 'react'
-import {StateConsumer} from '../state'
+import {StateConsumer} from '../state-context'
 
 export class AccessDenied extends React.Component
 {
