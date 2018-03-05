@@ -33,3 +33,23 @@ export const FormInput = (props: {
         {props.error && <div className='text-danger'>{props.error || 'Error'}</div>}
     </div>
 }
+
+export class DropButton extends React.Component<{
+    className?: string
+    display: React.ReactNode
+    children: React.ReactNode
+}, {open: boolean}>
+{
+    state = {open: false}
+
+    public render()
+    {
+        return <div className={this.props.className || 'btn-group'} role='group'>
+            <button className='btn btn-secondary dropdown-toggle' onClick={() => this.setState({open:!this.state.open})}>{this.props.display}</button>
+            <div className={`dropdown-menu ${this.state.open && 'show'}`}>
+                {this.props.children}
+            </div>
+        </div>
+
+    }
+}

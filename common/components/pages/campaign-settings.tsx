@@ -81,7 +81,7 @@ export class CampaignSettings extends React.Component<Props, State>
     render()
     {
         return <APIConsumer render={api => <StateConsumer render={state => (
-            <form onSubmit={ev => {ev.preventDefault(); this._handleSubmit(api)}}>
+            <div>
                 {(this.state.message ?
                     <div className={'alert alert-' + this.state.message.type} role='alert'>
                         {this.state.message.text}
@@ -120,7 +120,7 @@ export class CampaignSettings extends React.Component<Props, State>
                 <div className='form-group'>
                     <SaveButton saving={!!this.state.saving} disabled={!!this.state.saving} onClick={() => this._handleSubmit(api)}/>
                 </div>
-            </form>
+            </div>
         )}/>}/>
     }
 }

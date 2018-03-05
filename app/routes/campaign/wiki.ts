@@ -8,6 +8,8 @@ import {scrubDraftSecrets} from '../../util/scrub-draft-secrets'
 import * as slugUtils from '../../util/slug-utils'
 import {render} from '../../util/react-ssr'
 import {ViewWiki} from '../../../common/components/pages/view-wiki'
+import {EditWiki} from '../../../common/components/pages/edit-wiki'
+import {NewWiki} from '../../../common/components/pages/new-wiki'
 import {ListWiki} from '../../../common/components/pages/list-wiki'
 import {AccessDenied} from '../../../common/components/pages/access-denied'
 import {NotFound} from '../../../common/components/pages/not-found'
@@ -45,6 +47,19 @@ export function wiki() {
         render(res, ListWiki, props)
     })
 
+    router.get('/new-wiki', async (req, res, next) => {
+        if (!req.campaign)
+            throw new Error('Missing campaign')
+
+        if (!checkAccess('page:create', {profileId: req.profileId, role: req.campaignRole}))
+        {
+            render(res.status(403), AccessDenied, {})
+            return
+        }
+
+        render(res, NewWiki, {})
+    })
+
     router.get('/wiki/p/:slug', async (req, res, next) => {
         if (!req.campaign)
             throw new Error('Missing campaign')
@@ -79,15 +94,27 @@ export function wiki() {
             hidden: page.visibility !== PageVisibility.Public
         })
 
-        const props = {
-            slug: slug || '',
-            title,
-            rawbody: scrubDraftSecrets(rawbody, secrets),
-            tags,
-            visibility,
-            editable
+        if (!!req.query['edit'])
+        {
+            if (!editable) {
+                render(res.status(403), AccessDenied, {})
+                return
+            }
+
+            render(res, EditWiki, {initial: {...page, rawbody: JSON.parse(rawbody)}})
         }
-        render(res, ViewWiki, props)
+        else
+        {
+            const props = {
+                slug: slug || '',
+                title,
+                rawbody: scrubDraftSecrets(rawbody, secrets),
+                tags,
+                visibility,
+                editable
+            }
+            render(res, ViewWiki, props)
+        }
     })
 
     router.post('/wiki', async (req, res, next) => {
@@ -101,7 +128,7 @@ export function wiki() {
 
         if (!slug)
         {
-            res.status(400).json({status: 'error', message: 'Missing slug.'})
+            res.status(400).json({status: 'error', message: 'Missing slug.', errors: {slug: 'Required.'}})
             return
         }
         const page = await pageRepository.fetchBySlug({slug, campaignId: req.campaign.id})

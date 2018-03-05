@@ -82,7 +82,7 @@ export class NewCharacter extends React.Component<{}, State>
     {
         const current = this.state.char
         return (
-            <form>
+            <div>
                 <div className='form-row'>
                     <div className='col-md-10'>
                         <div className='form-row'>
@@ -105,7 +105,7 @@ export class NewCharacter extends React.Component<{}, State>
                         <APIConsumer render={api => <SaveButton disabled={!!this.state.saving} title='Create' saving={!!this.state.saving} onClick={() => this._handleSubmitClicked(api)}/>}/>
                     </div>
                 )}/>
-            </form>
+            </div>
         )
     }
 }

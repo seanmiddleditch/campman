@@ -12,7 +12,8 @@ import {
     AtomicBlockUtils,
     genKey,
     convertToRaw,
-    convertFromRaw
+    convertFromRaw,
+    RawDraftContentState
 } from 'draft-js'
 
 import {MediaSelectDialog} from '../media-select-dialog'
@@ -27,53 +28,41 @@ import {blockRenderer, handleReturn, blockRenderMap} from './helpers/block-utils
 
 import {MediaFile} from '../../types'
 
-interface MarkEditorProps
+interface Props
 {
-    document: any
+    document: RawDraftContentState|undefined
     disabled?: boolean
     editable?: boolean
-    onChange: (document: any) => void
-    buttons?: () => any
+    onChange: (document: RawDraftContentState) => void
+    buttons?: () => React.ReactNode
     tabIndex?: number
 }
-interface MarkEditorState
+interface State
 {
     editorState: EditorState
     preview: boolean
     mediaPopupOpen: boolean
+    active: boolean
 }
-export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState>
+export class MarkEditor extends React.Component<Props, State>
 {
     refs: {
         editor: HTMLElement
     }
 
-    constructor(props: MarkEditorProps)
+    constructor(props: Props)
     {
         super(props)
 
-        const editorState = (() => {
-            if (props.document)
-            {
-                const body = typeof props.document === 'string' ? JSON.parse(props.document) : props.document
-                try
-                {
-                    const content = convertFromRaw(body)
-                    return EditorState.createWithContent(content, decorators)
-                }
-                catch (err)
-                {
-                    console.error(err)
-                    return EditorState.createEmpty()
-                }
-            }
-            return EditorState.createEmpty(decorators)
-        })()
+        const editorState = props.document ?
+            EditorState.createWithContent(convertFromRaw(props.document), decorators) :
+            EditorState.createEmpty(decorators)
 
         this.state = {
             editorState,
             preview: false,
-            mediaPopupOpen: false
+            mediaPopupOpen: false,
+            active: false
         }
     }
 
@@ -129,8 +118,7 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
 
     componentDidMount()
     {
-        if (!this.props.disabled)
-            this.refs.editor.focus()
+        this.setState({active: true})
     }
 
     componentWillUnmount()
@@ -224,7 +212,7 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
                             {this.props.buttons && this.props.buttons()}
                         </div>
                     )}
-                    <div className='edit-area mt-2'>
+                    {this.state.active && <div className='edit-area mt-2'>
                         <Editor ref='editor'
                             editorState={this.state.editorState}
                             onBlur={() => this._flushState()}
@@ -237,7 +225,7 @@ export class MarkEditor extends React.Component<MarkEditorProps, MarkEditorState
                             blockRendererFn={this._blockRenderer.bind(this)}
                             tabIndex={this.props.tabIndex}
                         />
-                    </div>
+                    </div>}
                 </div>
             </div>
         )

@@ -5,10 +5,10 @@ export class APIError extends Error
 {
     public readonly errors?: {[key: string]: string|undefined}
 
-    public constructor(message: string, {errors}: {errors?: {[key: string]: string|undefined}})
+    public constructor(message: string, data?: {errors?: {[key: string]: string|undefined}})
     {
         super(message)
-        this.errors = errors
+        this.errors = data && data.errors
     }
 }
 

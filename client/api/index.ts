@@ -51,7 +51,7 @@ export class ClientAPI implements API
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             }),
-            body: JSON.stringify(page)
+            body: JSON.stringify({...page, rawbody: JSON.stringify(page.rawbody)})
         })
         
         const result = await response.json()

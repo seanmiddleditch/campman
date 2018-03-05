@@ -9,7 +9,7 @@ const style = (size: number) => ({
     margin: 24,
     overflow: 'hidden',
     position: 'relative',
-    border: '1px solid black'
+    border: '1px solid rgba(0, 0, 0, 0.3)'
 } as React.CSSProperties)
 
 interface Props
