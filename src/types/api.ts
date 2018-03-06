@@ -1,5 +1,4 @@
-import {MediaFile} from './media'
-import {CharacterInput, CharacterData, CampaignInput, CampaignData, WikiPageInput, WikiPageData} from './content'
+import { CharacterInput, CharacterData, CampaignInput, CampaignData, WikiPageInput, WikiPageData, MediaFile, ProfileData } from './content'
 
 export class APIError extends Error
 {
@@ -14,19 +13,19 @@ export class APIError extends Error
 
 export interface API
 {
-    showLoginDialog() : Promise<void>
-    endSession() : Promise<void>
+    showLoginDialog(): Promise<void>
+    endSession(): Promise<void>
 
     saveCharacter(char: CharacterInput) : Promise<CharacterData>
 
-    uploadFile(props: {file: File, path?: string, caption?: string}) : Promise<MediaFile>
-    listFiles(path: string): Promise<MediaFile[]>
+    uploadFile(props: {file: File, path?: string, caption?: string}): Promise<MediaFile>
+    listFiles(data: {campaignId: number, path?: string}): Promise<MediaFile[]>
     deleteFile(path: string): Promise<void>
-    getImageURL(hash: string, ext: string): string
-    getThumbURL(hash: string, size: number): string
 
     createCampaign(camp: CampaignInput): Promise<CampaignData>
     saveSettings(camp: CampaignInput): Promise<void>
 
     saveWikiPage(page: WikiPageInput): Promise<WikiPageData>
+
+    listProfiles(data: {campaignId: number}): Promise<ProfileData[]>
 }

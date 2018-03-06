@@ -1,11 +1,6 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
-import {Config} from '../types/config'
-
-interface State
-{
-    config: Config
-}
+import {State} from '../state'
 
 export class StateProvider extends React.Component<{state: State}> implements React.ChildContextProvider<{state: State}>
 {

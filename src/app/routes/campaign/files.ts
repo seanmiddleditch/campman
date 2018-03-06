@@ -12,6 +12,7 @@ import * as multer from 'multer'
 import {insertMedia} from '../../util/insert-media'
 import {ListFiles} from '../../../components/pages/list-files'
 import {render} from '../../util/react-ssr'
+import {MediaFile} from '../../../types'
 
 export function files()
 {
@@ -131,7 +132,7 @@ export function files()
 
         if (req.accepts('text/html'))
         {
-            render(res, ListFiles, {
+            const props = {
                 files: files.map(m => ({
                     path: m.path,
                     contentMD5: m.contentMD5,
@@ -141,7 +142,8 @@ export function files()
                 })),
                 canUpload,
                 canDelete
-            })
+            }
+            render(res, ListFiles, props)
         }
         else if (req.accepts('application/json'))
         {

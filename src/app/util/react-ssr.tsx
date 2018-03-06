@@ -4,25 +4,27 @@ import * as ReactDOMServer from 'react-dom/server'
 import {Application} from '../../components/application'
 import * as shortid from 'shortid'
 import {URL} from 'url'
-import {API, CharacterData, CampaignData, MediaFile, WikiPageData} from '../../types'
+import {API, CharacterData, CampaignData, MediaFile, WikiPageData, ProfileData} from '../../types'
 
 interface RenderProps
 {
     title?: string
 }
 
+type Stub<Result> = () => Promise<Result>
+function stub<R>(): Stub<R> { return () => {throw new Error('not implemented')} }
+
 const stubAPI: API = {
-    showLoginDialog() { return new Promise(r => {}) },
-    endSession() { return new Promise(r => {}) },
-    saveCharacter() { return new Promise<CharacterData>(r => {}) },
-    uploadFile() { return new Promise<MediaFile>(r => {}) },
-    listFiles() { return new Promise<MediaFile[]>(r => {}) },
-    deleteFile() { return new Promise(r => {}) },
-    getImageURL() { return '' },
-    getThumbURL() { return '' },
-    createCampaign() { return new Promise(r => {}) },
-    saveSettings() { return new Promise(r => {}) },
-    saveWikiPage() { return new Promise<WikiPageData>(r => {}) },
+    showLoginDialog: stub<void>(),
+    endSession: stub<void>(),
+    saveCharacter: stub<CharacterData>(),
+    uploadFile: stub<MediaFile>(),
+    listFiles: stub<MediaFile[]>(),
+    deleteFile: stub<void>(),
+    createCampaign: stub<CampaignData>(),
+    saveSettings: stub<void>(),
+    saveWikiPage: stub<WikiPageData>(),
+    listProfiles: stub<ProfileData[]>(),
 }
 
 const makeConfig = (resLocals: any, appLocals: any) => ({
@@ -31,19 +33,10 @@ const makeConfig = (resLocals: any, appLocals: any) => ({
     profile: resLocals.profile
 })
 
-type ComponentFactory<Props> = React.ComponentClass<Props>|React.StatelessComponent<Props>
+type ComponentType<P = {}> = React.ComponentClass<P>|React.StatelessComponent<P>
 
-export function render<Props, Component extends ComponentFactory<any>>(res: Response, component: Component, props: Props&RenderProps)
+export function render<Props, Component extends ComponentType<any>>(res: Response, component: Component, props: Props)
 {
     const content = ReactDOMServer.renderToString(<Application api={stubAPI} config={makeConfig(res.locals, res.app.locals)}>{React.createElement(component, props)}</Application>)
-    res.render('react', {title: props.title, content, props, component: component.name})
+    res.render('react', {content, props, component: component.name})
 }
-
-// export function renderString<Props, Component extends ComponentFactory<any>>(component: Component, env: any, props: Props&RenderProps) : string
-// {
-//     const config = makeConfig(env, env)
-//     const content = ReactDOMServer.renderToString(<Application api={stubAPI} config={config}>{React.createElement(component, props)}</Application>)
-//     const id = shortid()
-//     const fragment = `<div id='${id}'>${content}</div><script>ReactDOM.hydrate(React.createElement(Application,{api:new API('${env.config.publicURL}'),config:${JSON.stringify(config)}})},React.createElement(${component.name},${JSON.stringify(props)})),document.getElementById('${id}'))</script>`
-//     return fragment
-// }

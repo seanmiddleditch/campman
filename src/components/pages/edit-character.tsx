@@ -9,6 +9,7 @@ import { RawDraft } from '../raw-draft'
 import { API, APIError, CharacterData, CharacterInput } from '../../types'
 import { RawDraftContentState } from 'draft-js'
 import { APIConsumer } from '../api-context'
+import { ProfileDropdown } from '../profile-dropdown'
 
 interface Props
 {
@@ -18,6 +19,7 @@ interface State
 {
     char: CharacterInput
     saving?: Promise<void>
+    errorMessage?: string
     errors: {[K in keyof(CharacterData)]?: string}
 }
 export class EditCharacter extends React.Component<Props, State>
@@ -39,7 +41,7 @@ export class EditCharacter extends React.Component<Props, State>
                 .then(char => {
                     document.location.href = `/chars/c/${char.slug}`
                 }).catch(err => {
-                    this.setState({saving: undefined})
+                    this.setState({errorMessage: err.message, saving: undefined})
                     if (err instanceof APIError && err.errors)
                         this.setState({errors: err.errors})
                 })
@@ -57,6 +59,7 @@ export class EditCharacter extends React.Component<Props, State>
         const current = this.state.char
         return (
             <div>
+                {this.state.errorMessage && <div className='alert alert-danger'>{this.state.errorMessage}</div>}
                 <div className='form-row'>
                     <div className='col-md-10'>
                         <div className='form-row'>
@@ -70,6 +73,9 @@ export class EditCharacter extends React.Component<Props, State>
                         </div>
                         <div className='form-row'>
                             <FormInput type='text' className='col-md-12' name='slug' value={this.state.char.slug || ''} disabled={true} prefix={() => <span className='input-group-text'>/chars/c/</span>}/>
+                        </div>
+                        <div className='form-row'>
+                            <ProfileDropdown className='col-md-12' disabled={!!this.state.saving} value={this.state.char.owner} onChange={val => this._handleChange('owner', val)}/>
                         </div>
                     </div>
                     <ImageSelect size={100} label={false} className='form-group col-md-2'

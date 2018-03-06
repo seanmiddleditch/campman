@@ -1,8 +1,20 @@
 import * as React from 'react'
-import {API, Config} from '../types'
-import {StateProvider} from './state-context'
-import {APIProvider} from './api-context'
-import {Navigation} from './site/navigation'
+import { API } from '../types'
+import { Config } from '../state/config'
+import { StateProvider } from './state-context'
+import { APIProvider } from './api-context'
+import { Navigation } from './navigation'
+
+const footerStyle: React.CSSProperties = {
+    position: 'absolute',
+    bottom: 0,
+    height: 60,
+    width: '100%',
+    margin: 0,
+    padding: 0,
+    color: 'grey',
+    fontSize: 'small'
+}
 
 interface Props
 {
@@ -27,7 +39,7 @@ export class Application extends React.Component<Props>
                             {this.props.children}
                         </div>
                     </main>
-                    <footer className='mt-2' style={{position: 'absolute', bottom: 0, height: 60, width: '100%', margin: 0, padding: 0, color: 'grey', fontSize: 'small'}}>
+                    <footer className='mt-2' style={footerStyle}>
                         <div className='text-muted text-center'>Powered by <a href='https://github.com/seanmiddleditch/campman'>Campaign Manager</a></div>
                     </footer>
                 </APIProvider>

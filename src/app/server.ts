@@ -55,6 +55,9 @@ import * as routes from './routes'
     const wwwHost = `www.${host}`
     const mediaHost = `media.${host}`
 
+    app.locals.apiHost = new URL('', config.publicURL)
+    app.locals.apiHost.hostname = `api.${app.locals.apiHost.hostname}`
+
     // static assets first, before campaign checks or other work
     app.use(favicon(path.join(root, 'static', 'images', 'favicon.ico')))
     app.use(express.static(path.join(root, 'static')))
@@ -124,12 +127,12 @@ import * as routes from './routes'
     const mediaRouter = routes.mediaRoutes()
 
     app.use(async (req, res, next) => {
-        if (req.hostname === apiHost)
-            apiRouter(req, res, next)
-        else if (req.hostname === host)
+        if (req.hostname === host)
             mainRouter(req, res, next)
         else if (req.hostname === mediaHost)
             mediaRouter(req, res, next)
+        else if (req.hostname === apiHost)
+            apiRouter(req, res, next)
         else if (req.hostname === wwwHost)
             res.redirect(config.publicURL.toString())
         else if (req.hostname.endsWith(`.${host}`))

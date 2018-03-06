@@ -54,6 +54,7 @@
     "@types/sharp": "0.17.6",
     "@types/shortid": "0.0.29",
     "@types/spark-md5": "3.0.0",
+    "@types/url-join": "0.8.2",
     "@types/webpack": "3.0.10",
     "@types/webpack-dev-middleware": "1.9.3",
     "awesome-typescript-loader": "3.5.0",
@@ -102,6 +103,7 @@
     "typeorm": "0.1.9",
     "typescript": "2.7.1",
     "uglifyjs-webpack-plugin": "1.2.2",
+    "url-join": "4.0.0",
     "webpack": "4.0.1",
     "webpack-cli": "2.0.9"
   },

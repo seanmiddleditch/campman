@@ -28,7 +28,14 @@ export function membership() {
             return
         }
 
-        const all = await membershipRepository.findForCampaign({campaignId: req.campaign.id})
+        const all = (await membershipRepository.findForCampaign({campaignId: req.campaign.id})).map(m => ({
+            fullname: m.fullname,
+            nickname: m.nickname,
+            photoURL: m.photoURL,
+            email: m.email,
+            role: m.role,
+            id: m.id
+        }))
 
         render(res, CampaignMembership, {members: all})
     })

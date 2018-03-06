@@ -9,7 +9,7 @@ import {scrubDraftSecrets} from '../../util/scrub-draft-secrets'
 import * as slugUtils from '../../util/slug-utils'
 import * as multer from 'multer'
 import {insertMedia} from '../../util/insert-media'
-
+import {CharacterData} from '../../../types'
 import {render} from '../../util/react-ssr'
 import {ViewCharacter} from '../../../components/pages/view-character'
 import {EditCharacter} from '../../../components/pages/edit-character'
@@ -27,15 +27,16 @@ export function characters() {
             throw new Error('Missing campaign')
 
         const all = await characterRepository.findForCampaign({campaignId: req.campaign.id})
-        const filtered = all.filter(char => checkAccess('character:view', {
+        const chars = all.filter(char => checkAccess('character:view', {
             profileId: req.profileId,
             role: req.campaignRole,
-            hidden: !char.visible
-        }))
+            hidden: !char.visible,
+            ownerId: char.ownerId
+        })).map(c => ({...c, rawbody: JSON.parse(c.rawbody)}))
 
         const canCreate = checkAccess('character:view', {profileId: req.profileId, role: req.campaignRole})
 
-        render(res, ListCharacters, {chars: filtered, editable: canCreate})
+        render(res, ListCharacters, {chars, editable: canCreate})
     })
 
     router.get('/new-char', async (req, res, next) => {
@@ -47,6 +48,18 @@ export function characters() {
 
         render(res, NewCharacter, {})
     })
+
+    const encodeChar = (char: CharacterModel|undefined) => {
+        return char ? {
+            id: char.id,
+            title: char.title,
+            slug: char.slug,
+            owner: char.ownerId,
+            visible: char.visible,
+            portrait: char.portrait ? {contentMD5: char.portrait.contentMD5, extension: char.portrait.extension} : undefined,
+            rawbody: char.rawbody,
+        } : undefined
+    }
 
     const serveCharacter = (req: Request, res: Response, char: CharacterModel|undefined, edit: boolean) => {
         if (!char)
@@ -63,7 +76,7 @@ export function characters() {
 
         const secrets = checkAccess('character:view-secret', {profileId: req.profileId, role: req.campaignRole})
 
-        const editable = checkAccess('character:edit', {profileId: req.profileId, role: req.campaignRole})
+        const editable = checkAccess('character:edit', {profileId: req.profileId, role: req.campaignRole, ownerId: char.ownerId})
 
         if (edit)
         {
@@ -73,18 +86,17 @@ export function characters() {
                 return
             }
 
-            const props = {
-                initial: {...char, rawbody: JSON.parse(char.rawbody)},
-            }
-            render(res, EditCharacter, props)
+            const initial = encodeChar({...char, rawbody: scrubDraftSecrets(char.rawbody, secrets)})
+
+            render(res, EditCharacter, {initial})
         }
         else
         {
             const props = {
-                id: char.id,
-                char: {...char, rawbody: scrubDraftSecrets(char.rawbody, secrets)},
+                char: encodeChar({...char, rawbody: scrubDraftSecrets(char.rawbody, secrets)}),
                 editable
             }
+
             render(res, ViewCharacter, props)
         }
     }
@@ -116,11 +128,13 @@ export function characters() {
         if (!req.campaign)
             throw new Error('Missing campaign')
 
+        const secrets = checkAccess('character:view-secret', {profileId: req.profileId, role: req.campaignRole})
+
         const charId = req.body['id']
         const char = await characterRepository.fetchById({id: charId, campaignId: req.campaign.id})
         if (char)
         {
-            if (!checkAccess('character:edit', {profileId: req.profileId, role: req.campaignRole}))
+            if (!checkAccess('character:edit', {profileId: req.profileId, role: req.campaignRole, ownerId: char.ownerId}))
             {
                 render(res.status(403), AccessDenied, {})
                 return
@@ -133,11 +147,12 @@ export function characters() {
                 slug: req.body['slug'] || char.slug,
                 portraitStorageId: storageId,
                 rawbody: req.body['rawbody'] || char.rawbody,
-                visible: ('visible' in req.body) ? req.body['visible'] === 'visible' : char.visible
+                ownerId: req.body['owner'] || char.ownerId,
+                visible: !!req.body['visible']
             })
             await characterRepository.save(updatedChar)
 
-            res.json({status: 'success', message: 'Character saved.', body: {...updatedChar, rawbody: JSON.parse(updatedChar.rawbody)}})
+            res.json({status: 'success', message: 'Character saved.', body: encodeChar({...updatedChar, rawbody: scrubDraftSecrets(updatedChar.rawbody, secrets)})})
         }
         else
         {
@@ -155,11 +170,12 @@ export function characters() {
                 slug: req.body['slug'] || slugUtils.sanitize(req.body['title']),
                 portraitStorageId: storageId,
                 rawbody: req.body['rawbody'],
-                visible: req.body['visible'] === 'visible'
+                ownerId: req.body['owner'] || undefined,
+                visible: !!req.body['visible']
             })
             await characterRepository.save(newChar)
 
-            res.json({status: 'success', message: 'Character created.', body: {...newChar, rawbody: JSON.parse(newChar.rawbody)}})
+            res.json({status: 'success', message: 'Character created.', body: encodeChar({...newChar, rawbody: scrubDraftSecrets(newChar.rawbody, secrets)})})
         }
     })
 

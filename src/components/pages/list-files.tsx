@@ -3,10 +3,11 @@ import {API} from '../../types'
 import {ImageThumb} from '../image-thumb'
 import {MediaUploadDialog} from '../media-upload-dialog'
 import {APIConsumer} from '../api-context'
+import {MediaFile} from '../../types'
 
 interface Props
 {
-    files: any[]
+    files: MediaFile[]
     canUpload?: boolean
     canDelete?: boolean
 }
@@ -44,7 +45,7 @@ export class ListFiles extends React.Component<Props, State>
                         <div style={{height: '140px', overflow: 'hidden'}}><a href='{{image_url hash=this.contentMD5 ext=this.extension}}'><ImageThumb hash={file.contentMD5} size={200}/></a></div>
                         <div className='card-body'>
                             <h5 className='card-title'>{file.caption ? file.caption : file.path}</h5>
-                            <a href={file.url} className='btn btn-link'><i className='fa fa-search-plus'></i></a>
+                            <a href={'fixme'} className='btn btn-link'><i className='fa fa-search-plus'></i></a>
                             <button disabled className='btn btn-link'><i className='fa fa-pencil'></i></button>
                             {!!this.props.canDelete && <button disabled={!!this.state.uploadDialog} className='btn btn-link pull-right' onClick={() => this._handleDeleteClicked(file.path, api)}><i className='fa fa-trash-o'></i></button>}
                         </div>

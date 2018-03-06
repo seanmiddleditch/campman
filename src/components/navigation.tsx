@@ -1,6 +1,6 @@
 import * as React from 'react'
-import {StateConsumer} from '../state-context'
-import {APIConsumer} from '../api-context'
+import {StateConsumer} from './state-context'
+import {APIConsumer} from './api-context'
 
 export class Navigation extends React.Component
 {

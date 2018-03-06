@@ -2,9 +2,11 @@ import * as React from 'react'
 import {MediaUploadDialog} from './media-upload-dialog'
 import {MediaFile} from '../types'
 import {API} from '../types'
+import {Config} from '../state/config'
 import {Dialog} from './dialog'
 import {ImageThumb} from './image-thumb'
 import {APIConsumer} from './api-context'
+import {StateConsumer} from './state-context'
 
 function MediaList({media, selected, filter, onClick, onDoubleClick, loading}: {media?: MediaFile[], selected?: MediaFile, loading: boolean, filter: (f: MediaFile) => boolean, onClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void, onDoubleClick: (e: React.MouseEvent<HTMLDivElement>, f: MediaFile) => void})
 {
@@ -40,6 +42,7 @@ interface Props
 interface PropsWithAPI extends Props
 {
     api: API
+    config: Config
 }
 interface State
 {
@@ -65,7 +68,8 @@ class MediaSelect extends React.Component<PropsWithAPI, State>
     {
         if (!this.state.fetch)
         {
-            const fetch = this.props.api.listFiles(path).then(files => {
+            const {campaign} = this.props.config
+            const fetch = this.props.api.listFiles({campaignId: campaign ? campaign.id : 0, path}).then(files => {
                 this.setState({media: files, error: undefined, fetch: undefined})
             }).catch((e: Error) => {
                 this.setState({error: e.message, fetch: undefined})
@@ -198,4 +202,4 @@ class MediaSelect extends React.Component<PropsWithAPI, State>
     }
 }
 
-export const MediaSelectDialog = (props: Props) => <APIConsumer render={api => <MediaSelect api={api} {...props}/>}/>
+export const MediaSelectDialog = (props: Props) => <StateConsumer render={state => <APIConsumer render={api => <MediaSelect api={api} config={state.config} {...props}/>}/>}/>

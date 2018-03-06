@@ -2,6 +2,7 @@ export interface Config
 {
     readonly publicURL: URL
     readonly campaign?: {
+        id: number
         title: string
         url: URL
     }

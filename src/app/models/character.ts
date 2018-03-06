@@ -1,6 +1,7 @@
-import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, ManyToMany, JoinTable, JoinColumn, Index, EntityRepository, Repository} from 'typeorm'
+import {Entity, Column, PrimaryGeneratedColumn, ManyToOne, OneToMany, ManyToMany, JoinTable, JoinColumn, Index, EntityRepository, Repository} from 'typeorm'
 import {MediaStorageModel} from './media'
 import {CampaignModel} from './campaign'
+import {ProfileModel} from './profile'
 
 @Entity({name: 'character'})
 @Index(['campaignId', 'slug'])
@@ -30,6 +31,13 @@ export class CharacterModel
 
     @Column({type: 'text', default: ''})
     public rawbody: string
+
+    @Column({name: 'owner_id'})
+    public ownerId: number
+
+    @ManyToOne(t => ProfileModel)
+    @JoinColumn({ name: 'owner_id' })
+    public owner: ProfileModel
 
     @Column({ name: 'portrait_id' })
     public portraitStorageId: number

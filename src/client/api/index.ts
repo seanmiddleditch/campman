@@ -1,44 +1,78 @@
-import {API, CharacterInput, CharacterData, MediaFile, APIError, WikiPageInput, WikiPageData, CampaignInput, CampaignData} from '../../types'
+import {API, CharacterInput, CharacterData, MediaFile, APIError, WikiPageInput, WikiPageData, CampaignInput, CampaignData, ProfileData} from '../../types'
+import * as urlJoin from 'url-join'
 
 export class ClientAPI implements API
 {
     private _publicURL: string
+    private _apiURL: string
 
-    constructor(public publicURL: string)
+    constructor(publicURL: string, apiURL: string)
     {
         this._publicURL = publicURL
+        this._apiURL = apiURL
+    }
+
+    private _encodeRequestBody<Body = {}|undefined>(body: Body)
+    {
+        if (!body)
+            return {contentType: undefined, body: undefined}
+        const hasFile = Object.entries(body).some(([key, value]) => value instanceof File || value instanceof Blob)
+        if (hasFile)
+        {
+            const form = new FormData()
+            for (const [key, value] of Object.entries(body))
+                form.append(key, value)
+            return {contentType: undefined, body: form}
+        }
+        else
+        {
+            return {contentType: 'application/json', body: JSON.stringify(body)}
+        }
+    }
+
+    private async _callRemoteV1<Response, Body = {}>(uri: string, req: {campaignId?: number, method?: string, body?: Body}) : Promise<Response>
+    {
+        const method = req.method || 'GET'
+        const {contentType, body} = this._encodeRequestBody(req.body)
+        const headers = new Headers({
+            'Accept': 'application/json'
+        })
+        if (contentType)
+            headers.set('Content-Type', contentType)
+
+        const response = await fetch(uri, {
+            method,
+            credentials: 'include',
+            mode: 'cors',
+            headers,
+            body: body
+        })
+
+        if (!response.ok)
+            throw new APIError(response.statusText)
+
+        const result = await response.json()
+
+        if (!('status' in result))
+            throw new APIError('Field "status" missing from JSON response body')
+
+        if (result.status === 'success')
+            return result.body as Response
+        else if (result.status === 'error')
+            throw new APIError(result.message || 'Unknown error', result.fields)
+        else
+            throw new APIError(`Invalid "status": "${result.status}"`)
+    }
+
+    private async _callRemote<Response, Body = {}>(uri: string, req: {campaignId?: number, method?: string, body?: Body}) : Promise<Response>
+    {
+        const fullUri = urlJoin(this._apiURL, '/api/v1', req.campaignId ? `/campaigns/${req.campaignId}` : '', uri)
+        return this._callRemoteV1<Response, Body>(fullUri, req)
     }
 
     public async saveCharacter(char: CharacterInput) : Promise<CharacterData>
     {
-        const body = new FormData()
-        if (char.id) body.append('id', char.id.toString())
-        if (char.slug) body.append('slug', char.slug)
-        if (char.title) body.append('title', char.title)
-        if ('visible' in char) body.append('visible', char.visible ? 'visible' : '')
-        if (char.portrait instanceof File) body.append('portrait', char.portrait)
-        if (char.rawbody) body.append('rawbody', char.rawbody ? JSON.stringify(char.rawbody) : '')
-
-        const response = await fetch('/chars', {
-            method: 'POST',
-            mode: 'same-origin',
-            credentials: 'include',
-            body
-        })
-        if (!response.ok)
-            throw new Error(response.statusText)
-        else if (response.status !== 200)
-            throw new Error(response.statusText)
-
-        const result = await response.json()
-
-        if (result.status !== 'success')
-        {
-            const errors = result.errors
-            throw new APIError(result.message, {errors})
-        }
-
-        return result.body as CharacterData
+        return this._callRemoteV1<CharacterData>('/chars', {method: 'POST', body: {...char, rawbody: JSON.stringify(char.rawbody)}})
     }
 
     public async saveWikiPage(page: WikiPageInput) : Promise<WikiPageData>
@@ -113,26 +147,13 @@ export class ClientAPI implements API
         }
     }
 
-    async listFiles(path: string) : Promise<MediaFile[]>
+    listFiles({campaignId, path}: {campaignId: number, path?: string}) : Promise<MediaFile[]>
     {
-        if (path.length === 0 || path.charAt(0) !== '/')
-            path = `/${path}`
+        const cleanPath = path && path.length !== 0 && path.charAt(0) === '/' ?
+            path :
+            `/${path}`
 
-        const result = await fetch(`/files${path}`, {
-            method: 'GET',
-            mode: 'same-origin',
-            credentials: 'include',
-            headers: new Headers({'Accept': 'application/json'}),
-        })
-        if (!result.ok)
-            throw new Error(result.statusText)
-
-        const body = await result.json()
-
-        if (body.status !== 'success')
-            throw new Error(body.message)
-
-        return body.body['files']
+        return this._callRemote<MediaFile[]>(`/files${cleanPath}`, {campaignId})
     }
 
     async deleteFile(path: string)
@@ -149,16 +170,6 @@ export class ClientAPI implements API
 
         if (body.status !== 'success')
             throw new Error(body.message)
-    }
-
-    getImageURL(hash: string, ext: string)
-    {
-        return `/media/img/full/${hash}.${ext}`
-    }
-
-    getThumbURL(hash: string, size: number)
-    {
-        return `/media/img/thumb/${size}/${hash}.png`
     }
 
     private async _saveCampaign(path: string, camp: CampaignInput) : Promise<CampaignData>
@@ -199,8 +210,13 @@ export class ClientAPI implements API
         return this._saveCampaign('/campaigns', camp)
     }
 
-    async saveSettings(camp: CampaignInput) : Promise<void>
+    async saveSettings(camp: CampaignInput): Promise<void>
     {
         await this._saveCampaign('/settings', camp)
+    }
+
+    async listProfiles({campaignId}: {campaignId: number}): Promise<ProfileData[]>
+    {
+        return this._callRemote<ProfileData[]>('/members', {campaignId})
     }
 }
