@@ -47,6 +47,7 @@ export interface CampaignInput
     visibility?: 'Public'|'Hidden'
 }
 
+
 export interface MediaFile
 {
     path: string
@@ -54,6 +55,26 @@ export interface MediaFile
     extension: string
     caption?: string
 }
+export interface FileImageData
+{
+    readonly id: number
+    readonly contentMD5: string
+    readonly extension: string
+    readonly byteLength: number
+    readonly imageWidth: number
+    readonly imageHeight: number
+}
+
+
+export interface MapData
+{
+    id: number
+    slug: string
+    title: string
+    rawbody: RawDraftContentState
+    storage: FileImageData,
+}
+
 
 export interface ProfileData
 {

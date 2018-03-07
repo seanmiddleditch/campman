@@ -1,16 +1,41 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
-import {State} from '../state'
+import { State } from '../state'
 
-export class StateProvider extends React.Component<{state: State}> implements React.ChildContextProvider<{state: State}>
+type SetState = (state: Partial<State>) => void
+
+interface Props
+{
+    initialState: State
+}
+interface ComponentState
+{
+    state: State
+}
+interface Context
+{
+    state: State
+    setState: SetState
+}
+export class StateProvider extends React.Component<Props, ComponentState> implements React.ChildContextProvider<Context>
 {
     static childContextTypes = {
-        state: PropTypes.object
+        state: PropTypes.object,
+        setState: PropTypes.func
+    }
+
+    constructor(props: Props)
+    {
+        super(props)
+        this.state = {state: {...props.initialState}}
     }
 
     public getChildContext()
     {
-        return {state: this.props.state}
+        return {
+            state: this.state.state,
+            setState: (state: Partial<State>) => this.setState({state: {...this.state.state, state}})
+        }
     }
 
     public render()
@@ -19,17 +44,16 @@ export class StateProvider extends React.Component<{state: State}> implements Re
     }
 }
 
-export class StateConsumer extends React.Component<{render: (state: State) => JSX.Element}>
+export class StateConsumer extends React.Component<{render: (state: State, setState: SetState) => JSX.Element}>
 {
-    context: {
-        state: State
-    }
+    context: Context
     static contextTypes = {
-        state: PropTypes.object
+        state: PropTypes.object,
+        setState: PropTypes.func
     }
 
     public render()
     {
-        return this.props.render(this.context.state)
+        return this.props.render(this.context.state, this.context.setState)
     }
 }

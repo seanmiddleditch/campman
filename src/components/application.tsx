@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { API } from '../types'
-import { Config } from '../state/config'
+import { State } from '../state'
 import { StateProvider } from './state-context'
 import { APIProvider } from './api-context'
 import { Navigation } from './navigation'
@@ -19,7 +19,7 @@ const footerStyle: React.CSSProperties = {
 interface Props
 {
     api: API
-    config: Config
+    initialState: State
 }
 export class Application extends React.Component<Props>
 {
@@ -28,7 +28,7 @@ export class Application extends React.Component<Props>
         const header = undefined as {icon: string, title: string}|undefined
 
         return (
-            <StateProvider state={{config: this.props.config}}>
+            <StateProvider initialState={this.props.initialState}>
                 <APIProvider api={this.props.api}>
                     <Navigation/>
                     <main role='main' className='container mt-2'>

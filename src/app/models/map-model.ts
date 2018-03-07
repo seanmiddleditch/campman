@@ -29,7 +29,7 @@ export class MapModel
 
     @ManyToOne(t => MediaStorageModel)
     @JoinColumn({name: 'storage_id'})
-    public storage?: MediaStorageModel
+    public storage: MediaStorageModel
 }
 
 @EntityRepository(MapModel)

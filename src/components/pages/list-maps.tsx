@@ -1,9 +1,20 @@
 import * as React from 'react'
-import {ImageThumb} from '../image-thumb'
+import { ImageThumb } from '../image-thumb'
+import { MapData } from '../../types'
+
+const style = (size: number) => ({
+    width: `${size+1}px`,
+    height: `${size+1}px`,
+    borderRadius: 8,
+    margin: 24,
+    overflow: 'hidden',
+    position: 'relative',
+    border: '1px solid rgba(0, 0, 0, 0.3)'
+} as React.CSSProperties)
 
 interface Props
 {
-    maps: any[]
+    maps: MapData[]
     canCreate: boolean
 }
 export class ListMaps extends React.Component<Props>
@@ -16,21 +27,15 @@ export class ListMaps extends React.Component<Props>
                 <i className='fa fa-plus'></i> New Map
             </a>}
             <div className='clearfix'>
-            {(maps && maps.length) ? maps.map(map => (
-                <a key={map.slug} href={`/maps/m/${map.slug}`}>
-                    <div className='card float-left m-2' style={{width: '12rem', height: '14rem'}}>
-                        <div style={{height: 140, overflow: 'hidden'}}>
-                            <ImageThumb hash={map.storage.contentMD5} size={200} caption={map.title}/>
+                {maps.map(map => (
+                    <a key={map.id} href={`/maps/m/${map.slug}`}>
+                        <div className='pull-left' style={style(400)}>
+                            <ImageThumb hash={map.storage.contentMD5} size={400} caption={map.title}/>
                         </div>
-                        <div className='card-body'>
-                            <h5 className='card-title'>{map.title}</h5>
-                        </div>
-                    </div>
-                </a>
-            )) :
-                <div className='alert alert-warning'>No results</div>
-            }
+                    </a>
+                ))}
             </div>
+            {maps.length === 0 && <div className='alert alert-warning'>No results</div>}
         </div>)
     }
 }

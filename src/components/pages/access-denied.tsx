@@ -6,7 +6,7 @@ export class AccessDenied extends React.Component
     public render()
     {
         return <StateConsumer render={state => {
-            if (state.config.profile)
+            if (state.profile)
                 return <p>Plase Login</p>
             else
                 return <p>This resource is protected.</p>

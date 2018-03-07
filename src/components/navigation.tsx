@@ -54,12 +54,12 @@ export class Navigation extends React.Component
                             </span>
                         </form>
 
-                        {state.config.profile ? (
+                        {state.profile ? (
                             <div className='btn-group' role='group'>
                                 <button className='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
-                                    <span>{state.config.profile.nickname}</span>
-                                    {state.config.profile.photoURL ? (
-                                        <img width={24} height={24} src={state.config.profile.photoURL.toString()}/>
+                                    <span>{state.profile.nickname}</span>
+                                    {state.profile.photoURL ? (
+                                        <img width={24} height={24} src={state.profile.photoURL.toString()}/>
                                     ) : (
                                         <i className='navigation-bar-profile-photo fa fa-user-circle-o'></i>
                                     )}

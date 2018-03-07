@@ -29,14 +29,16 @@ const stubAPI: API = {
 
 const makeConfig = (resLocals: any, appLocals: any) => ({
     publicURL: new URL(appLocals.config.publicURL) as any,
-    campaign: resLocals.campaign,
-    profile: resLocals.profile
+    campaign: resLocals.campaign
 })
 
 type ComponentType<P = {}> = React.ComponentClass<P>|React.StatelessComponent<P>
 
 export function render<Props, Component extends ComponentType<any>>(res: Response, component: Component, props: Props)
 {
-    const content = ReactDOMServer.renderToString(<Application api={stubAPI} config={makeConfig(res.locals, res.app.locals)}>{React.createElement(component, props)}</Application>)
+    const config = makeConfig(res.locals, res.app.locals)
+    const profile = res.locals.profile
+    const initialState = {config, profile}
+    const content = ReactDOMServer.renderToString(<Application api={stubAPI} initialState={initialState}>{React.createElement(component, props)}</Application>)
     res.render('react', {content, props, component: component.name})
 }

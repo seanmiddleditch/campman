@@ -4,10 +4,6 @@ import { connection } from '../../../../db'
 import { members } from './members'
 import { files } from './files'
 
-async function index()
-{
-    
-}
 
 export function campaigns()
 {

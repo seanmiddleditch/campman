@@ -33,6 +33,12 @@ export function maps()
         const filtered = all.filter(map => checkAccess('map:view', {
             profileId: req.profileId,
             role: req.campaignRole
+        })).map(m => ({
+            id: m.id,
+            slug: m.slug,
+            title: m.title,
+            rawbody: m.rawbody,
+            storage: m.storage,
         }))
 
         const canCreate = checkAccess('map:create', {
