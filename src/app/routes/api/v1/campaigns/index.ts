@@ -3,13 +3,14 @@ import { CampaignRepository } from '../../../../models'
 import { connection } from '../../../../db'
 import { members } from './members'
 import { files } from './files'
-
+import { adventures } from './adventures'
 
 export function campaigns()
 {
     const campaignRepository = connection().getCustomRepository(CampaignRepository)
 
     const router = PromiseRouter()
+    router.use('/:campaignId/adventures', adventures())
     router.use('/:campaignId/members', members())
     router.use('/:campaignId/files', files())
     router.use('/:campaignId/', async (req, res) => {

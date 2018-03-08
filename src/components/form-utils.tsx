@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 export const FormInput = (props: {
-    type: 'text',
+    type: 'text'|'datetime-local',
     title?: string,
     className?: string,
     name: string,

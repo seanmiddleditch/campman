@@ -33,9 +33,12 @@ interface AccessConfiguration
     ['character:view-secret']: AccessControls
     ['character:create']: AccessControls
     ['character:edit']: AccessControls
+    ['adventure:view']: AccessControls
+    ['adventure:create']: AccessControls
+    ['adventure:edit']: AccessControls
 }
 
-export const accessConfiguration : AccessConfiguration = {
+export const accessConfiguration: AccessConfiguration = {
     'tag:view': [
         p => p.role !== CampaignRole.Visitor
     ],
@@ -112,7 +115,20 @@ export const accessConfiguration : AccessConfiguration = {
         p => p.ownerId === p.profileId,
         p => p.role === CampaignRole.Owner,
         p => p.role === CampaignRole.GameMaster,
-    ]
+    ],
+    'adventure:view': [
+        p => p.role === CampaignRole.Owner,
+        p => p.role === CampaignRole.GameMaster,
+        p => !p.hidden
+    ],
+    'adventure:create': [
+        p => p.role === CampaignRole.Owner,
+        p => p.role === CampaignRole.GameMaster,
+    ],
+    'adventure:edit': [
+        p => p.role === CampaignRole.Owner,
+        p => p.role === CampaignRole.GameMaster,
+    ],
 }
 type AccessTargets = keyof AccessConfiguration
 

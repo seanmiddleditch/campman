@@ -73,7 +73,8 @@ import * as routes from './routes'
         const webpackConfig = require(path.join(root, 'webpack.dev.config.js'))
         const compiler = webpack(webpackConfig)
         app.use(webpackDevMiddleware(compiler, {
-            publicPath: webpackConfig.output.publicPath
+            publicPath: webpackConfig.output.publicPath,
+            logLevel: 'error'
         }))
     }
 

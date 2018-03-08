@@ -1,4 +1,11 @@
-import { CharacterInput, CharacterData, CampaignInput, CampaignData, WikiPageInput, WikiPageData, MediaFile, ProfileData } from './content'
+import {
+    CharacterInput, CharacterData,
+    CampaignInput, CampaignData,
+    WikiPageInput, WikiPageData,
+    AdventureInput, AdventureData,
+    MediaFile,
+    ProfileData
+} from './content'
 
 export class APIError extends Error
 {
@@ -28,4 +35,7 @@ export interface API
     saveWikiPage(page: WikiPageInput): Promise<WikiPageData>
 
     listProfiles(data: {campaignId: number}): Promise<ProfileData[]>
+
+    createAdventure(data: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>
+    updateAdventure(data: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>
 }

@@ -4,7 +4,7 @@ import * as ReactDOMServer from 'react-dom/server'
 import {Application} from '../../components/application'
 import * as shortid from 'shortid'
 import {URL} from 'url'
-import {API, CharacterData, CampaignData, MediaFile, WikiPageData, ProfileData} from '../../types'
+import {API, CharacterData, CampaignData, MediaFile, WikiPageData, ProfileData, AdventureData} from '../../types'
 
 interface RenderProps
 {
@@ -25,6 +25,8 @@ const stubAPI: API = {
     saveSettings: stub<void>(),
     saveWikiPage: stub<WikiPageData>(),
     listProfiles: stub<ProfileData[]>(),
+    createAdventure: stub<AdventureData>(),
+    updateAdventure: stub<AdventureData>(),
 }
 
 const makeConfig = (resLocals: any, appLocals: any) => ({

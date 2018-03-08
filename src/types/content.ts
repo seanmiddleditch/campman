@@ -83,3 +83,14 @@ export interface ProfileData
     fullname: string
     photoURL?: string
 }
+
+
+export interface AdventureData
+{
+    readonly id: number
+    readonly created_at: Date
+    readonly title: string
+    readonly rawbody: RawDraftContentState
+    readonly visible: boolean
+}
+export type AdventureInput = Partial<AdventureData>

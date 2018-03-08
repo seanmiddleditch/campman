@@ -1,4 +1,12 @@
-import {API, CharacterInput, CharacterData, MediaFile, APIError, WikiPageInput, WikiPageData, CampaignInput, CampaignData, ProfileData} from '../../types'
+import {
+    API, APIError,
+    CharacterInput, CharacterData,
+    MediaFile,
+    WikiPageInput, WikiPageData,
+    CampaignInput, CampaignData,
+    AdventureInput, AdventureData,
+    ProfileData
+} from '../../types'
 import * as urlJoin from 'url-join'
 
 export class ClientAPI implements API
@@ -218,5 +226,15 @@ export class ClientAPI implements API
     async listProfiles({campaignId}: {campaignId: number}): Promise<ProfileData[]>
     {
         return this._callRemote<ProfileData[]>('/members', {campaignId})
+    }
+
+    async createAdventure({campaignId, adventure}: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>
+    {
+        return this._callRemoteV1<AdventureData>('/new-adventure', {method: 'POST', campaignId, body: adventure})
+    }
+
+    async updateAdventure({campaignId, adventure}: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>
+    {
+        return this._callRemoteV1<AdventureData>('/adventures', {method: 'POST', campaignId, body: adventure})
     }
 }

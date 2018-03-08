@@ -24,7 +24,7 @@ export class Navigation extends React.Component
                     <div className='collapse navbar-collapse' id='navbar-links'>
                         {state.config.campaign ? (
                             <ul className='navbar-nav mr-lg-auto'>
-                                <li className='nav-item'><a className='nav-link disabled' href='#'>Adventures</a></li>
+                                <li className='nav-item'><a className='nav-link' href={`${state.config.campaign.url}adventures`}>Adventures</a></li>
                                 <li className='nav-item'><a className='nav-link' href={`${state.config.campaign.url}wiki`}>Wiki</a></li>
                                 <li className='nav-item'><a className='nav-link' href={`${state.config.campaign.url}tags`}>Tags</a></li>
                                 <li className='nav-item'><a className='nav-link' href={`${state.config.campaign.url}maps`}>Maps</a></li>
@@ -57,12 +57,12 @@ export class Navigation extends React.Component
                         {state.profile ? (
                             <div className='btn-group' role='group'>
                                 <button className='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
-                                    <span>{state.profile.nickname}</span>
                                     {state.profile.photoURL ? (
                                         <img width={24} height={24} src={state.profile.photoURL.toString()}/>
                                     ) : (
                                         <i className='navigation-bar-profile-photo fa fa-user-circle-o'></i>
                                     )}
+                                    <span> {state.profile.nickname}</span>
                                 </button>
                                 <div className='dropdown-menu'>
                                     <a className='dropdown-item' href={`${state.config.publicURL}campaigns`}>Campaigns</a>

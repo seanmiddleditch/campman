@@ -1,21 +1,22 @@
-import {Request, Response, NextFunction} from 'express'
-import {wiki} from './wiki'
-import {tags} from './tags'
-import {files} from './files'
-import {settings} from './settings'
-import {membership} from './membership'
-import {maps} from './maps'
-import {characters} from './characters'
-import {checkAccess} from '../../auth'
-import {CampaignModel, CampaignRepository, MembershipRepository, CampaignVisibility,} from '../../models'
-import {CampaignRole} from '../../auth'
+import { Request, Response, NextFunction } from 'express'
+import { wiki } from './wiki'
+import { tags } from './tags'
+import { files } from './files'
+import { settings } from './settings'
+import { membership } from './membership'
+import { maps } from './maps'
+import { characters } from './characters'
+import { adventures } from './adventures'
+import { checkAccess } from '../../auth'
+import { CampaignModel, CampaignRepository, MembershipRepository, CampaignVisibility } from '../../models'
+import { CampaignRole } from '../../auth'
 import PromiseRouter = require('express-promise-router')
-import {connection} from '../../db'
-import {URL} from 'url'
-import {config} from '../../config'
-import {AccessDenied} from '../../../components/pages/access-denied'
-import {NotFound} from '../../../components/pages/not-found'
-import {render} from '../../util/react-ssr'
+import { connection } from '../../db'
+import { URL } from 'url'
+import { config } from '../../config'
+import { AccessDenied } from '../../../components/pages/access-denied'
+import { NotFound } from '../../../components/pages/not-found'
+import { render } from '../../util/react-ssr'
 
 function resolveCampaign()
 {
@@ -110,6 +111,7 @@ export function routes()
     router.use(membership())
     router.use(maps())
     router.use(characters())
+    router.use(adventures())
     router.use('/media', (req, res) => {
         const redirected = new URL('', mediaURL)
         redirected.pathname = req.url
@@ -119,7 +121,7 @@ export function routes()
         if (req.url === '/')
             res.redirect('/wiki/p/home')
         else
-            res.render('not-found')
+            render(res.status(404), NotFound, {})
     })
     return router
 }

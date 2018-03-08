@@ -30,7 +30,8 @@ export async function connectToDatabase(databaseURL: string) : Promise<Connectio
             models.MediaStorageModel,
             models.MapModel,
             models.InvitationModel,
-            models.CharacterModel
+            models.CharacterModel,
+            models.AdventureModel,
         ]
     })
 
