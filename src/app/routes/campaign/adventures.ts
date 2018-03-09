@@ -51,7 +51,7 @@ export function adventures()
         if (!req.campaign)
             throw new Error('Missing campaign')
 
-        const adventure = await adventureRepository.findOneById({campaignId: req.campaign.id, id: req.params['id']})
+        const adventure = await adventureRepository.findOne({campaignId: req.campaign.id, id: req.params['id']})
         if (!adventure)
         {
             render(res.status(404), NotFound, {})
