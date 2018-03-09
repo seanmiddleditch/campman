@@ -12,19 +12,25 @@ import { StateConsumer } from '../state-context'
 import { APIConsumer } from '../api-context'
 import { ProfileDropdown } from '../profile-dropdown'
 
+interface Props
+{
+    initial: AdventureData
+}
 interface State
 {
     adventure: AdventureInput
     saving?: Promise<void>
     errors: {[K in keyof(AdventureInput)]?: string}
 }
-export class NewAdventure extends React.Component<{}, State>
+export class EditAdventure extends React.Component<{}, State>
 {
-    state: State = {
-        adventure: {
-            title: ''
-        },
-        errors: {}
+    constructor(props: Props)
+    {
+        super(props)
+        this.state = {
+            adventure: {...props.initial},
+            errors: {}
+        }
     }
 
     private _handleSubmitClicked(campaignId: number, api: API)
@@ -62,7 +68,7 @@ export class NewAdventure extends React.Component<{}, State>
                 </div>
                 <MarkEditor document={adventure.rawbody} disabled={!!this.state.saving} onChange={doc => this._handleChange('rawbody', doc)} buttons={() => (
                     <div className='ml-sm-2 float-right'>
-                        <StateConsumer render={state => <APIConsumer render={api => <SaveButton disabled={!!this.state.saving} title='Create' saving={!!this.state.saving} onClick={() => this._handleSubmitClicked(state.config.campaign ? state.config.campaign.id : 0, api)}/>}/>}/>
+                        <StateConsumer render={state => <APIConsumer render={api => <SaveButton disabled={!!this.state.saving} title='Save' saving={!!this.state.saving} onClick={() => this._handleSubmitClicked(state.config.campaign ? state.config.campaign.id : 0, api)}/>}/>}/>
                     </div>
                 )}/>
             </div>

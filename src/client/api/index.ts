@@ -56,15 +56,12 @@ export class ClientAPI implements API
             body: body
         })
 
-        if (!response.ok)
-            throw new APIError(response.statusText)
-
         const result = await response.json()
 
         if (!('status' in result))
             throw new APIError('Field "status" missing from JSON response body')
 
-        if (result.status === 'success')
+        if (result.status === 'success' && response.ok)
             return result.body as Response
         else if (result.status === 'error')
             throw new APIError(result.message || 'Unknown error', result.fields)
@@ -230,11 +227,11 @@ export class ClientAPI implements API
 
     async createAdventure({campaignId, adventure}: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>
     {
-        return this._callRemoteV1<AdventureData>('/new-adventure', {method: 'POST', campaignId, body: adventure})
+        return this._callRemoteV1<AdventureData>('/new-adventure', {method: 'POST', campaignId, body: {...adventure, rawbody: JSON.stringify(adventure.rawbody)}})
     }
 
     async updateAdventure({campaignId, adventure}: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>
     {
-        return this._callRemoteV1<AdventureData>('/adventures', {method: 'POST', campaignId, body: adventure})
+        return this._callRemoteV1<AdventureData>('/adventures', {method: 'POST', campaignId, body: {...adventure, rawbody: JSON.stringify(adventure.rawbody)}})
     }
 }

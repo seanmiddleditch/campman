@@ -17,3 +17,16 @@ export function scrubDraftSecrets(rawbody: string, secrets: boolean = false)
 
     return body
 }
+
+export function validateDraft(rawbody: string|object)
+{
+    if (typeof rawbody === 'string')
+        rawbody = JSON.parse(rawbody) as object
+
+    if (!('blocks' in rawbody))
+        return false;
+    if (!('entityMap' in rawbody))
+        return false;
+
+    return true;
+}
