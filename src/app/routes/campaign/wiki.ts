@@ -128,7 +128,7 @@ export function wiki() {
 
         if (!slug)
         {
-            res.status(400).json({status: 'error', message: 'Missing slug.', errors: {slug: 'Required.'}})
+            res.status(400).json({status: 'error', message: 'Missing slug.', fields: {slug: 'Required.'}})
             return
         }
         const page = await pageRepository.fetchBySlug({slug, campaignId: req.campaign.id})

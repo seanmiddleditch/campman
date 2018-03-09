@@ -42,8 +42,7 @@ export class AdventureRepository extends Repository<AdventureModel>
     public async fetchById({id, campaignId}: {id: number, campaignId: number})
     {
         return this.findOne({
-            where: {id, campaignId},
-            relations: ['portrait']
+            where: {id, campaignId}
         })
     }
 }

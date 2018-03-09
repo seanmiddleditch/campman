@@ -51,7 +51,7 @@ module.exports = {
         'draft-js': 'Draft',
         'jquery': '$',
         'immutable': 'Immutable',
-        'prop-types': 'PropTypes'
+        'prop-types': 'PropTypes',
     },
 
     plugins: [

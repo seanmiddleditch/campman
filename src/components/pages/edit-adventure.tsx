@@ -37,7 +37,7 @@ export class EditAdventure extends React.Component<{}, State>
     {
         if (!this.state.saving)
         {
-            const saving = api.createAdventure({campaignId, adventure: this.state.adventure})
+            const saving = api.updateAdventure({campaignId, adventure: this.state.adventure})
                 .then(adv => {
                     document.location.href = `/adventures/${adv.id}`
                 }).catch(err => {

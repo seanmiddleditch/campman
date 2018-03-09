@@ -51,7 +51,7 @@ export function adventures()
         if (!req.campaign)
             throw new Error('Missing campaign')
 
-        const adventure = await adventureRepository.findOne({campaignId: req.campaign.id, id: req.params['id']})
+        const adventure = await adventureRepository.findOne({campaignId: req.campaign.id, id: req.body['id']})
         if (!adventure)
         {
             render(res.status(404), NotFound, {})
@@ -70,12 +70,12 @@ export function adventures()
 
         if (typeof title !== 'string' || title.length === 0)
         {
-            res.status(400).json({status: 'error', message: 'Missing title', errors: {title: 'Required'}})
+            res.status(400).json({status: 'error', message: 'Missing title', fields: {title: 'Required'}})
             return
         }
         if (!rawbody || !validateDraft(rawbody))
         {
-            res.status(400).json({status: 'error', message: 'Form submission failed', errors: {rawbody: 'Processing error'}})
+            res.status(400).json({status: 'error', message: 'Form submission failed', fields: {rawbody: 'Processing error'}})
             return
         }
 
@@ -171,12 +171,12 @@ export function adventures()
 
         if (typeof title !== 'string' || title.length === 0)
         {
-            res.status(400).json({status: 'error', message: 'Missing title', errors: {title: 'Required'}})
+            res.status(400).json({status: 'error', message: 'Missing title', fields: {title: 'Required'}})
             return
         }
         if (!rawbody || !validateDraft(rawbody))
         {
-            res.status(400).json({status: 'error', message: 'Form submission failed', errors: {rawbody: 'Processing error'}})
+            res.status(400).json({status: 'error', message: 'Form submission failed', fields: {rawbody: 'Processing error'}})
             return
         }
 

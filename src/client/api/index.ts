@@ -64,7 +64,7 @@ export class ClientAPI implements API
         if (result.status === 'success' && response.ok)
             return result.body as Response
         else if (result.status === 'error')
-            throw new APIError(result.message || 'Unknown error', result.fields)
+            throw new APIError(result.message || 'Unknown error', {errors: result.fields})
         else
             throw new APIError(`Invalid "status": "${result.status}"`)
     }
