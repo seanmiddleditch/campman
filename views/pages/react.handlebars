@@ -1,0 +1,18 @@
+{{#>layouts/essential title=title}}
+
+{{#*inline "body"}}
+<div id='react-content'>{{{content}}}</div>
+<script>
+    const config = {
+        publicURL: new URL('{{config.publicURL}}'),
+        apiURL: new URL('{{apiHost}}'),
+        {{#if campaign}}campaign: {id: {{campaign.id}}, title: '{{campaign.title}}', url: new URL('{{{campaign.url}}}')},{{/if}}
+    }
+    const profile = {{#if profile}}{nickname: '{{profile.nickname}}', photoURL: new URL('{{{profile.photoURL}}}')}{{else}}undefined{{/if}}
+    const api = new ClientAPI(config.publicURL.toString(), config.apiURL.toString())
+    ReactDOM.hydrate(React.createElement(Application, {api, initialState: {config, profile} }, React.createElement({{component}}, {...{{{json props}}} })),
+    document.getElementById('react-content'))
+</script>
+{{/inline}}
+
+{{/layouts/essential}}

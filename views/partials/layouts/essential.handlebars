@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {{#if config.googleAnalyticsId}}
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{config.googleAnalyticsId}}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '{{config.googleAnalyticsId}}');
+        </script>
+        {{/if}}
+        <title>{{title}}</title>
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha256-eZrrJcwDc/3uDhsdt61sL2oOBY362qM3lon1gyExkL0=" crossorigin="anonymous" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/draft-js/0.10.5/Draft.min.css" integrity="sha256-Ik31E0nhWqsHBPP+YZTVC0fe+L/WW8HctxY+zx277nY=" crossorigin="anonymous" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/react-select/1.2.1/react-select.min.css" integrity="sha256-7dXXB4zyHReEIPqjxh3FHYpR1tPbcP9DW678SCcrvlo=" crossorigin="anonymous" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="utf-8" />
+        {{#>head}}
+            {{! Header block content goes here }}
+        {{/head}}
+        <style>
+            html { position: relative; min-height: 100% }
+            body { margin-bottom: 60px }
+        </style>
+    </head>
+    <body>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/immutable/3.8.2/immutable.min.js" integrity="sha256-+0IwgnFxUKpHZPXBhTQkuv+Dqy0eDno7myZB6OOjORA=" crossorigin="anonymous"></script>
+        {{#if config.production}}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react/16.2.0/umd/react.production.min.js" integrity="sha256-wouRkivKKXA3y6AuyFwcDcF50alCNV8LbghfYCH6Z98=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.2.0/umd/react-dom.production.min.js" integrity="sha256-9hrJxD4IQsWHdNpzLkJKYGiY/SEZFJJSUqyeZPNKd8g=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.6.1/prop-types.min.js" integrity="sha256-hMV/CxbecNC5yXFYw1PxgYj0AximiDUyWJbacFBm9vE=" crossorigin="anonymous"></script>
+        {{else}}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react/16.2.0/umd/react.development.js" integrity="sha256-oK7yxCBxbvB6f0k30sHQEN7rIMklxeiFkzO/xOqA054=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.2.0/umd/react-dom.development.js" integrity="sha256-MENkb7k+X0cdQau8EP2kECRfc0A4Lq9uo6QGSnWgK0o=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.6.1/prop-types.js" integrity="sha256-/Xe/TBYyudtUWtlmG+SFQINXcIC4u+T/cgZsIjhYW3s=" crossorigin="anonymous"></script>
+        {{/if}}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/draft-js/0.10.5/Draft.min.js" integrity="sha256-pLL6CtakWa8a+kWzkm3+Zt0hz1/P2NkyDAfua9moG4k=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.0/spark-md5.min.js" integrity="sha256-vZfKuqtZrm/miyPulNgpGOT0P57rJDIoGfzzGaMuqfg=" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+        {{#>scripts}}
+            {{! Additional JavaScript includes go here }}
+        {{/scripts}}
+        <script src="/js/bundle.js"></script>        
+        {{#>body}}
+            {{! Body content goes here }}
+        {{/body}}
+    </body>
+</html>
