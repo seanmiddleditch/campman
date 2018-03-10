@@ -24,6 +24,7 @@ export interface CharacterInput
 
 export interface WikiPageData
 {
+    id: number
     slug: string
     title: string
     rawbody: RawDraftContentState

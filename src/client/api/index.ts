@@ -38,7 +38,7 @@ export class ClientAPI implements API
         }
     }
 
-    private async _callRemoteV1<Response, Body = {}>(uri: string, req: {campaignId?: number, method?: string, body?: Body}) : Promise<Response>
+    private async _callRemoteV1<Response, Body = {}>(uri: string, req: {method?: string, body?: Body}) : Promise<Response>
     {
         const method = req.method || 'GET'
         const {contentType, body} = this._encodeRequestBody(req.body)
@@ -100,6 +100,11 @@ export class ClientAPI implements API
         }
 
         return result.body
+    }
+
+    public deletePage(data: {pageId: number}): Promise<void>
+    {
+        return this._callRemoteV1<void>(`/wiki/${data.pageId}`, {method: 'DELETE'})
     }
 
     showLoginDialog() : Promise<void>
@@ -227,16 +232,16 @@ export class ClientAPI implements API
 
     async createAdventure({campaignId, adventure}: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>
     {
-        return this._callRemoteV1<AdventureData>('/new-adventure', {method: 'POST', campaignId, body: {...adventure, rawbody: JSON.stringify(adventure.rawbody)}})
+        return this._callRemoteV1<AdventureData>('/new-adventure', {method: 'POST', body: {...adventure, rawbody: JSON.stringify(adventure.rawbody)}})
     }
 
     async updateAdventure({campaignId, adventure}: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>
     {
-        return this._callRemoteV1<AdventureData>(`/adventures/${adventure.id}`, {method: 'POST', campaignId, body: {...adventure, rawbody: JSON.stringify(adventure.rawbody)}})
+        return this._callRemoteV1<AdventureData>(`/adventures/${adventure.id}`, {method: 'POST', body: {...adventure, rawbody: JSON.stringify(adventure.rawbody)}})
     }
 
     async deleteAdventure({campaignId, adventureId}: {campaignId: number, adventureId: number}): Promise<void>
     {
-        return this._callRemoteV1<void>(`/adventures/${adventureId}`, {method: 'DELETE', campaignId})
+        return this._callRemoteV1<void>(`/adventures/${adventureId}`, {method: 'DELETE'})
     }
 }

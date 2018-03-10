@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { MarkEditor } from '../mark-editor'
-import { SaveButton } from '../save-button'
+import { ActionButton } from '../action-button'
 import { WikiPageInput, WikiPageData } from '../../types/content'
 import { API, APIError } from '../../types/api'
 import { RawDraftContentState } from 'draft-js'
@@ -20,6 +20,7 @@ interface State
     }
     errors?: {[P in keyof(WikiPageInput)]?: string}
     saving?: Promise<void>
+    deleting?: Promise<void>
 }
 export class EditWiki extends React.Component<Props, State>
 {
@@ -36,7 +37,7 @@ export class EditWiki extends React.Component<Props, State>
 
     private _handleSubmitClicked(api: API)
     {
-        if (!this.state.saving)
+        if (!this.state.saving && !this.state.deleting)
         {
             const saving = api.saveWikiPage(this.state.page)
                 .then(page => {
@@ -48,6 +49,26 @@ export class EditWiki extends React.Component<Props, State>
                         this.setState({errors: err.errors})
                 })
             this.setState({saving})
+        }
+    }
+
+    private _handleDeleteClicked(api: API)
+    {
+        if (!this.state.saving && !this.state.deleting)
+        {
+            if (confirm('This deletion will be forever. Click OK to confirm.'))
+            {
+                const deleting = api.deletePage({pageId: this.props.initial.id})
+                    .then(() => {
+                        document.location.href = '/wiki'
+                    })
+                    .catch(err => {
+                        this.setState({saving: undefined, message: {type: 'danger', text: err.message}})
+                        if (err instanceof APIError && err.errors)
+                            this.setState({errors: err.errors})
+                    })
+                this.setState({deleting})
+            }
         }
     }
 
@@ -89,7 +110,17 @@ export class EditWiki extends React.Component<Props, State>
                             <a className={'dropdown-item ' + (this.state.page.visibility == 'Public' ? 'active' : '')} onClick={() => this._handleChange('visibility', 'Public')}>Party Public</a>
                             <a className={'dropdown-item ' + (this.state.page.visibility == 'Hidden' ? 'active' : '')} onClick={() => this._handleChange('visibility', 'Hidden')}>GM Secret</a>
                         </DropButton>
-                        <APIConsumer render={api => <SaveButton disabled={!!this.state.saving} saving={!!this.state.saving} onClick={() => this._handleSubmitClicked(api)}/>}/>
+                        <APIConsumer render={api => (
+                            <ActionButton
+                                disabled={!!this.state.saving || !!this.state.deleting}
+                                defaultAction='save'
+                                busy={this.state.saving ? 'Saving...' : this.state.deleting ? 'Deleting...' : undefined}
+                                actions={{
+                                    save: {label: 'Save Changes', icon: 'floppy-o', onClick: () => this._handleSubmitClicked(api)},
+                                    delete: {label: 'Delete Page', icon: 'trash-o', color: 'danger', onClick: () => this._handleDeleteClicked(api)}
+                                }}
+                            />
+                        )}/>
                     </div>
                 )}/>
             </div>

@@ -33,6 +33,7 @@ export interface API
     saveSettings(camp: CampaignInput): Promise<void>
 
     saveWikiPage(page: WikiPageInput): Promise<WikiPageData>
+    deletePage(data: {pageId: number}): Promise<void>
 
     listProfiles(data: {campaignId: number}): Promise<ProfileData[]>
 

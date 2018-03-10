@@ -79,7 +79,7 @@ export function wiki() {
             return
         }
 
-        const {slug, title, rawbody, tags, visibility} = page
+        const {id, slug, title, rawbody, tags, visibility} = page
 
         const secrets = checkAccess('page:view-secret', {
             profileId: req.profileId,
@@ -106,6 +106,7 @@ export function wiki() {
         else
         {
             const props = {
+                id,
                 slug: slug || '',
                 title,
                 rawbody: scrubDraftSecrets(rawbody, secrets),
@@ -115,6 +116,37 @@ export function wiki() {
             }
             render(res, ViewWiki, props)
         }
+    })
+
+    router.delete('/wiki/:id', async (req, res, next) => {
+        if (!req.campaign)
+            throw new Error('Missing campaign')
+
+        const id = req.params['id']
+
+        const page = await pageRepository.findOne({campaignId: req.campaign.id, id})
+        if (!page)
+        {
+            render(res.status(404), NotFound, {})
+            return
+        }
+
+        const deletable = checkAccess('page:edit', {
+            profileId: req.profileId,
+            role: req.campaignRole,
+            ownerId: page.authorId,
+            hidden: page.visibility !== PageVisibility.Public
+        })
+
+        if (!deletable)
+        {
+            res.status(403).json({status: 'error', message: 'Access denied.'})
+            return
+        }
+
+        await pageRepository.deleteById(page.id)
+
+        res.json({status: 'success', message: 'Page deleted.'})
     })
 
     router.post('/wiki', async (req, res, next) => {

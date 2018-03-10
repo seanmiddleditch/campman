@@ -25,6 +25,7 @@ const stubAPI: API = {
     createCampaign: stub<CampaignData>(),
     saveSettings: stub<void>(),
     saveWikiPage: stub<WikiPageData>(),
+    deletePage: stub<void>(),
     listProfiles: stub<ProfileData[]>(),
     createAdventure: stub<AdventureData>(),
     updateAdventure: stub<AdventureData>(),

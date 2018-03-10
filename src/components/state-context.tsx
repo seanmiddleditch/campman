@@ -6,7 +6,7 @@ type SetState = (state: Partial<State>) => void
 
 interface Props
 {
-    initialState: State
+    initialState: Readonly<State>
 }
 interface ComponentState
 {
@@ -14,7 +14,7 @@ interface ComponentState
 }
 interface Context
 {
-    state: State
+    state: Readonly<State>
     setState: SetState
 }
 export class StateProvider extends React.Component<Props, ComponentState> implements React.ChildContextProvider<Context>
