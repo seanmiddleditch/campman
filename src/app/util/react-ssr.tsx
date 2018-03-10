@@ -14,6 +14,7 @@ interface RenderProps
 type Stub<Result> = () => Promise<Result>
 function stub<R>(): Stub<R> { return () => {throw new Error('not implemented')} }
 
+
 const stubAPI: API = {
     showLoginDialog: stub<void>(),
     endSession: stub<void>(),
@@ -27,6 +28,7 @@ const stubAPI: API = {
     listProfiles: stub<ProfileData[]>(),
     createAdventure: stub<AdventureData>(),
     updateAdventure: stub<AdventureData>(),
+    deleteAdventure: stub<void>(),
 }
 
 const makeConfig = (resLocals: any, appLocals: any) => ({

@@ -232,6 +232,11 @@ export class ClientAPI implements API
 
     async updateAdventure({campaignId, adventure}: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>
     {
-        return this._callRemoteV1<AdventureData>('/adventures', {method: 'POST', campaignId, body: {...adventure, rawbody: JSON.stringify(adventure.rawbody)}})
+        return this._callRemoteV1<AdventureData>(`/adventures/${adventure.id}`, {method: 'POST', campaignId, body: {...adventure, rawbody: JSON.stringify(adventure.rawbody)}})
+    }
+
+    async deleteAdventure({campaignId, adventureId}: {campaignId: number, adventureId: number}): Promise<void>
+    {
+        return this._callRemoteV1<void>(`/adventures/${adventureId}`, {method: 'DELETE', campaignId})
     }
 }

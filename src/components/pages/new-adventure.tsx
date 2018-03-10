@@ -10,7 +10,6 @@ import { API, APIError, AdventureData, AdventureInput } from '../../types'
 import { RawDraftContentState } from 'draft-js'
 import { StateConsumer } from '../state-context'
 import { APIConsumer } from '../api-context'
-import { ProfileDropdown } from '../profile-dropdown'
 import { Alert } from '../alert'
 
 interface State
@@ -58,7 +57,7 @@ export class NewAdventure extends React.Component<{}, State>
             <div>
                 {this.state.errorMessage && <Alert type='danger'>{this.state.errorMessage}</Alert>}
                 <FormInput type='text' title='Short Description' error={errors.title} name='title' value={adventure.title || ''} disabled={!!this.state.saving} onChange={val => this._handleChange('title', val)}/>
-                <FormSelect name='visible' title='Public' options={[{value: 'visible', label: 'Public'}, {value: '', label: 'Secret'}]} defaultValue='visible'/>
+                <FormSelect name='visible' title='Public' error={errors.visible} options={[{value: 'visible', label: 'Public'}, {value: '', label: 'Secret'}]} value={adventure.visible ? 'visible' : ''} defaultValue='visible'/>
                 <MarkEditor document={adventure.rawbody} disabled={!!this.state.saving} onChange={doc => this._handleChange('rawbody', doc)} buttons={() => (
                     <div className='ml-sm-2 float-right'>
                         <StateConsumer render={state => <APIConsumer render={api => <SaveButton disabled={!!this.state.saving} title='Create' saving={!!this.state.saving} onClick={() => this._handleSubmitClicked(state.config.campaign ? state.config.campaign.id : 0, api)}/>}/>}/>

@@ -3,14 +3,14 @@ import * as React from 'react'
 import { MarkEditor } from '../mark-editor'
 import { ImageSelect } from '../image-select'
 import { ImageThumb } from '../image-thumb'
-import { SaveButton } from '../save-button'
-import { FormInput } from '../form-utils'
+import { FormInput, FormSelect } from '../form-utils'
 import { RawDraft } from '../raw-draft'
 import { API, APIError, AdventureData, AdventureInput } from '../../types'
 import { RawDraftContentState } from 'draft-js'
 import { StateConsumer } from '../state-context'
 import { APIConsumer } from '../api-context'
-import { ProfileDropdown } from '../profile-dropdown'
+import { Alert } from '../alert'
+import { ActionButton } from '../action-button'
 
 interface Props
 {
@@ -20,9 +20,11 @@ interface State
 {
     adventure: AdventureInput
     saving?: Promise<void>
+    deleting?: Promise<void>
+    errorMessage?: string
     errors: {[K in keyof(AdventureInput)]?: string}
 }
-export class EditAdventure extends React.Component<{}, State>
+export class EditAdventure extends React.Component<Props, State>
 {
     constructor(props: Props)
     {
@@ -35,17 +37,38 @@ export class EditAdventure extends React.Component<{}, State>
 
     private _handleSubmitClicked(campaignId: number, api: API)
     {
-        if (!this.state.saving)
+        if (!this.state.saving && !this.state.deleting)
         {
             const saving = api.updateAdventure({campaignId, adventure: this.state.adventure})
                 .then(adv => {
                     document.location.href = `/adventures/${adv.id}`
-                }).catch(err => {
-                    this.setState({saving: undefined})
+                })
+                .catch(err => {
+                    this.setState({saving: undefined, errorMessage: err.message})
                     if (err instanceof APIError && err.errors)
                         this.setState({errors: err.errors})
                 })
             this.setState({saving})
+        }
+    }
+
+    private _handleDeleteClicked(campaignId: number, api: API)
+    {
+        if (!this.state.saving && !this.state.deleting)
+        {
+            if (confirm('This deletion will be forever. Click OK to confirm.'))
+            {
+                const deleting = api.deleteAdventure({campaignId, adventureId: this.props.initial.id})
+                    .then(() => {
+                        document.location.href = '/adventures'
+                    })
+                    .catch(err => {
+                        this.setState({deleting: undefined, errorMessage: err.message})
+                        if (err instanceof APIError && err.errors)
+                            this.setState({errors: err.errors})
+                    })
+                this.setState({deleting})
+            }
         }
     }
 
@@ -57,18 +80,25 @@ export class EditAdventure extends React.Component<{}, State>
     public render()
     {
         const adventure = this.state.adventure
+        const errors = this.state.errors
         return (
             <div>
-                <FormInput type='text' title='Short Description' name='title' value={adventure.title || ''} disabled={!!this.state.saving} onChange={val => this._handleChange('title', val)}/>
-                <div className='form-group'>
-                    <select className='form-control' disabled={!!this.state.saving} value={adventure.visible?'visible':''} onChange={ev => this._handleChange('visible', ev.target.value === 'visible')}>
-                        <option value='visible'>Party Public</option>
-                        <option value=''>GM Secret</option>
-                    </select>
-                </div>
+                {this.state.errorMessage && <Alert type='danger'>{this.state.errorMessage}</Alert>}
+                <FormInput type='text' title='Short Description' error={errors.title} name='title' value={adventure.title || ''} disabled={!!this.state.saving} onChange={val => this._handleChange('title', val)}/>
+                <FormSelect name='visible' title='Public' error={errors.visible} options={[{value: 'visible', label: 'Public'}, {value: '', label: 'Secret'}]} value={adventure.visible ? 'visible' : ''} defaultValue='visible'/>
                 <MarkEditor document={adventure.rawbody} disabled={!!this.state.saving} onChange={doc => this._handleChange('rawbody', doc)} buttons={() => (
                     <div className='ml-sm-2 float-right'>
-                        <StateConsumer render={state => <APIConsumer render={api => <SaveButton disabled={!!this.state.saving} title='Save' saving={!!this.state.saving} onClick={() => this._handleSubmitClicked(state.config.campaign ? state.config.campaign.id : 0, api)}/>}/>}/>
+                        <StateConsumer render={state => <APIConsumer render={api => (
+                            <ActionButton
+                                defaultAction='save'
+                                disabled={!!this.state.saving}
+                                busy={this.state.saving && 'Saving'}
+                                actions={{
+                                    save: {label: 'Save Changes', icon: 'floppy-o', onClick: () => this._handleSubmitClicked(state.config.campaign ? state.config.campaign.id : 0, api)},
+                                    delete: {label: 'Delete Adventure', color: 'danger', icon: 'trash-o', onClick: () => this._handleDeleteClicked(state.config.campaign ? state.config.campaign.id : 0, api)}
+                                }}
+                            />
+                        )}/>}/>
                     </div>
                 )}/>
             </div>

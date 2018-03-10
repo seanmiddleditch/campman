@@ -38,4 +38,5 @@ export interface API
 
     createAdventure(data: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>
     updateAdventure(data: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>
+    deleteAdventure(data: {campaignId: number, adventureId: number}): Promise<void>
 }

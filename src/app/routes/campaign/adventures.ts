@@ -47,45 +47,6 @@ export function adventures()
         render(res, ListAdventures, {adventures: filtered, canCreate})
     })
 
-    router.post('/adventures', async (req, res, next) => {
-        if (!req.campaign)
-            throw new Error('Missing campaign')
-
-        const adventure = await adventureRepository.findOne({campaignId: req.campaign.id, id: req.body['id']})
-        if (!adventure)
-        {
-            render(res.status(404), NotFound, {})
-            return
-        }
-
-        if (!checkAccess('adventure:edit', {profileId: req.profileId, role: req.campaignRole}))
-        {
-            render(res.status(403), AccessDenied, {})
-            return
-        }
-
-        const title = req.body['title'] as string|undefined
-        const rawbody = req.body['rawbody'] as string|undefined
-        const visible = req.body['visible'] === 'visible'
-
-        if (typeof title !== 'string' || title.length === 0)
-        {
-            res.status(400).json({status: 'error', message: 'Missing title', fields: {title: 'Required'}})
-            return
-        }
-        if (!rawbody || !validateDraft(rawbody))
-        {
-            res.status(400).json({status: 'error', message: 'Form submission failed', fields: {rawbody: 'Processing error'}})
-            return
-        }
-
-        adventure.title = title
-        adventure.rawbody = rawbody
-        await adventureRepository.save(adventure)
-
-        res.json({status: 'success', message: 'Adventure amended!', body: {...adventure, rawbody: JSON.parse(adventure.rawbody)}})
-    })
-
     router.get('/adventures/:id', async (req, res, next) => {
         if (!req.campaign)
             throw new Error('Missing campaign')
@@ -133,7 +94,67 @@ export function adventures()
                 editable: checkAccess('adventure:edit', {profileId: req.profileId, role: req.campaignRole})
             })
         }
+    })
+    
+    router.post('/adventures/:id', async (req, res, next) => {
+        if (!req.campaign)
+            throw new Error('Missing campaign')
 
+        const adventure = await adventureRepository.findOne({campaignId: req.campaign.id, id: req.params['id']})
+        if (!adventure)
+        {
+            render(res.status(404), NotFound, {})
+            return
+        }
+
+        if (!checkAccess('adventure:edit', {profileId: req.profileId, role: req.campaignRole}))
+        {
+            render(res.status(403), AccessDenied, {})
+            return
+        }
+
+        const title = req.body['title'] as string|undefined
+        const rawbody = req.body['rawbody'] as string|undefined
+        const visible = req.body['visible'] === 'visible'
+
+        if (typeof title !== 'string' || title.length === 0)
+        {
+            res.status(400).json({status: 'error', message: 'Missing title', fields: {title: 'Required'}})
+            return
+        }
+        if (!rawbody || !validateDraft(rawbody))
+        {
+            res.status(400).json({status: 'error', message: 'Form submission failed', fields: {rawbody: 'Processing error'}})
+            return
+        }
+
+        adventure.title = title
+        adventure.rawbody = rawbody
+        await adventureRepository.save(adventure)
+
+        res.json({status: 'success', message: 'Adventure amended!', body: {...adventure, rawbody: JSON.parse(adventure.rawbody)}})
+    })
+
+    router.delete('/adventures/:id', async (req, res, next) => {
+        if (!req.campaign)
+            throw new Error('Missing campaign')
+
+        const adventure = await adventureRepository.findOne({campaignId: req.campaign.id, id: req.params['id']})
+        if (!adventure)
+        {
+            render(res.status(404), NotFound, {})
+            return
+        }
+
+        if (!checkAccess('adventure:edit', {profileId: req.profileId, role: req.campaignRole}))
+        {
+            render(res.status(403), AccessDenied, {})
+            return
+        }
+
+        await adventureRepository.deleteById(adventure.id)
+
+        res.json({status: 'success', message: 'Adventure deleted.'})
     })
  
     router.get('/new-adventure', async (req, res, next) => {
