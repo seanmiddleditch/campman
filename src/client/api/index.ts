@@ -75,12 +75,17 @@ export class ClientAPI implements API
         return this._callRemoteV1<Response, Body>(fullUri, req)
     }
 
-    public async saveCharacter(char: CharacterInput) : Promise<CharacterData>
+    public async saveCharacter(char: CharacterInput): Promise<CharacterData>
     {
         return this._callRemoteV1<CharacterData>('/chars', {method: 'POST', body: {...char, rawbody: JSON.stringify(char.rawbody)}})
     }
 
-    public async saveWikiPage(page: WikiPageInput) : Promise<WikiPageData>
+    public async deleteCharacter(data: {characterId: number}): Promise<void>
+    {
+        return this._callRemoteV1<void>(`/chars/c/${data.characterId}`, {method: 'DELETE'})
+    }
+
+    public async saveWikiPage(page: WikiPageInput): Promise<WikiPageData>
     {
         const response = await fetch('/wiki', {
             method: 'POST',

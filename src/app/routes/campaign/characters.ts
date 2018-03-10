@@ -112,6 +112,30 @@ export function characters() {
         serveCharacter(req, res, char, edit)
     })
 
+    router.delete('/chars/c/:id(\\d+)/', async (req, res, next) =>
+    {
+        if (!req.campaign)
+            throw new Error('Missing campaign')
+
+        const id = req.params['id']
+        const char = await characterRepository.fetchById({id, campaignId: req.campaign.id})
+        if (!char)
+        {
+            res.status(404).json({status: 'error', message: 'Not found.'})
+            return
+        }
+        
+        if (!checkAccess('character:edit', {profileId: req.profileId, role: req.campaignRole, ownerId: char.ownerId}))
+        {
+            res.status(403).json({status: 'error', message: 'Access denied.'})
+            return
+        }
+
+        await characterRepository.deleteById(char.id)
+
+        res.json({status: 'success', message: 'Character deleted.'})
+    })
+
     router.get('/chars/c/:slug', async (req, res, next) =>
     {
         if (!req.campaign)

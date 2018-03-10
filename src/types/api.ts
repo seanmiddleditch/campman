@@ -23,7 +23,8 @@ export interface API
     showLoginDialog(): Promise<void>
     endSession(): Promise<void>
 
-    saveCharacter(char: CharacterInput) : Promise<CharacterData>
+    saveCharacter(char: CharacterInput): Promise<CharacterData>
+    deleteCharacter(data: {characterId: number}): Promise<void>
 
     uploadFile(props: {file: File, path?: string, caption?: string}): Promise<MediaFile>
     listFiles(data: {campaignId: number, path?: string}): Promise<MediaFile[]>

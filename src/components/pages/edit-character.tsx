@@ -3,7 +3,7 @@ import * as React from 'react'
 import { MarkEditor } from '../mark-editor'
 import { ImageSelect } from '../image-select'
 import { ImageThumb } from '../image-thumb'
-import { SaveButton } from '../save-button'
+import { ActionButton } from '../action-button'
 import { FormInput } from '../form-utils'
 import { RawDraft } from '../raw-draft'
 import { API, APIError, CharacterData, CharacterInput } from '../../types'
@@ -19,6 +19,7 @@ interface State
 {
     char: CharacterInput
     saving?: Promise<void>
+    deleting?: Promise<void>
     errorMessage?: string
     errors: {[K in keyof(CharacterData)]?: string}
 }
@@ -35,7 +36,7 @@ export class EditCharacter extends React.Component<Props, State>
 
     private _handleSubmitClicked(api: API)
     {
-        if (!this.state.saving)
+        if (!this.state.saving && !this.state.deleting)
         {
             const saving = api.saveCharacter(this.state.char)
                 .then(char => {
@@ -46,6 +47,25 @@ export class EditCharacter extends React.Component<Props, State>
                         this.setState({errors: err.errors})
                 })
             this.setState({saving})
+        }
+    }
+
+    private _handleDeleteClicked(api: API)
+    {
+        if (!this.state.saving && !this.state.deleting)
+        {
+            if (confirm('This deletion will be forever. Click OK to confirm.'))
+            {
+                const deleting = api.deleteCharacter({characterId: this.props.initial.id})
+                    .then(char => {
+                        document.location.href = `/chars`
+                    }).catch(err => {
+                        this.setState({errorMessage: err.message, saving: undefined})
+                        if (err instanceof APIError && err.errors)
+                            this.setState({errors: err.errors})
+                    })
+                this.setState({deleting})
+            }
         }
     }
 
@@ -85,7 +105,17 @@ export class EditCharacter extends React.Component<Props, State>
                 </div>
                 <MarkEditor document={this.state.char.rawbody} disabled={!!this.state.saving} onChange={body => this._handleChange('rawbody', body)} buttons={() => (
                     <div className='ml-sm-2 float-right'>
-                        <APIConsumer render={api => <SaveButton disabled={!!this.state.saving} saving={!!this.state.saving} onClick={() => this._handleSubmitClicked(api)}/>}/>
+                        <APIConsumer render={api => 
+                            <ActionButton
+                                disabled={!!this.state.saving || !!this.state.deleting}
+                                defaultAction='save'
+                                busy={this.state.saving ? 'Saving...' : this.state.deleting ? 'Deleting...' : undefined}
+                                actions={{
+                                    save: {label: 'Save Changes', icon: 'floppy-o', onClick: () => this._handleSubmitClicked(api)},
+                                    delete: {label: 'Delete Character', icon: 'trash-o', color: 'danger', onClick: () => this._handleDeleteClicked(api)}
+                                }}
+                            />
+                        }/>
                     </div>
                 )}/>
             </div>

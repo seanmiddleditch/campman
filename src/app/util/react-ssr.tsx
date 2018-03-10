@@ -19,6 +19,7 @@ const stubAPI: API = {
     showLoginDialog: stub<void>(),
     endSession: stub<void>(),
     saveCharacter: stub<CharacterData>(),
+    deleteCharacter: stub<void>(),
     uploadFile: stub<MediaFile>(),
     listFiles: stub<MediaFile[]>(),
     deleteFile: stub<void>(),
