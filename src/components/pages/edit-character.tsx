@@ -1,11 +1,10 @@
 import * as React from 'react'
 
-import { MarkEditor } from '../mark-editor'
+import { MarkEditor } from '../draft/editor'
 import { ImageSelect } from '../image-select'
 import { ImageThumb } from '../image-thumb'
 import { ActionButton } from '../action-button'
 import { FormInput } from '../form-utils'
-import { RawDraft } from '../raw-draft'
 import { API, APIError, CharacterData, CharacterInput } from '../../types'
 import { RawDraftContentState } from 'draft-js'
 import { APIConsumer } from '../api-context'

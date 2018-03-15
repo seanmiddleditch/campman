@@ -3,11 +3,15 @@ import {EditorState, Modifier, RichUtils, ContentBlock, ContentState, EntityInst
 import * as Immutable from 'immutable'
 
 import {AtomicImage} from '../components/atomic-image'
-import {SecretBlock} from '../components/secret-block'
+import { SecretBlock } from '../../blocks/secret'
 
 export const blockRenderMap = DefaultDraftBlockRenderMap.merge(Immutable.Map({
+    'unstyled': {
+        element: 'div',
+    },
     'secret': {
-        element: SecretBlock
+        element: 'blockquote',
+        wrapper: <SecretBlock/>
     }
 }))
 

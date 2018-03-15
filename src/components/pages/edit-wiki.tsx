@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { MarkEditor } from '../mark-editor'
+import { MarkEditor } from '../draft/editor'
 import { ActionButton } from '../action-button'
 import { WikiPageInput, WikiPageData } from '../../types/content'
 import { API, APIError } from '../../types/api'

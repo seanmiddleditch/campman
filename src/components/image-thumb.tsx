@@ -21,7 +21,15 @@ const captionStyle: React.CSSProperties = {
     whiteSpace: 'nowrap'
 }
 
-export const ImageThumb = ({className, hash, size, alt, caption}: {className?: string, hash: string, size: number, alt?: string, caption?: string}) => {
+interface Props
+{
+    className?: string
+    hash: string
+    size: number
+    alt?: string
+    caption?: string
+}
+export const ImageThumb: React.SFC<Props> = ({className, hash, size, alt, caption}) => {
     return <div className={className} style={wrapperStyle(size)}>
         {caption && <div style={captionStyle}>{caption}</div>}
         <img src={`/media/img/thumb/${size}/${hash}.png`} width={size} alt={alt}/>

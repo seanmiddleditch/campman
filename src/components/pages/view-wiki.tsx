@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { RawDraft } from '../raw-draft'
+import { RenderRaw } from '../draft/render-raw'
 import { WikiPageInput, WikiPageData } from '../../types/content'
 import { RawDraftContentState } from 'draft-js'
 
@@ -30,7 +30,7 @@ export class ViewWiki extends React.Component<Props>
                 <div>
                     <i className='fa fa-tags'></i> {this.props.tags ? this.props.tags : <span className='text-muted'>no tags</span>}
                 </div>
-                <RawDraft document={this.props.rawbody}/>
+                <RenderRaw document={this.props.rawbody}/>
             </div>
         )
     }

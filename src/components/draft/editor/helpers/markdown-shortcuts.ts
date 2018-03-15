@@ -1,6 +1,6 @@
 import {Editor, EditorState, ContentState, ContentBlock, RichUtils, SelectionState, Modifier, CompositeDecorator, AtomicBlockUtils, genKey} from 'draft-js'
 
-const LINK_REGEX = /\[\[(.*)\]\]$/
+const LINK_REGEX = /\[\[([^|]*)(\|(.*))?\]\]$/
 const STRONG_REGEX = /\*\*([^*]+)\*\*$/
 //const EM_REGEX = /[^*]\*([^*]+)\*$/ -- somewhat problematic with the simpler matcher; FIXME
 const UNDERLINE_REGEX = /_([^_]*)_$/
@@ -42,11 +42,19 @@ function matchLineInput(text: string, editorState: EditorState, regex: RegExp, c
 function linkifyBeforeInput(text: string, editorState: EditorState)
 {
     return matchLineInput(text, editorState, LINK_REGEX, (match, selection, block) => {
+
+        const rawTarget = match[1].trim()
+        const rawText = match[3] ? match[3].trim() : undefined
+        console.log(match.join('::'))
+
+        const target = rawTarget.toLowerCase().replace(/[^a-z0-9-]+/g, '-')
+        const text = rawText || rawTarget
+
         const contentState = editorState.getCurrentContent()
-        const contentStateWithEntity = contentState.createEntity('wiki-link', 'MUTABLE', {target: match[1]})
+        const contentStateWithEntity = contentState.createEntity('wiki-link', 'MUTABLE', {target})
         const entityKey = contentState.getLastCreatedEntityKey()
 
-        const contentStateReplaced = Modifier.replaceText(contentStateWithEntity, selection, match[1], undefined, entityKey)
+        const contentStateReplaced = Modifier.replaceText(contentStateWithEntity, selection, text, undefined, entityKey)
         const editorStateReplaced = EditorState.push(editorState, contentStateReplaced, 'apply-entity')
 
         const newSelection = contentStateReplaced.getSelectionAfter()

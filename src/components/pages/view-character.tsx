@@ -2,7 +2,7 @@ import * as React from 'react'
 
 import { ImageThumb } from '../image-thumb'
 import { SaveButton } from '../save-button'
-import { RawDraft } from '../raw-draft'
+import { RenderRaw } from '../draft/render-raw'
 import { CharacterData, CharacterInput } from '../../types'
 import { RawDraftContentState } from 'draft-js'
 
@@ -26,7 +26,7 @@ export class ViewCharacter extends React.Component<Props>
                 <div className='pull-right'>
                     {this.props.char.portrait && <ImageThumb hash={this.props.char.portrait.contentMD5} size={200}/>}
                 </div>
-                <RawDraft document={this.props.char.rawbody}/>
+                <RenderRaw document={this.props.char.rawbody}/>
             </div>
         )
     }

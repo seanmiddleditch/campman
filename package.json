@@ -64,7 +64,7 @@
     "cors": "2.8.4",
     "css-loader": "0.28.7",
     "dotenv": "4.0.0",
-    "draft-js": "0.10.2",
+    "draft-js": "0.10.5",
     "express": "4.16.2",
     "express-handlebars": "3.0.0",
     "express-promise-router": "2.0.0",
