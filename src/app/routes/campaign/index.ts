@@ -46,9 +46,9 @@ function resolveCampaign()
             if (req.campaign)
             {
                 req.campaign.id = req.campaign ? req.campaign.id : 0
-                res.locals.campaignURL = new URL('', config.publicURL)
-                res.locals.campaignURL.host = campaignHost
-                res.locals.campaign = {...req.campaign, url: res.locals.campaignURL}
+                const campaignURL = new URL('', config.publicURL)
+                campaignURL.host = campaignHost
+                res.locals.campaign = {...req.campaign, url: campaignURL}
                 domainCache.set(req.hostname, res.locals.campaign)
     
                 return next()

@@ -94,8 +94,8 @@ export class EditAdventure extends React.Component<Props, State>
                                 disabled={!!this.state.saving}
                                 busy={this.state.saving ? 'Saving...' : this.state.deleting ? 'Deleting...' : undefined}
                                 actions={{
-                                    save: {label: 'Save Changes', icon: 'floppy-o', onClick: () => this._handleSubmitClicked(state.config.campaign ? state.config.campaign.id : 0, api)},
-                                    delete: {label: 'Delete Adventure', color: 'danger', icon: 'trash-o', onClick: () => this._handleDeleteClicked(state.config.campaign ? state.config.campaign.id : 0, api)}
+                                    save: {label: 'Save Changes', icon: 'floppy-o', onClick: () => this._handleSubmitClicked(state.campaign ? state.campaign.id : 0, api)},
+                                    delete: {label: 'Delete Adventure', color: 'danger', icon: 'trash-o', onClick: () => this._handleDeleteClicked(state.campaign ? state.campaign.id : 0, api)}
                                 }}
                             />
                         )}/>}/>

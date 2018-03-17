@@ -213,6 +213,7 @@ export class ClientAPI implements API
         }
 
         return {
+            id: result.body.id,
             title: result.body.title,
             slug: result.body.slug,
             visibility: result.body.visibility,

@@ -34,6 +34,11 @@ import * as routes from './routes'
 
     const connection = await connectToDatabase(config.databaseURL)
 
+    const host = config.publicURL.hostname
+    const apiHost = `api.${host}`
+    const wwwHost = `www.${host}`
+    const mediaHost = `media.${host}`
+
     const app = express()
     app.engine('handlebars', exphbs({
         partialsDir: path.join(root, 'views', 'partials'),
@@ -42,21 +47,16 @@ import * as routes from './routes'
     }))
     app.locals.config = {
         publicURL: config.publicURL,
-        googleAnalyticsId: config.googleAnalyticsId
+        googleAnalyticsId: config.googleAnalyticsId,
+        apiURL: new URL('', config.publicURL)
     }
+    app.locals.config.apiURL.hostname = `api.${app.locals.config.apiURL.hostname}`
     app.set('view engine', 'handlebars')
     app.set('views', path.join(root, 'views', 'pages'))
     app.set('view cache', config.production)
 
     app.set('subdomain offset', (config.publicURL.hostname.match(/[.]/g) || []).length + 1)
 
-    const host = config.publicURL.hostname
-    const apiHost = `api.${host}`
-    const wwwHost = `www.${host}`
-    const mediaHost = `media.${host}`
-
-    app.locals.apiHost = new URL('', config.publicURL)
-    app.locals.apiHost.hostname = `api.${app.locals.apiHost.hostname}`
 
     // static assets first, before campaign checks or other work
     app.use(favicon(path.join(root, 'static', 'images', 'favicon.ico')))
@@ -74,7 +74,7 @@ import * as routes from './routes'
         const compiler = webpack(webpackConfig)
         app.use(webpackDevMiddleware(compiler, {
             publicPath: webpackConfig.output.publicPath,
-            logLevel: 'error'
+            logLevel: 'silent'
         }))
     }
 

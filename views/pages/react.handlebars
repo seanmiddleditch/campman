@@ -3,14 +3,12 @@
 {{#*inline "body"}}
 <div id='react-content'>{{{content}}}</div>
 <script>
-    const config = {
-        publicURL: new URL('{{config.publicURL}}'),
-        apiURL: new URL('{{apiHost}}'),
-        {{#if campaign}}campaign: {id: {{campaign.id}}, title: '{{campaign.title}}', url: new URL('{{{campaign.url}}}')},{{/if}}
-    }
-    const profile = {{#if profile}}{nickname: '{{profile.nickname}}', photoURL: new URL('{{{profile.photoURL}}}')}{{else}}undefined{{/if}}
+    const config = {publicURL: new URL('{{config.publicURL}}'), apiURL: new URL('{{config.apiURL}}')}
+    const profile = {{#if profile}}{id: {{profile.id}}, email: '{{profile.email}}', nickname: '{{profile.nickname}}', photoURL: new URL('{{{profile.photoURL}}}')}{{else}}undefined{{/if}}
+    const campaign = {{#if campaign}}{id: {{campaign.id}}, slug: '{{campaign.slug}}', title: '{{campaign.title}}', url: new URL('{{{campaign.url}}}')}{{else}}undefined{{/if}}
     const api = new ClientAPI(config.publicURL.toString(), config.apiURL.toString())
-    ReactDOM.hydrate(React.createElement(Application, {api, initialState: {config, profile} }, React.createElement({{component}}, {...{{{json props}}} })),
+    const initialState = {config, profile, campaign}
+    ReactDOM.hydrate(React.createElement(Application, {api, initialState}, React.createElement({{component}}, {...{{{json props}}} })),
     document.getElementById('react-content'))
 </script>
 {{/inline}}

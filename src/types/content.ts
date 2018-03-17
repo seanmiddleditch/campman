@@ -36,6 +36,7 @@ export type WikiPageInput = Partial<WikiPageData>
 
 export interface CampaignData
 {
+    id: number
     slug: string
     title: string
     url: string

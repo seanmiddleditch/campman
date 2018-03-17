@@ -9,10 +9,10 @@ export class Navigation extends React.Component
         return (
             <APIConsumer render={api => <StateConsumer render={state => (
                 <nav className='navbar sticky-top navbar-expand-lg navbar-light bg-light justify-content-between' style={{minHeight: 60}}>
-                    {state.config.campaign ? (
+                    {state.campaign ? (
                         <div className='navbar-brand'>
                             <a href={state.config.publicURL.toString()}><i className='fa fa-home'></i> </a>
-                            <a href={state.config.campaign.url.toString()}>{state.config.campaign.title}</a>
+                            <a href={state.campaign.url.toString()}>{state.campaign.title}</a>
                         </div>
                     ) : (
                         <div className='navbar-brand'><a href={state.config.publicURL.toString()}><i className='fa fa-home'></i> Campaign Manager</a></div>
@@ -22,20 +22,20 @@ export class Navigation extends React.Component
                         <span className='navbar-toggler-icon'></span>
                     </button>
                     <div className='collapse navbar-collapse' id='navbar-links'>
-                        {state.config.campaign ? (
+                        {state.campaign ? (
                             <ul className='navbar-nav mr-lg-auto'>
-                                <li className='nav-item'><a className='nav-link' href={`${state.config.campaign.url}adventures`}>Adventures</a></li>
-                                <li className='nav-item'><a className='nav-link' href={`${state.config.campaign.url}wiki`}>Wiki</a></li>
-                                <li className='nav-item'><a className='nav-link' href={`${state.config.campaign.url}tags`}>Tags</a></li>
-                                <li className='nav-item'><a className='nav-link' href={`${state.config.campaign.url}maps`}>Maps</a></li>
-                                <li className='nav-item'><a className='nav-link' href={`${state.config.campaign.url}chars`}>Characters</a></li>
+                                <li className='nav-item'><a className='nav-link' href={`${state.campaign.url}adventures`}>Adventures</a></li>
+                                <li className='nav-item'><a className='nav-link' href={`${state.campaign.url}wiki`}>Wiki</a></li>
+                                <li className='nav-item'><a className='nav-link' href={`${state.campaign.url}tags`}>Tags</a></li>
+                                <li className='nav-item'><a className='nav-link' href={`${state.campaign.url}maps`}>Maps</a></li>
+                                <li className='nav-item'><a className='nav-link' href={`${state.campaign.url}chars`}>Characters</a></li>
                                 <li className='nav-item'><a className='nav-link disabled' href='#'>Timeline</a></li>
-                                <li className='nav-item'><a className='nav-link' href={`${state.config.campaign.url}files`}>Files</a></li>
+                                <li className='nav-item'><a className='nav-link' href={`${state.campaign.url}files`}>Files</a></li>
                                 <li className='nav-item dropdown'>
                                     <a className='nav-link' href='#' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'><i className='fa fa-cog'></i></a>
                                     <div className='dropdown-menu'>
-                                        <a className='dropdown-item' href={`${state.config.campaign.url}settings`}>Settings</a>
-                                        <a className='dropdown-item' href={`${state.config.campaign.url}membership`}>Members</a>
+                                        <a className='dropdown-item' href={`${state.campaign.url}settings`}>Settings</a>
+                                        <a className='dropdown-item' href={`${state.campaign.url}membership`}>Members</a>
                                     </div>
                                 </li>
                             </ul>

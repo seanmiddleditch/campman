@@ -5,11 +5,11 @@ import {config} from '../../config'
 import {URL} from 'url'
 import * as slugUtils from '../../../common/slug-utils'
 import {QueryFailedError} from 'typeorm'
-import {render} from '../../react-ssr'
-import {ListCampaigns} from '../../../components/pages/list-campaigns'
+import {render, renderMain} from '../../react-ssr'
 import {NewCampaign} from '../../../components/pages/new-campaign'
 import {AccessDenied} from '../../../components/pages/access-denied'
 import {checkAccess, CampaignRole} from '../../auth'
+import { CampaignData } from '../../../types'
 
 export function campaigns() {
     const router = PromiseRouter()
@@ -18,7 +18,7 @@ export function campaigns() {
     router.get('/campaigns', async (req, res, next) => {
         const all = await campaignRepository.findAllForProfile({profileId: req.profileId})
 
-        const campaigns = all.filter(camp => checkAccess('campaign:view', {
+        const campaigns: CampaignData[] = all.filter(camp => checkAccess('campaign:view', {
             hidden: camp.visibility === CampaignVisibility.Hidden,
             profileId: req.profileId,
             role: camp.role
@@ -29,7 +29,7 @@ export function campaigns() {
 
         const canCreate = checkAccess('campaign:create', {profileId: req.profileId, role: CampaignRole.Visitor})
 
-        render(res, ListCampaigns, {campaigns, canCreate})
+        renderMain(res, {campaigns: new Map(campaigns.map(c => [c.id, c] as [number, CampaignData]))})
     })
 
     router.get('/new-campaign', async (req, res, next) => {
