@@ -1,10 +1,10 @@
 import * as React from 'react'
 import {Response} from 'express'
 import * as ReactDOMServer from 'react-dom/server'
-import {Application} from '../../components/application'
+import {Application} from '../components/application'
 import * as shortid from 'shortid'
 import {URL} from 'url'
-import {API, CharacterData, CampaignData, MediaFile, WikiPageData, ProfileData, AdventureData} from '../../types'
+import {API, CharacterData, CampaignData, MediaFile, WikiPageData, ProfileData, AdventureData} from '../types'
 
 interface RenderProps
 {

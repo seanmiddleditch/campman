@@ -17,7 +17,7 @@ import { URL } from 'url'
 import { CampaignRole, googleAuth } from './auth'
 import { Config, config } from './config'
 import { connectToDatabase } from './db'
-import * as handlebarsHelpers from './util/handlebars-helpers'
+import * as handlebarsHelpers from './handlebars-helpers'
 
 import * as routes from './routes'
 

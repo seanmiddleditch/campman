@@ -4,7 +4,7 @@ import {join} from './join'
 import PromiseRouter = require('express-promise-router')
 import {SiteHome} from '../../../components/pages/site-home'
 import {NotFound} from '../../../components/pages/not-found'
-import {render} from '../../util/react-ssr'
+import {render} from '../../react-ssr'
 
 export function routes()
 {

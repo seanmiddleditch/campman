@@ -9,9 +9,9 @@ import {QueryFailedError} from 'typeorm'
 import * as mime from 'mime'
 import {URL} from 'url'
 import * as multer from 'multer'
-import {insertMedia} from '../../util/insert-media'
+import {insertMedia} from '../../insert-media'
 import {ListFiles} from '../../../components/pages/list-files'
-import {render} from '../../util/react-ssr'
+import {render} from '../../react-ssr'
 import {MediaFile} from '../../../types'
 
 export function files()

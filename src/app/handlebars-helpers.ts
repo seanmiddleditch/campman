@@ -1,7 +1,7 @@
-import {config} from '../config'
+import {config} from './config'
 import {URL} from 'url'
 import {SafeString} from 'handlebars'
-import * as components from '../../components'
+import * as components from '../components'
 
 export function json(context: any)
 {

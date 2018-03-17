@@ -1,6 +1,6 @@
 import {Entity, Column, PrimaryGeneratedColumn, Index, EntityRepository, Repository, ManyToMany} from 'typeorm'
 import {PageModel, MediaModel} from '.'
-import * as slug from '../util/slug-utils'
+import * as slug from '../../common/slug-utils'
 
 @Entity({name: 'label'})
 export class TagModel

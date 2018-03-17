@@ -1,5 +1,6 @@
 import * as React from 'react'
-import {ContentBlock, ContentState, Entity} from 'draft-js'
+import { ContentBlock, ContentState, Entity } from 'draft-js'
+import { WikiLink } from '../../entities/wiki-link'
 
 const wikiLinkDecoratorStrategy = (contentBlock: ContentBlock, callback: (s: number, e: number) => void, contentState: ContentState) => {
     contentBlock.findEntityRanges(cm => {
@@ -8,14 +9,14 @@ const wikiLinkDecoratorStrategy = (contentBlock: ContentBlock, callback: (s: num
     }, callback)
 }
 
-const WikiLinkComponent = (props: {contentState: ContentState, entityKey: string, offsetKey: string, children: any}) => {
+const WikiLinkWrapper = (props: {contentState: ContentState, entityKey: string, offsetKey: string, children: any}) => {
     const {contentState, entityKey, offsetKey} = props
     const entity = contentState.getEntity(entityKey)
     const {target} = entity.getData()
-    return <a href={'/wiki/p/' + target} target='_blank' data-offset-key={offsetKey}>{props.children}</a>
+    return <WikiLink target={target} offsetKey={offsetKey}>{props.children}</WikiLink>
 }
 
 export const wikiLinkDecorator: any = {
     strategy: wikiLinkDecoratorStrategy,
-    component: WikiLinkComponent
+    component: WikiLinkWrapper
 }

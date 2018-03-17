@@ -4,7 +4,7 @@ import {TagRepository} from '../../models'
 import {connection} from '../../db'
 import PromiseRouter = require('express-promise-router')
 import {ListTags} from '../../../components/pages/list-tags'
-import {render} from '../../util/react-ssr'
+import {render} from '../../react-ssr'
 
 export function tags()
 {

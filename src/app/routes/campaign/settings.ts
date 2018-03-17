@@ -5,9 +5,9 @@ import {connection} from '../../db'
 import {URL} from 'url'
 import {config} from '../../config'
 import PromiseRouter = require('express-promise-router')
-import * as slugUtils from '../../util/slug-utils'
+import * as slugUtils from '../../../common/slug-utils'
 import {CampaignSettings} from '../../../components/pages/campaign-settings'
-import {render} from '../../util/react-ssr'
+import {render} from '../../react-ssr'
 
 export function settings()
 {

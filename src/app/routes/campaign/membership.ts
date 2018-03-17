@@ -10,7 +10,7 @@ import * as shortid from 'shortid'
 import * as mailgun from 'mailgun-js'
 import {CampaignMembership} from '../../../components/pages/campaign-membership'
 import {AccessDenied} from '../../../components/pages/access-denied'
-import {render} from '../../util/react-ssr'
+import {render} from '../../react-ssr'
 
 export function membership() {
     const router = PromiseRouter()

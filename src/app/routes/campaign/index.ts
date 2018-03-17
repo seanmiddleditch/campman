@@ -16,7 +16,7 @@ import { URL } from 'url'
 import { config } from '../../config'
 import { AccessDenied } from '../../../components/pages/access-denied'
 import { NotFound } from '../../../components/pages/not-found'
-import { render } from '../../util/react-ssr'
+import { render } from '../../react-ssr'
 
 function resolveCampaign()
 {

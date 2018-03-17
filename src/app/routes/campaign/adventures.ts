@@ -3,14 +3,14 @@ import {checkAccess} from '../../auth'
 import {AdventureRepository} from '../../models'
 import {connection} from '../../db'
 import PromiseRouter = require('express-promise-router')
-import {render} from '../../util/react-ssr'
+import {render} from '../../react-ssr'
 import {AccessDenied} from '../../../components/pages/access-denied'
 import {NotFound} from '../../../components/pages/not-found'
 import {ListAdventures} from '../../../components/pages/list-adventures'
 import {NewAdventure} from '../../../components/pages/new-adventure'
 import {EditAdventure} from '../../../components/pages/edit-adventure'
 import {ViewAdventure} from '../../../components/pages/view-adventure'
-import {validateDraft} from '../../util/draft-utils'
+import {validateDraft} from '../../../common/draft-utils'
 
 export function adventures()
 {

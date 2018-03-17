@@ -6,7 +6,7 @@ import {config} from '../../config'
 import {URL} from 'url'
 import {QueryFailedError} from 'typeorm'
 import {JoinCampaign} from '../../../components/pages/join-campaign'
-import {render} from '../../util/react-ssr'
+import {render} from '../../react-ssr'
 
 export function join() {
     const router = PromiseRouter()
