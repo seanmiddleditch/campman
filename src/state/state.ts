@@ -7,4 +7,8 @@ export interface State
     profile?: ProfileData
     campaign?: CampaignData
     campaigns: Map<number, CampaignData>
+    join?: {
+        success: boolean,
+        error?: string
+    }
 }

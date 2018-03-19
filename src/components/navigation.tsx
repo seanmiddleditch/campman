@@ -1,8 +1,10 @@
 import * as React from 'react'
-import {StateConsumer} from './state-context'
-import {APIConsumer} from './api-context'
+import { StateConsumer } from './state-context'
+import { APIConsumer } from './api-context'
+import { NavLink } from 'react-router-dom'
+import { Location } from 'history'
 
-export class Navigation extends React.Component
+export class Navigation extends React.Component<{location: Location}>
 {
     public render()
     {
@@ -15,7 +17,7 @@ export class Navigation extends React.Component
                             <a href={state.campaign.url.toString()}>{state.campaign.title}</a>
                         </div>
                     ) : (
-                        <div className='navbar-brand'><a href={state.config.publicURL.toString()}><i className='fa fa-home'></i> Campaign Manager</a></div>
+                        <div className='navbar-brand'><NavLink to='/'><i className='fa fa-home'></i> Campaign Manager</NavLink></div>
                     )}
 
                     <button className='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbar-links' aria-controls='navbar-links' aria-expanded='false' aria-label='Toggle navigation'>
@@ -41,7 +43,7 @@ export class Navigation extends React.Component
                             </ul>
                         ) : (
                             <ul className='navbar-nav mr-lg-auto'>
-                                <div className='nav-link'><a href={`${state.config.publicURL}campaigns`}>Campaigns</a></div>
+                                <NavLink className='nav-link' to='/campaigns'>Campaigns</NavLink>
                             </ul>
                         )}
 
@@ -65,7 +67,10 @@ export class Navigation extends React.Component
                                     <span> {state.profile.nickname}</span>
                                 </button>
                                 <div className='dropdown-menu'>
-                                    <a className='dropdown-item' href={`${state.config.publicURL}campaigns`}>Campaigns</a>
+                                    {state.campaign ?
+                                        <NavLink className='dropdown-item' to='/campaigns'>Campaigns</NavLink> :
+                                        <a className='dropdown-item' href={`${state.config.publicURL}campaigns`}>Campaigns</a>
+                                    }
                                     <a className='dropdown-item' href={`${state.config.publicURL}profile`}>Profile</a>
                                     <button className='dropdown-item btn btn-link' onClick={() => {api.endSession().then(() => window.location.reload(true)); return false}}>Logout</button>
                                 </div>

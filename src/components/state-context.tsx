@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import { State } from '../state'
 
-type SetState = (state: Partial<State>) => void
+export type SetState = (action: (sttae: State) => State) => void
 
 interface Props
 {
@@ -34,7 +34,9 @@ export class StateProvider extends React.Component<Props, ComponentState> implem
     {
         return {
             state: this.state.state,
-            setState: (state: Partial<State>) => this.setState({state: {...this.state.state, state}})
+            setState: (action: (state: State) => State) => {
+                this.setState({state: action(this.state.state)})
+            }
         }
     }
 
@@ -44,7 +46,7 @@ export class StateProvider extends React.Component<Props, ComponentState> implem
     }
 }
 
-export class StateConsumer extends React.Component<{render: (state: State, setState: SetState) => JSX.Element}>
+export class StateConsumer extends React.Component<{render: (state: State, setState: SetState) => React.ReactNode}>
 {
     context: Context
     static contextTypes = {

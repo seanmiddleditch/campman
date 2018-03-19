@@ -13,7 +13,9 @@ interface Props
 }
 export const Main: React.SFC<Props> = ({api, initialState}) =>
     <Router history={createBrowserHistory()}>
-        <Application api={api} initialState={initialState}>
-            <Routes/>
-        </Application>
+        <Route match='/' render={({location}) =>
+            <Application api={api} initialState={initialState} location={location}>
+                <Routes location={location}/>
+            </Application>
+        }/>
     </Router>

@@ -4,6 +4,7 @@ import { State } from '../state'
 import { StateProvider } from './state-context'
 import { APIProvider } from './api-context'
 import { Navigation } from './navigation'
+import { Location } from 'history'
 
 const footerStyle: React.CSSProperties = {
     position: 'absolute',
@@ -20,30 +21,27 @@ interface Props
 {
     api: API
     initialState: State
+    location: Location
 }
-export class Application extends React.Component<Props>
-{
-    public render()
-    {
-        const header = undefined as {icon: string, title: string}|undefined
+export const Application: React.SFC<Props> = ({api, location, initialState, children}) => {
+    const header = undefined as {icon: string, title: string}|undefined
 
-        return (
-            <StateProvider initialState={this.props.initialState}>
-                <APIProvider api={this.props.api}>
-                    <Navigation/>
-                    <main role='main' className='container mt-2'>
-                        {header && <div className='page-header'>
-                            <h1>{header.icon && <i className={`fa fa-${header.icon}`}></i> }{header.title}</h1>
-                        </div>}
-                        <div className='page'>
-                            {this.props.children}
-                        </div>
-                    </main>
-                    <footer className='mt-2' style={footerStyle}>
-                        <div className='text-muted text-center'>Powered by <a href='https://github.com/seanmiddleditch/campman'>Campaign Manager</a></div>
-                    </footer>
-                </APIProvider>
-            </StateProvider>
-        )
-    }
+    return (
+        <StateProvider initialState={initialState}>
+            <APIProvider api={api}>
+                <Navigation location={location}/>
+                <main role='main' className='container mt-2'>
+                    {header && <div className='page-header'>
+                        <h1>{header.icon && <i className={`fa fa-${header.icon}`}></i> }{header.title}</h1>
+                    </div>}
+                    <div className='page'>
+                        {children}
+                    </div>
+                </main>
+                <footer className='mt-2' style={footerStyle}>
+                    <div className='text-muted text-center'>Powered by <a href='https://github.com/seanmiddleditch/campman'>Campaign Manager</a></div>
+                </footer>
+            </APIProvider>
+        </StateProvider>
+    )
 }

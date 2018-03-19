@@ -4,6 +4,8 @@ import { connection } from '../../../../db'
 import { members } from './members'
 import { files } from './files'
 import { adventures } from './adventures'
+import { makeCampaignURL } from '../../../../../common/url-utils'
+import { config } from '../../../../config'
 
 export function campaigns()
 {
@@ -21,8 +23,19 @@ export function campaigns()
             id: campaign.id,
             title: campaign.title,
             slug: campaign.slug,
-            visibility: campaign.visibility
+            visibility: campaign.visibility,
+            url: makeCampaignURL({slug: campaign.slug, publicURL: config.publicURL})
         }})
+    })
+    router.use('/', async (req, res) => {
+        const [all, count] = await campaignRepository.findAndCount()
+        res.json({status: 'success', body: all.map(c => ({
+            id: c.id,
+            title: c.title,
+            slug: c.slug,
+            visibility: c.visibility,
+            url: makeCampaignURL({slug: c.slug, publicURL: config.publicURL})
+        }))})
     })
     return router
 }

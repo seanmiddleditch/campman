@@ -38,10 +38,10 @@ export class ClientAPI implements API
         }
     }
 
-    private async _callRemoteV1<Response, Body = {}>(uri: string, req: {method?: string, body?: Body}) : Promise<Response>
+    private async _callRemoteV1<Response, Body = {}>(uri: string, req: {method?: string, body?: Body}|undefined) : Promise<Response>
     {
-        const method = req.method || 'GET'
-        const {contentType, body} = this._encodeRequestBody(req.body)
+        const method = (req && req.method) || 'GET'
+        const {contentType, body} = (req && req.body) ? this._encodeRequestBody(req.body) : {contentType: undefined, body: undefined}
         const headers = new Headers({
             'Accept': 'application/json'
         })
@@ -69,18 +69,19 @@ export class ClientAPI implements API
             throw new APIError(`Invalid "status": "${result.status}"`)
     }
 
-    private async _callRemote<Response, Body = {}>(uri: string, req: {campaignId?: number, method?: string, body?: Body}) : Promise<Response>
+
+    private _callRemote<Response, Body = {}>(uri: string, req: {campaignId?: number, method?: string, body?: Body}|undefined) : Promise<Response>
     {
-        const fullUri = urlJoin(this._apiURL, '/api/v1', req.campaignId ? `/campaigns/${req.campaignId}` : '', uri)
+        const fullUri = urlJoin(this._apiURL, '/api/v1', (req && req.campaignId) ? `/campaigns/${req.campaignId}` : '', uri)
         return this._callRemoteV1<Response, Body>(fullUri, req)
     }
 
-    public async saveCharacter(char: CharacterInput): Promise<CharacterData>
+    public saveCharacter(char: CharacterInput): Promise<CharacterData>
     {
         return this._callRemoteV1<CharacterData>('/chars', {method: 'POST', body: {...char, rawbody: JSON.stringify(char.rawbody)}})
     }
 
-    public async deleteCharacter(data: {characterId: number}): Promise<void>
+    public deleteCharacter(data: {characterId: number}): Promise<void>
     {
         return this._callRemoteV1<void>(`/chars/c/${data.characterId}`, {method: 'DELETE'})
     }
@@ -112,7 +113,7 @@ export class ClientAPI implements API
         return this._callRemoteV1<void>(`/wiki/${data.pageId}`, {method: 'DELETE'})
     }
 
-    showLoginDialog() : Promise<void>
+    public showLoginDialog() : Promise<void>
     {
         return new Promise((resolve, reject) => {
             (window as EventTarget).addEventListener('message', () => resolve(), {once:true})
@@ -121,7 +122,7 @@ export class ClientAPI implements API
         })
     }
 
-    endSession() : Promise<void>
+    public endSession() : Promise<void>
     {
         const logoutURL = new URL('/auth/logout', this._publicURL)
         return new Promise((resolve, reject) => {
@@ -132,7 +133,7 @@ export class ClientAPI implements API
         })
     }
 
-    async uploadFile({file, path, caption}: {file: File, path?: string, caption?: string})
+    public async uploadFile({file, path, caption}: {file: File, path?: string, caption?: string})
     {
         path = path || `/${file.name}`
 
@@ -162,7 +163,7 @@ export class ClientAPI implements API
         }
     }
 
-    listFiles({campaignId, path}: {campaignId: number, path?: string}) : Promise<MediaFile[]>
+    public listFiles({campaignId, path}: {campaignId: number, path?: string}) : Promise<MediaFile[]>
     {
         const cleanPath = path && path.length !== 0 && path.charAt(0) === '/' ?
             path :
@@ -171,7 +172,7 @@ export class ClientAPI implements API
         return this._callRemote<MediaFile[]>(`/files${cleanPath}`, {campaignId})
     }
 
-    async deleteFile(path: string)
+    public async deleteFile(path: string)
     {
         const result = await fetch(`/files${path}`, {
             method: 'DELETE',
@@ -221,14 +222,19 @@ export class ClientAPI implements API
         }
     }
 
-    createCampaign(camp: CampaignInput)
+    public createCampaign(camp: CampaignInput)
     {
         return this._saveCampaign('/campaigns', camp)
     }
 
-    async saveSettings(camp: CampaignInput): Promise<void>
+    public saveSettings(camp: CampaignInput): Promise<void>
     {
-        await this._saveCampaign('/settings', camp)
+        return this._saveCampaign('/settings', camp).then(() => {})
+    }
+
+    public listCampaigns(): Promise<CampaignData[]>
+    {
+        return this._callRemote<CampaignData[]>('/campaigns', {})
     }
 
     async listProfiles({campaignId}: {campaignId: number}): Promise<ProfileData[]>

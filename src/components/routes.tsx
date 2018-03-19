@@ -1,10 +1,21 @@
 import * as React from 'react'
-import * as history from 'history'
+import { Location } from 'history'
 import { Router, Route, Switch } from 'react-router'
-import { NotFound, ListCampaigns } from './pages'
+import { NotFound, ListCampaigns, NewCampaign, SiteHome, JoinCampaign } from './pages'
 
-export const Routes: React.SFC<{}> = () =>
-    <Switch>
-        <Route exact match='/campaigns' component={ListCampaigns}/>
-        <Route component={NotFound}/>
+export const Routes: React.SFC<{location: Location}> = ({location}) =>
+    <Switch location={location}>
+        <Route exact path='/'>
+            <SiteHome/>
+        </Route>
+        <Route exact path='/campaigns'>
+            <ListCampaigns/>
+        </Route>
+        <Route exact path='/new-campaign'>
+            <NewCampaign/>
+        </Route>
+        <Route exact path='/join/:code'>
+            <JoinCampaign/>
+        </Route>
+        <Route status={404} component={NotFound}/>
     </Switch>

@@ -30,6 +30,7 @@ export interface API
     listFiles(data: {campaignId: number, path?: string}): Promise<MediaFile[]>
     deleteFile(path: string): Promise<void>
 
+    listCampaigns(): Promise<CampaignData[]>
     createCampaign(camp: CampaignInput): Promise<CampaignData>
     saveSettings(camp: CampaignInput): Promise<void>
 

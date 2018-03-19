@@ -5,7 +5,7 @@ import {config} from '../../config'
 import {URL} from 'url'
 import * as slugUtils from '../../../common/slug-utils'
 import {QueryFailedError} from 'typeorm'
-import {render, renderMain} from '../../react-ssr'
+import { render, renderMain } from '../../react-ssr'
 import {NewCampaign} from '../../../components/pages/new-campaign'
 import {AccessDenied} from '../../../components/pages/access-denied'
 import {checkAccess, CampaignRole} from '../../auth'
@@ -29,7 +29,7 @@ export function campaigns() {
 
         const canCreate = checkAccess('campaign:create', {profileId: req.profileId, role: CampaignRole.Visitor})
 
-        renderMain(res, {campaigns: new Map(campaigns.map(c => [c.id, c] as [number, CampaignData]))})
+        renderMain(req, res, {campaigns: new Map(campaigns.map(c => [c.id, c] as [number, CampaignData]))})
     })
 
     router.get('/new-campaign', async (req, res, next) => {
@@ -41,7 +41,7 @@ export function campaigns() {
             return
         }
 
-        render(res, NewCampaign, {})
+        renderMain(req, res, {})
     })
 
     router.post('/campaigns', async (req, res, next) => {
