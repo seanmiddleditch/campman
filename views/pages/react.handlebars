@@ -8,7 +8,7 @@
     const campaign = {{#if campaign}}{id: {{campaign.id}}, slug: '{{campaign.slug}}', title: '{{campaign.title}}', url: new URL('{{{campaign.url}}}')}{{else}}undefined{{/if}}
     const api = new ClientAPI(config.publicURL.toString(), config.apiURL.toString())
     const initialState = {config, profile, campaign}
-    ReactDOM.hydrate(React.createElement(Application, {api, initialState}, React.createElement({{component}}, {...{{{json props}}} })),
+    ReactDOM.hydrate(React.createElement(Main, {api, initialState}, React.createElement({{component}}, {...{{{json props}}} })),
     document.getElementById('react-content'))
 </script>
 {{/inline}}

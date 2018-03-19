@@ -11,11 +11,11 @@ interface Props
     api: API
     initialState: State
 }
-export const Main: React.SFC<Props> = ({api, initialState}) =>
+export const Main: React.SFC<Props> = ({api, initialState, children}) =>
     <Router history={createBrowserHistory()}>
         <Route match='/' render={({location}) =>
             <Application api={api} initialState={initialState} location={location}>
-                <Routes location={location}/>
+                {children ? children : <Routes location={location}/>}
             </Application>
         }/>
     </Router>

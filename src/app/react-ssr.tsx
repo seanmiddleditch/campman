@@ -51,7 +51,17 @@ export function render<Props, Component extends ComponentType<any>>(res: Respons
     const campaign: CampaignData|undefined = res.locals.campaign
     const initialState: State = {config, profile, campaign, campaigns: new Map<number, CampaignData>()}
     const location = createLocation('/')
-    const content = ReactDOMServer.renderToString(<Application api={stubAPI} initialState={initialState} location={location}>{React.createElement(component, props)}</Application>)
+
+    const ctx = {}
+    const content = ReactDOMServer.renderToString(
+        <StaticRouter context={ctx} location={location}>
+            <Route match='/' render={({location}) =>
+                <Application api={stubAPI} initialState={initialState} location={location}>
+                    {React.createElement(component, props)}
+                </Application>
+            }/>
+        </StaticRouter>
+    )
     res.render('react', {content, props, component: component.name})
 }
 
