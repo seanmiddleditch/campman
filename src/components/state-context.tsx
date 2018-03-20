@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import { State } from '../state'
 
-export type SetState = (action: (sttae: State) => State) => void
+export type SetState = (action: (state: State) => State) => void
 
 interface Props
 {

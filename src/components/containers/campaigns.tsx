@@ -4,7 +4,6 @@ import { APIConsumer } from '../api-context'
 import { CampaignData } from '../../types'
 import { API } from '../../types'
 import { State } from '../../state'
-import { StateEnteredEventDetails } from 'aws-sdk/clients/stepfunctions';
 
 interface Props
 {

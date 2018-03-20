@@ -1,15 +1,39 @@
 import * as React from 'react'
 import { StateConsumer } from './state-context'
-import { APIConsumer } from './api-context'
 import { NavLink } from 'react-router-dom'
 import { Location } from 'history'
+import { Authenticated } from './containers/authenticated'
+import { CampaignData } from '../types'
+
+const CampaignLinks: React.SFC<{campaign: CampaignData}> = ({campaign}) => 
+    <ul className='navbar-nav mr-lg-auto'>
+        <li className='nav-item'><a className='nav-link' href={`${campaign.url}adventures`}>Adventures</a></li>
+        <li className='nav-item'><a className='nav-link' href={`${campaign.url}wiki`}>Wiki</a></li>
+        <li className='nav-item'><a className='nav-link' href={`${campaign.url}tags`}>Tags</a></li>
+        <li className='nav-item'><a className='nav-link' href={`${campaign.url}maps`}>Maps</a></li>
+        <li className='nav-item'><a className='nav-link' href={`${campaign.url}chars`}>Characters</a></li>
+        <li className='nav-item'><a className='nav-link disabled' href='#'>Timeline</a></li>
+        <li className='nav-item'><a className='nav-link' href={`${campaign.url}files`}>Files</a></li>
+        <li className='nav-item dropdown'>
+            <a className='nav-link' href='#' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'><i className='fa fa-cog'></i></a>
+            <div className='dropdown-menu'>
+                <a className='dropdown-item' href={`${campaign.url}settings`}>Settings</a>
+                <a className='dropdown-item' href={`${campaign.url}membership`}>Members</a>
+            </div>
+        </li>
+    </ul>
+
+const MainLinks: React.SFC = () =>
+    <ul className='navbar-nav mr-lg-auto'>
+        <NavLink className='nav-link' to='/campaigns'>Campaigns</NavLink>
+    </ul>
 
 export class Navigation extends React.Component<{location: Location}>
 {
     public render()
     {
         return (
-            <APIConsumer render={api => <StateConsumer render={state => (
+            <StateConsumer render={state => (
                 <nav className='navbar sticky-top navbar-expand-lg navbar-light bg-light justify-content-between' style={{minHeight: 60}}>
                     {state.campaign ? (
                         <div className='navbar-brand'>
@@ -24,28 +48,10 @@ export class Navigation extends React.Component<{location: Location}>
                         <span className='navbar-toggler-icon'></span>
                     </button>
                     <div className='collapse navbar-collapse' id='navbar-links'>
-                        {state.campaign ? (
-                            <ul className='navbar-nav mr-lg-auto'>
-                                <li className='nav-item'><a className='nav-link' href={`${state.campaign.url}adventures`}>Adventures</a></li>
-                                <li className='nav-item'><a className='nav-link' href={`${state.campaign.url}wiki`}>Wiki</a></li>
-                                <li className='nav-item'><a className='nav-link' href={`${state.campaign.url}tags`}>Tags</a></li>
-                                <li className='nav-item'><a className='nav-link' href={`${state.campaign.url}maps`}>Maps</a></li>
-                                <li className='nav-item'><a className='nav-link' href={`${state.campaign.url}chars`}>Characters</a></li>
-                                <li className='nav-item'><a className='nav-link disabled' href='#'>Timeline</a></li>
-                                <li className='nav-item'><a className='nav-link' href={`${state.campaign.url}files`}>Files</a></li>
-                                <li className='nav-item dropdown'>
-                                    <a className='nav-link' href='#' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'><i className='fa fa-cog'></i></a>
-                                    <div className='dropdown-menu'>
-                                        <a className='dropdown-item' href={`${state.campaign.url}settings`}>Settings</a>
-                                        <a className='dropdown-item' href={`${state.campaign.url}membership`}>Members</a>
-                                    </div>
-                                </li>
-                            </ul>
-                        ) : (
-                            <ul className='navbar-nav mr-lg-auto'>
-                                <NavLink className='nav-link' to='/campaigns'>Campaigns</NavLink>
-                            </ul>
-                        )}
+                        {state.campaign ?
+                            <CampaignLinks campaign={state.campaign}/> :
+                            <MainLinks/>
+                        }
 
                         <form className='input-group mr-sm-2' action='/search' method='get'>
                             <input className='form-control' type='search' name='q' placeholder='Search' aria-label='Search'/>
@@ -56,15 +62,15 @@ export class Navigation extends React.Component<{location: Location}>
                             </span>
                         </form>
 
-                        {state.profile ? (
+                        <Authenticated render={({profile, login, logout}) => profile ?
                             <div className='btn-group' role='group'>
                                 <button className='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
-                                    {state.profile.photoURL ? (
-                                        <img width={24} height={24} src={state.profile.photoURL.toString()}/>
+                                    {profile.photoURL ? (
+                                        <img width={24} height={24} src={profile.photoURL.toString()}/>
                                     ) : (
                                         <i className='navigation-bar-profile-photo fa fa-user-circle-o'></i>
                                     )}
-                                    <span> {state.profile.nickname}</span>
+                                    <span> {profile.nickname}</span>
                                 </button>
                                 <div className='dropdown-menu'>
                                     {state.campaign ?
@@ -72,17 +78,16 @@ export class Navigation extends React.Component<{location: Location}>
                                         <a className='dropdown-item' href={`${state.config.publicURL}campaigns`}>Campaigns</a>
                                     }
                                     <a className='dropdown-item' href={`${state.config.publicURL}profile`}>Profile</a>
-                                    <button className='dropdown-item btn btn-link' onClick={() => {api.endSession().then(() => window.location.reload(true)); return false}}>Logout</button>
+                                    <button className='dropdown-item btn btn-link' onClick={logout}>Logout</button>
                                 </div>
-                            </div>
-                        ) : (
-                            <button className='btn btn-signin-google p-0 m-0' onClick={() => api.showLoginDialog().then(() => window.location.reload(true))}>
+                            </div> :
+                            <button className='btn btn-signin-google p-0 m-0' onClick={login}>
                                 <img src={`${state.config.publicURL}images/google-signin/normal.png`} alt='Sign-in (Google+)'/>
                             </button>
-                        )}
+                        }/>
                     </div>
                 </nav>
-            )}/>}/>
+            )}/>
         )
     }
 }

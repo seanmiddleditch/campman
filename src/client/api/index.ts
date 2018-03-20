@@ -113,12 +113,28 @@ export class ClientAPI implements API
         return this._callRemoteV1<void>(`/wiki/${data.pageId}`, {method: 'DELETE'})
     }
 
-    public showLoginDialog() : Promise<void>
+    public showLoginDialog() : Promise<ProfileData|undefined>
     {
         return new Promise((resolve, reject) => {
-            (window as EventTarget).addEventListener('message', () => resolve(), {once:true})
+            var loggedIn = false;
+            window.onmessage = ev => {
+                if (ev.type === 'message' && ev.data.name === 'login') // FIXME: check origin
+                {
+                    loggedIn = true 
+                    resolve(ev.data.profile as ProfileData)
+                }
+            }
             const loginURL = new URL('/auth/google/login', this._publicURL)
             const popup = window.open(loginURL.toString(), 'google_login', 'menubar=false,scrollbars=false,location=false,width=400,height=300')
+            if (!popup)
+                return reject(new Error('Window could not be opened'))
+            const timeout = () => {
+                if (popup.closed && !loggedIn)
+                    resolve()
+                else if (!loggedIn)
+                    setTimeout(timeout, 500)
+            }
+            setTimeout(timeout, 1000)
         })
     }
 

@@ -20,7 +20,7 @@ function stub<R>(): Stub<R> { return () => {throw new Error('not implemented')} 
 
 
 const stubAPI: API = {
-    showLoginDialog: stub<void>(),
+    showLoginDialog: stub<ProfileData|undefined>(),
     endSession: stub<void>(),
     saveCharacter: stub<CharacterData>(),
     deleteCharacter: stub<void>(),

@@ -4,6 +4,7 @@ import {ProfileModel} from '../../models'
 import {URL} from 'url'
 import {config} from '../../config'
 import PromiseRouter = require('express-promise-router')
+import { ProfileData } from '../../../types'
 
 export function auth()
 {
@@ -31,7 +32,10 @@ export function auth()
 
     router.get('/auth/google/callback',
         passport.authenticate('google'),
-        (req, res) => res.send('<html><script>try{window.opener.postMessage({name:"login"},"*")}catch(e){console.error(e,e.stack)}window.close()</script></html>')
+        (req, res) => {
+            const profile = req.user as ProfileData
+            res.send(`<html><script>try{window.opener.postMessage({name:"login",profile:${JSON.stringify(req.user)}},"*")}catch(e){console.error(e,e.stack)}window.close()</script></html>`)
+        }
     )
 
     router.get('/auth/google/login', passport.authenticate('google', {scope: ['email', 'profile']}))

@@ -20,7 +20,7 @@ export class APIError extends Error
 
 export interface API
 {
-    showLoginDialog(): Promise<void>
+    showLoginDialog(): Promise<ProfileData|undefined>
     endSession(): Promise<void>
 
     saveCharacter(char: CharacterInput): Promise<CharacterData>

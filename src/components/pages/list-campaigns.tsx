@@ -2,6 +2,7 @@ import * as React from 'react'
 import { CampaignData } from '../../types'
 import { Link } from 'react-router-dom'
 import { CampaignsContainer } from '../containers/campaigns'
+import { Authenticated } from '../containers/authenticated';
 
 export const ListCampaigns: React.SFC = () =>
     <div>
@@ -15,11 +16,13 @@ export const ListCampaigns: React.SFC = () =>
                     </a>
                 ))}
                 {campaigns.length === 0 && <div className='list-group-item'>No campaigns found</div>}
-                <div className='list-group-item'>
-                    <Link to='/new-campaign' className='btn btn-primary'>
-                        <i className='fa fa-plus'></i> Start New Campaign
-                    </Link>
-                </div>
+                <Authenticated render={({profile}) => profile &&
+                    <div className='list-group-item'>
+                        <Link to='/new-campaign' className='btn btn-primary'>
+                            <i className='fa fa-plus'></i> Start New Campaign
+                        </Link>
+                    </div>
+                }/>
             </div>}/>
         </div>
     </div>
