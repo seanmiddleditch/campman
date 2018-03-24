@@ -2,13 +2,13 @@ import * as React from 'react'
 import { Request, Response } from 'express'
 import * as ReactDOMServer from 'react-dom/server'
 import {Application} from '../components/application'
-import { Routes } from '../components/routes'
+import { MainRoutes, CampaignRoutes } from '../components/routes'
 import * as shortid from 'shortid'
 import {URL} from 'url'
-import { createLocation } from 'history'
 import {API, CharacterData, CampaignData, MediaFile, WikiPageData, ProfileData, AdventureData} from '../types'
 import { State, serializeState } from '../state'
 import { StaticRouter, Route } from 'react-router'
+import { config } from './config'
 
 interface RenderProps
 {
@@ -33,55 +33,59 @@ const stubAPI: API = {
     saveWikiPage: stub<WikiPageData>(),
     deletePage: stub<void>(),
     listProfiles: stub<ProfileData[]>(),
+    listAdventures: stub<AdventureData[]>(),
+    fetchAdventure: stub<AdventureData|undefined>(),
     createAdventure: stub<AdventureData>(),
     updateAdventure: stub<AdventureData>(),
     deleteAdventure: stub<void>(),
 }
 
-const makeConfig = (resLocals: any, appLocals: any) => ({
-    publicURL: new URL(appLocals.config.publicURL) as any
+const makeConfig = () => ({
+    publicURL: config.publicURL.toString()
 })
 
 type ComponentType<P = {}> = React.ComponentClass<P>|React.StatelessComponent<P>
 
 export function render<Props, Component extends ComponentType<any>>(res: Response, component: Component, props: Props)
 {
-    const config = makeConfig(res.locals, res.app.locals)
+    const config = makeConfig()
     const profile: ProfileData|undefined = res.locals.profile
     const campaign: CampaignData|undefined = res.locals.campaign
-    const initialState: State = {config, profile, campaign, campaigns: new Map<number, CampaignData>()}
-    const location = createLocation('/')
+    const initialState: State = {config, profile, campaign, data: {}}
 
     const ctx = {}
+    const children = React.createElement(component, props)
     const content = ReactDOMServer.renderToString(
-        <StaticRouter context={ctx} location={location}>
+        <StaticRouter context={ctx} location={res.locals.url}>
             <Route match='/' render={({location}) =>
                 <Application api={stubAPI} initialState={initialState} location={location}>
-                    {React.createElement(component, props)}
+                    {campaign ?
+                        <CampaignRoutes location={location} children={children}/> :
+                        <MainRoutes location={location} children={children}/>
+                    }
                 </Application>
             }/>
         </StaticRouter>
     )
-    res.render('react', {content, props, component: component.name})
-}
-
-const emptyState = {
-    campaigns: new Map<number, CampaignData>()
+    res.render('react', {content, props, component: component.name, initialState: serializeState(initialState)})
 }
 
 export function renderMain(req: Request, res: Response, state: Partial<State>)
 {
-    const config = makeConfig(res.locals, res.app.locals)
+    const config = makeConfig()
     const profile: ProfileData|undefined = res.locals.profile
     const campaign: CampaignData|undefined = res.locals.campaign
-    const initialState: State = {config, profile, campaign, ...emptyState, ...state}
+    const initialState: State = {config, profile, campaign, data: {...state.data}, ...state}
 
     const ctx = {}
     const content = ReactDOMServer.renderToString(
-        <StaticRouter context={ctx} location={req.url}>
+        <StaticRouter context={ctx} location={res.locals.url}>
             <Route match='/' render={({location}) =>
                 <Application api={stubAPI} initialState={initialState} location={location}>
-                    <Routes location={location}/>
+                    {campaign ?
+                        <CampaignRoutes location={location}/> :
+                        <MainRoutes location={location}/>
+                    }
                 </Application>
             }/>
         </StaticRouter>

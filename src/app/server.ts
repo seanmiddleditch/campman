@@ -1,3 +1,4 @@
+require('source-map-support').install()
 import 'reflect-metadata'
 
 import * as express from 'express'
@@ -128,6 +129,8 @@ import * as routes from './routes'
     const mediaRouter = routes.mediaRoutes()
 
     app.use(async (req, res, next) => {
+        res.locals.url = req.url
+
         if (req.hostname === host)
             mainRouter(req, res, next)
         else if (req.hostname === mediaHost)

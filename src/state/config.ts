@@ -1,4 +1,4 @@
 export interface Config
 {
-    publicURL: URL
+    publicURL: string
 }

@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { API } from '../types'
 import { State } from '../state'
+import { Store } from '../components/context'
 import { StateProvider } from './state-context'
 import { APIProvider } from './api-context'
 import { Navigation } from './navigation'
@@ -26,8 +27,10 @@ interface Props
 export const Application: React.SFC<Props> = ({api, location, initialState, children}) => {
     const header = undefined as {icon: string, title: string}|undefined
 
+    const store = new Store(initialState)
+
     return (
-        <StateProvider initialState={initialState}>
+        <StateProvider store={store}>
             <APIProvider api={api}>
                 <Navigation location={location}/>
                 <main role='main' className='container mt-2'>

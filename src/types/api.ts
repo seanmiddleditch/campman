@@ -6,6 +6,7 @@ import {
     MediaFile,
     ProfileData
 } from './content'
+import { ListAdventures } from '../components';
 
 export class APIError extends Error
 {
@@ -39,6 +40,8 @@ export interface API
 
     listProfiles(data: {campaignId: number}): Promise<ProfileData[]>
 
+    listAdventures(data: {campaignId: number}): Promise<AdventureData[]>
+    fetchAdventure(data: {adventureId: number, campaignId: number}): Promise<AdventureData|undefined>
     createAdventure(data: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>
     updateAdventure(data: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>
     deleteAdventure(data: {campaignId: number, adventureId: number}): Promise<void>

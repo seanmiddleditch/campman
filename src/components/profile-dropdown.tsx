@@ -1,11 +1,12 @@
 import * as React from 'react'
-import {ProfileData} from '../types'
+import { ProfileData, CampaignData } from '../types'
 import {API} from '../types'
 import {State} from '../state'
 import {Config} from '../state/config'
 import {ImageThumb} from './image-thumb'
 import {APIConsumer} from './api-context'
 import {StateConsumer} from './state-context'
+import { CurrentCampaign } from './containers/current-campaign'
 
 interface Props
 {
@@ -19,7 +20,7 @@ interface Props
 interface PropsWithAPI extends Props
 {
     api: API
-    state: State
+    campaign?: CampaignData
 }
 interface ProfileDropdownState
 {
@@ -41,7 +42,7 @@ class ProfileDropdownInner extends React.Component<PropsWithAPI, ProfileDropdown
     {
         if (!this.state.fetch)
         {
-            const {campaign} = this.props.state
+            const {campaign} = this.props
             const fetch = this.props.api.listProfiles({campaignId: campaign ? campaign.id : 0})
                 .then(profiles => this.setState({profiles, error: undefined, fetch: undefined}))
                 .catch((e: Error) => this.setState({profiles: undefined, error: e.message, fetch: undefined}))
@@ -79,4 +80,9 @@ class ProfileDropdownInner extends React.Component<PropsWithAPI, ProfileDropdown
     }
 }
 
-export const ProfileDropdown = (props: Props) => <StateConsumer render={state => <APIConsumer render={api => <ProfileDropdownInner api={api} state={state} {...props}/>}/>}/>
+export const ProfileDropdown = (props: Props) =>
+    <CurrentCampaign render={campaign =>
+        <APIConsumer render={api =>
+            <ProfileDropdownInner api={api} campaign={campaign} {...props}/>
+        }/>
+    }/>

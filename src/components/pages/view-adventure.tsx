@@ -2,11 +2,12 @@ import * as React from 'react'
 import { RenderRaw } from '../draft/render-raw'
 import { AdventureData } from '../../types/content'
 import { RawDraftContentState } from 'draft-js'
+import { LocalDate } from '../local-date'
+import { AdventureContainer } from '../containers/adventure'
 
 interface Props
 {
-    adventure: AdventureData
-    editable: boolean
+    id: number
 }
 export class ViewAdventure extends React.Component<Props>
 {
@@ -15,17 +16,19 @@ export class ViewAdventure extends React.Component<Props>
         document.location.href = `${document.location.href}?edit=1`
     }
 
-    render()
+    public render()
     {
-        return (
-            <div>
-                <h1>
-                    {this.props.adventure.title}
-                    {this.props.editable && <button className='btn btn-link' onClick={ev => this._handleEditClicked(ev)}><i className='fa fa-pencil'></i></button>}
-                </h1>
-                <h2>{this.props.adventure.created_at}</h2>
-                <RenderRaw document={this.props.adventure.rawbody}/>
-            </div>
-        )
+        return <AdventureContainer id={this.props.id}>
+            {({adventure}) => adventure &&
+                <>
+                    <h1>
+                        {adventure.title}
+                        {true && <button className='btn btn-link' onClick={ev => this._handleEditClicked(ev)}><i className='fa fa-pencil'></i></button>}
+                    </h1>
+                    <h2><LocalDate date={adventure.created_at}/></h2>
+                    <RenderRaw document={adventure.rawbody}/>
+                </>
+            }
+        </AdventureContainer>
     }
 }

@@ -29,7 +29,7 @@ export function campaigns() {
 
         const canCreate = checkAccess('campaign:create', {profileId: req.profileId, role: CampaignRole.Visitor})
 
-        renderMain(req, res, {campaigns: new Map(campaigns.map(c => [c.id, c] as [number, CampaignData]))})
+        renderMain(req, res, {data: {campaigns}})
     })
 
     router.get('/new-campaign', async (req, res, next) => {

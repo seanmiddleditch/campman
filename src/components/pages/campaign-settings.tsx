@@ -3,6 +3,8 @@ import {SaveButton} from '../save-button'
 import {API, APIError} from '../../types'
 import {StateConsumer} from '../state-context'
 import {APIConsumer} from '../api-context'
+import { WithConfig } from '../containers/with-config'
+import parse = require('url-parse')
 
 interface Campaign
 {
@@ -80,8 +82,8 @@ export class CampaignSettings extends React.Component<Props, State>
 
     render()
     {
-        return <APIConsumer render={api => <StateConsumer render={state => (
-            <div>
+        return <WithConfig>
+            {config => <>
                 {(this.state.message ?
                     <div className={'alert alert-' + this.state.message.type} role='alert'>
                         {this.state.message.text}
@@ -98,11 +100,11 @@ export class CampaignSettings extends React.Component<Props, State>
                     <label htmlFor='campaign-slug'>Website Address</label>
                     <div className='input-group'>
                         <div className='input-group-prepend'>
-                            <span className='input-group-text'>{state.config.publicURL.protocol}//</span>
+                            <span className='input-group-text'>{parse(config.publicURL).protocol}//</span>
                         </div>
                         <input type='text' className='form-control' id='campaign-slug' name='slug' value={this.state.campaign.slug} onChange={ev => this._handleSlugChanged(ev)}/>
                         <div className='input-group-append'>
-                            <span className='input-group-text'>.{state.config.publicURL.hostname}</span>
+                            <span className='input-group-text'>.{parse(config.publicURL).hostname}</span>
                         </div>
                     </div>
                     {this.state.errors.slug ? <small className='form-text text-danger'>{this.state.errors.slug}</small> : <span/>}
@@ -118,9 +120,11 @@ export class CampaignSettings extends React.Component<Props, State>
                     </div>
                 </div>
                 <div className='form-group'>
-                    <SaveButton saving={!!this.state.saving} disabled={!!this.state.saving} onClick={() => this._handleSubmit(api)}/>
+                    <APIConsumer render={api => 
+                        <SaveButton saving={!!this.state.saving} disabled={!!this.state.saving} onClick={() => this._handleSubmit(api)}/>
+                    }/>
                 </div>
-            </div>
-        )}/>}/>
+            </>}
+        </WithConfig>
     }
 }

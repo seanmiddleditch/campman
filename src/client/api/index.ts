@@ -258,6 +258,16 @@ export class ClientAPI implements API
         return this._callRemote<ProfileData[]>('/members', {campaignId})
     }
 
+    async listAdventures({campaignId}: {campaignId: number}): Promise<AdventureData[]>
+    {
+        return this._callRemote<AdventureData[]>('/adventures', {method: 'GET', campaignId})
+    }
+
+    async fetchAdventure({adventureId, campaignId}: {adventureId: number, campaignId: number}): Promise<AdventureData|undefined>
+    {
+        return this._callRemote<AdventureData|null>(`/adventures/${adventureId}`, {method: 'GET'}).then(adv => adv || undefined)
+    }
+
     async createAdventure({campaignId, adventure}: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>
     {
         return this._callRemoteV1<AdventureData>('/new-adventure', {method: 'POST', body: {...adventure, rawbody: JSON.stringify(adventure.rawbody)}})

@@ -3,14 +3,14 @@ import {checkAccess} from '../../auth'
 import {AdventureRepository} from '../../models'
 import {connection} from '../../db'
 import PromiseRouter = require('express-promise-router')
-import {render} from '../../react-ssr'
+import { render, renderMain } from '../../react-ssr'
 import {AccessDenied} from '../../../components/pages/access-denied'
 import {NotFound} from '../../../components/pages/not-found'
-import {ListAdventures} from '../../../components/pages/list-adventures'
 import {NewAdventure} from '../../../components/pages/new-adventure'
 import {EditAdventure} from '../../../components/pages/edit-adventure'
 import {ViewAdventure} from '../../../components/pages/view-adventure'
 import {validateDraft} from '../../../common/draft-utils'
+import { AdventureData } from '../../../types'
 
 export function adventures()
 {
@@ -28,15 +28,16 @@ export function adventures()
             return
         }
 
-        const filtered = all.filter(map => checkAccess('adventure:view', {
+        const filtered: AdventureData[] = all.filter(map => checkAccess('adventure:view', {
             profileId: req.profileId,
             role: req.campaignRole
         })).map(m => ({
             id: m.id,
             title: m.title,
             rawbody: JSON.parse(m.rawbody),
-            created_at: m.createdAt.toUTCString(),
-            editable: checkAccess('adventure:edit', {profileId: req.profileId, role: req.campaignRole})
+            created_at: m.createdAt,
+            editable: checkAccess('adventure:edit', {profileId: req.profileId, role: req.campaignRole}),
+            visible: m.visible
         }))
 
         const canCreate = checkAccess('adventure:create', {
@@ -44,7 +45,7 @@ export function adventures()
             role: req.campaignRole
         })
 
-        render(res, ListAdventures, {adventures: filtered, canCreate})
+        renderMain(req, res, {data: {adventures: filtered}})
     })
 
     router.get('/adventures/:id', async (req, res, next) => {
@@ -66,15 +67,16 @@ export function adventures()
                 return
             }
 
-            render(res, ViewAdventure, {
-                adventure: {
-                    id: adventure.id,
-                    title: adventure.title,
-                    rawbody: JSON.parse(adventure.rawbody),
-                    created_at: adventure.createdAt.toUTCString(),
-                },
-                editable: checkAccess('adventure:edit', {profileId: req.profileId, role: req.campaignRole})
-            })
+            const adventureData: AdventureData = {
+                id: adventure.id,
+                title: adventure.title,
+                rawbody: JSON.parse(adventure.rawbody),
+                created_at: adventure.createdAt,
+                visible: adventure.visible
+            }
+
+            renderMain(req, res, {data: {adventures: [adventureData]}})
+                //editable: checkAccess('adventure:edit', {profileId: req.profileId, role: req.campaignRole})
         }
         else
         {
@@ -170,7 +172,7 @@ export function adventures()
             return
         }
 
-        render(res, NewAdventure, {})
+        renderMain(req, res, {})
     })
 
     router.post('/new-adventure', async (req, res, next) => {

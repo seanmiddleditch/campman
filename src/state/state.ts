@@ -1,12 +1,15 @@
 import { Config } from './config'
-import { ProfileData, CampaignData } from '../types'
+import { ProfileData, CampaignData, AdventureData } from '../types'
 
 export interface State
 {
     config: Config
     profile?: ProfileData
     campaign?: CampaignData
-    campaigns: Map<number, CampaignData>
+    data: {
+        campaigns?: CampaignData[]
+        adventures?: AdventureData[]
+    }
     join?: {
         success: boolean,
         error?: string

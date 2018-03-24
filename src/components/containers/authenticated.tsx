@@ -1,44 +1,49 @@
 import * as React from 'react'
-import { StateConsumer, SetState } from '../state-context'
+import { StateConsumer } from '../state-context'
 import { APIConsumer } from '../api-context'
 import { ProfileData } from '../../types'
 import { API } from '../../types'
 import { State } from '../../state'
 
-type AuthenticatedRender = (data: {profile?: ProfileData, login: () => void, logout: () => void}) => React.ReactNode
+type Render = (data: {profile?: ProfileData, login: () => void, logout: () => void}) => React.ReactNode
 
-interface Props
-{
-    render: AuthenticatedRender
-}
+type Props = {render: Render, children?: never}|{render?: never, children: Render}
 
-interface PropsWithAPI extends Props
+type PropsWithAPI = Props&
 {
     api: API
-    state: State
-    setState: SetState
+    profile?: ProfileData
+    setState: (cb: (state: State) => State) => void
 }
 class Container extends React.Component<PropsWithAPI>
 {
     private _login()
     {
-        this.props.api.showLoginDialog().then(profile => this.props.setState(state => ({...state, profile})))
+        const {setState} = this.props
+        this.props.api.showLoginDialog().then(profile => setState(state => ({...state, profile})))
     }
 
     private _logout()
     {
-        this.props.api.endSession().then(() => this.props.setState(state => ({...state, profile: undefined})))
+        const {setState} = this.props
+        this.props.api.endSession().then(() => setState(state => ({...state, profile: undefined})))
     }
 
     public render()
     {
-        if (this.props.render)
-            return this.props.render({profile: this.props.state.profile, login: () => this._login(), logout: () => this._logout()}) || <div/>
-        else if (this.props.children)
-            return this.props.children
-        else
-            return <div/>
+        const {profile, render, children} = this.props
+        const renderProps = {profile, login: () => this._login(), logout: () => this._logout()}
+
+        let result: React.ReactNode = undefined
+        if (typeof render === 'function')
+            result = render(renderProps)
+        else if (typeof children === 'function')
+            result = children(renderProps)
+        else if (children)
+            result = children
+
+        return result || <div/>
     }
 }
 
-export const Authenticated: React.SFC<Props> = props => <StateConsumer render={(state, setState) => <APIConsumer render={api => <Container api={api} state={state} setState={setState} {...props}/>}/>}/>
+export const Authenticated: React.SFC<Props> = props => <StateConsumer>{({profile}, setState) => <APIConsumer render={api => <Container api={api} profile={profile} setState={setState} {...props}/>}/>}</StateConsumer>

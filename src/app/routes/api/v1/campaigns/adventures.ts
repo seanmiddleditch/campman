@@ -7,15 +7,28 @@ export function adventures()
     const router = PromiseRouter({mergeParams: true})
     const adventureRepository = connection().getCustomRepository(AdventureRepository)
 
-    router.get('/', async (req, res) => {
-        const members = await adventureRepository.findForCampaign({campaignId: req.params['campaignId']})
+    router.get('/:id', async (req, res) => {
+        const id = req.params['id']
+        const one = await adventureRepository.findOne({id, campaignId: req.params['campaignId']})
 
-        res.json({status: 'success', body: members.map(m => ({
-            id: m.id,
-            title: m.title,
-            rawbody: m.rawbody,
-            created_at: m.createdAt,
-            visible: m.visible
+        res.json({status: 'success', body: one ? {
+            id: one.id,
+            title: one.title,
+            rawbody: one.rawbody,
+            created_at: one.createdAt,
+            visible: one.visible
+        } : null})
+    })
+
+    router.get('/', async (req, res) => {
+        const all = await adventureRepository.findForCampaign({campaignId: req.params['campaignId']})
+
+        res.json({status: 'success', body: all.map(one => ({
+            id: one.id,
+            title: one.title,
+            rawbody: one.rawbody,
+            created_at: one.createdAt,
+            visible: one.visible
         }))})
     })
 

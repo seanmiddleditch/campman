@@ -1,6 +1,6 @@
 import { Config } from './config'
 import { State } from './state'
-import { CampaignData, ProfileData } from '../types'
+import { CampaignData, ProfileData, AdventureData } from '../types'
 
 type SerializedState = {
     config: {
@@ -8,18 +8,24 @@ type SerializedState = {
     },
     profile?: ProfileData,
     campaign?: CampaignData,
-    campaigns: CampaignData[]
+    data: {
+        campaigns?: CampaignData[]
+        adventures?: AdventureData[]
+    }
 }
 
 export function serializeState(state: State): SerializedState
 {
     return {
         config: {
-            publicURL: state.config.publicURL.toString()
+            publicURL: state.config.publicURL
         },
         profile: state.profile,
         campaign: state.campaign,
-        campaigns: Array.from(state.campaigns.values())
+        data: {
+            campaigns: state.data.campaigns,
+            adventures: state.data.adventures
+        }
     }
 }
 
@@ -28,8 +34,11 @@ export function deserializeState(state: SerializedState): State
     return {
         ...state,
         config: {
-            publicURL: new URL(state.config.publicURL)
+            publicURL: state.config.publicURL
         },
-        campaigns: new Map<number, CampaignData>(state.campaigns.map(c => [c.id, c] as [number, CampaignData]))
+        data: {
+            campaigns: state.data.campaigns,
+            adventures: state.data.adventures
+        }
     } as State
 }

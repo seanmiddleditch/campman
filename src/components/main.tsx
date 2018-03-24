@@ -4,7 +4,7 @@ import { Router, Route, Switch } from 'react-router'
 import { State } from '../state'
 import { API } from '../types'
 import { Application } from './application'
-import { Routes } from './routes'
+import { MainRoutes, CampaignRoutes } from './routes'
 
 interface Props
 {
@@ -15,7 +15,10 @@ export const Main: React.SFC<Props> = ({api, initialState, children}) =>
     <Router history={createBrowserHistory()}>
         <Route match='/' render={({location}) =>
             <Application api={api} initialState={initialState} location={location}>
-                {children ? children : <Routes location={location}/>}
+                {initialState.campaign ?
+                    <CampaignRoutes location={location} children={children}/> :
+                    <MainRoutes location={location} children={children}/>
+                }
             </Application>
         }/>
     </Router>

@@ -10,6 +10,7 @@ import { RawDraftContentState } from 'draft-js'
 import { StateConsumer } from '../state-context'
 import { APIConsumer } from '../api-context'
 import { Alert } from '../alert'
+import { CurrentCampaign } from '../containers/current-campaign'
 
 interface State
 {
@@ -59,7 +60,13 @@ export class NewAdventure extends React.Component<{}, State>
                 <FormSelect name='visible' title='Public' error={errors.visible} options={[{value: 'visible', label: 'Public'}, {value: '', label: 'Secret'}]} value={adventure.visible ? 'visible' : ''} defaultValue='visible'/>
                 <MarkEditor document={adventure.rawbody} disabled={!!this.state.saving} onChange={doc => this._handleChange('rawbody', doc)} buttons={() => (
                     <div className='ml-sm-2 float-right'>
-                        <StateConsumer render={state => <APIConsumer render={api => <SaveButton disabled={!!this.state.saving} title='Create' saving={!!this.state.saving} onClick={() => this._handleSubmitClicked(state.campaign ? state.campaign.id : 0, api)}/>}/>}/>
+                        <CurrentCampaign>
+                            {campaign =>
+                                <APIConsumer render={api =>
+                                    <SaveButton disabled={!!this.state.saving} title='Create' saving={!!this.state.saving} onClick={() => this._handleSubmitClicked(campaign ? campaign.id : 0, api)}/>
+                                }/>
+                            }
+                        </CurrentCampaign>
                     </div>
                 )}/>
             </div>
