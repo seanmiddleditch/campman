@@ -12,12 +12,7 @@ export class ListWiki extends React.Component<Props>
     {
         return (<div>
             <h1>Wiki Pages</h1>
-            <div className='list-group'>
-                {this.props.editable && (
-                    <div className='list-group-item'>
-                        <a className='btn btn-primary' href='/new-wiki'><i className='fa fa-plus'></i> New Page</a>
-                    </div>
-                )}
+            <div className='list-group list-group-flush'>
                 {this.props.pages.map(page => (
                     <a key={page.slug} href={`/wiki/p/${page.slug}`} className='list-group-item'>
                         <div className='list-item-name'><i className='fa fa-file'></i> {page.title}</div>
@@ -25,6 +20,11 @@ export class ListWiki extends React.Component<Props>
                     </a>
                 ))}
                 {this.props.pages.length === 0 && <div className='list-group-item'>No results</div>}
+                {this.props.editable && (
+                    <div className='list-group-item'>
+                        <a className='btn btn-primary' href='/new-wiki'><i className='fa fa-plus'></i> Create New Page</a>
+                    </div>
+                )}
             </div>
         </div>)
     }

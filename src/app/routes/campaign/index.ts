@@ -16,7 +16,7 @@ import { URL } from 'url'
 import { config } from '../../config'
 import { AccessDenied } from '../../../components/pages/access-denied'
 import { NotFound } from '../../../components/pages/not-found'
-import { render } from '../../react-ssr'
+import { render, renderMain } from '../../react-ssr'
 
 function resolveCampaign()
 {
@@ -118,10 +118,7 @@ export function routes()
         res.redirect(redirected.toString(), 307)
     })
     router.use('/', (req, res) => {
-        if (req.url === '/')
-            res.redirect('/wiki/p/home')
-        else
-            render(res.status(404), NotFound, {})
+        renderMain(req, res, {})
     })
     return router
 }

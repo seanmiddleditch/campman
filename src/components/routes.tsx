@@ -34,6 +34,7 @@ export const MainRoutes: React.SFC<{location: Location}> = ({location, children}
 export const CampaignRoutes: React.SFC<{location: Location}> = ({location, children}) =>
     <Switch location={location}>
         <Route exact path='/'>
+            <Redirect to='/wiki/p/home'/>
         </Route>
         <Route exact path='/adventures/:id' render={({match}) =>
             <ViewAdventure id={match.params['id']}/>

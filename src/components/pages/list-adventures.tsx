@@ -8,12 +8,13 @@ export class ListAdventures extends React.PureComponent
 {
     public render()
     {
-        return (
-            <div>
-                <h1>Adventures</h1>
-                <div className='list-group list-group-flush'>
-                    <AdventuresContainer>{({adventures}) =>
-                        adventures && adventures.length !== 0 ?
+        return <AdventuresContainer>{({adventures, fetching}) =>
+            fetching ?
+                <div className='text-center'><i className='fa fa-spinner fa-spin fa-3x fa-fw'></i></div> :
+                <>
+                    <h1>Adventures</h1>
+                    <div className='list-group list-group-flush'>
+                        {adventures && adventures.length !== 0 ?
                             adventures.map(adv => (
                                 <Link key={adv.id} to={`/adventures/${adv.id}`} className='list-group-item'>
                                     <div className='list-item-name'><i className='fa fa-file'></i> {adv.title}</div>
@@ -21,14 +22,14 @@ export class ListAdventures extends React.PureComponent
                                 </Link>
                             )) :
                             <div className='list-group-item'>No adventures have yet been had</div>
-                    }</AdventuresContainer>
-                    <div className='list-group-item'>
-                        <Link to='/new-adventure' className='btn btn-primary'>
-                            <i className='fa fa-plus'></i> Post New Adventure
-                        </Link>
+                        }
+                        <div className='list-group-item'>
+                            <Link to='/new-adventure' className='btn btn-primary'>
+                                <i className='fa fa-plus'></i> Post New Adventure
+                            </Link>
+                        </div>
                     </div>
-                </div>
-            </div>
-        )
+                </>
+        }</AdventuresContainer>
     }
 }

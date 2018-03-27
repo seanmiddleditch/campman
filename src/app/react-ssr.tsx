@@ -77,7 +77,7 @@ export function renderMain(req: Request, res: Response, state: Partial<State>)
     const campaign: CampaignData|undefined = res.locals.campaign
     const initialState: State = {config, profile, campaign, data: {...state.data}, indices: {...state.indices}, ...state}
 
-    const ctx = {}
+    const ctx: {action?: 'REPLACE', url?: string} = {}
     const content = ReactDOMServer.renderToString(
         <StaticRouter context={ctx} location={res.locals.url}>
             <Route match='/' render={({location}) =>
@@ -90,5 +90,13 @@ export function renderMain(req: Request, res: Response, state: Partial<State>)
             }/>
         </StaticRouter>
     )
-    res.render('react-main', {content, initialState})
+
+    if (ctx.action === 'REPLACE' && ctx.url)
+    {
+        res.redirect(ctx.url)
+    }
+    else
+    {
+        res.render('react-main', {content, initialState})
+    }
 }
