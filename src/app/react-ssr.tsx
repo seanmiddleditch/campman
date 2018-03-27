@@ -6,7 +6,7 @@ import { MainRoutes, CampaignRoutes } from '../components/routes'
 import * as shortid from 'shortid'
 import {URL} from 'url'
 import {API, CharacterData, CampaignData, MediaFile, WikiPageData, ProfileData, AdventureData} from '../types'
-import { State, serializeState } from '../state'
+import { State } from '../state'
 import { StaticRouter, Route } from 'react-router'
 import { config } from './config'
 
@@ -51,7 +51,7 @@ export function render<Props, Component extends ComponentType<any>>(res: Respons
     const config = makeConfig()
     const profile: ProfileData|undefined = res.locals.profile
     const campaign: CampaignData|undefined = res.locals.campaign
-    const initialState: State = {config, profile, campaign, data: {}}
+    const initialState: State = {config, profile, campaign, data: {}, indices: {}}
 
     const ctx = {}
     const children = React.createElement(component, props)
@@ -67,7 +67,7 @@ export function render<Props, Component extends ComponentType<any>>(res: Respons
             }/>
         </StaticRouter>
     )
-    res.render('react', {content, props, component: component.name, initialState: serializeState(initialState)})
+    res.render('react', {content, props, component: component.name, initialState})
 }
 
 export function renderMain(req: Request, res: Response, state: Partial<State>)
@@ -75,7 +75,7 @@ export function renderMain(req: Request, res: Response, state: Partial<State>)
     const config = makeConfig()
     const profile: ProfileData|undefined = res.locals.profile
     const campaign: CampaignData|undefined = res.locals.campaign
-    const initialState: State = {config, profile, campaign, data: {...state.data}, ...state}
+    const initialState: State = {config, profile, campaign, data: {...state.data}, indices: {...state.indices}, ...state}
 
     const ctx = {}
     const content = ReactDOMServer.renderToString(
@@ -90,5 +90,5 @@ export function renderMain(req: Request, res: Response, state: Partial<State>)
             }/>
         </StaticRouter>
     )
-    res.render('react-main', {content, initialState: serializeState(initialState)})
+    res.render('react-main', {content, initialState})
 }

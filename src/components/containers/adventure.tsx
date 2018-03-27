@@ -3,11 +3,18 @@ import { StateConsumer, SetState } from '../state-context'
 import { APIConsumer } from '../api-context'
 import { AdventureData, CampaignData } from '../../types'
 import { API } from '../../types'
+import { Mapping } from '../../state'
 
 type Render = (data: {adventure?: AdventureData, error?: Error, fetching: boolean}) => React.ReactNode
 type RenderProps = {render: Render, children?: never}|{render?: never, children: Render}
 type Props = {id: number}&RenderProps
-type PropsWithAPI = Props&{api: API, campaign?: CampaignData, adventures?: AdventureData[], setState: SetState}
+type PropsWithAPI = Props&
+{
+    api: API
+    campaign?: CampaignData
+    adventures?: Mapping<AdventureData>
+    setState: SetState
+}
 
 interface ContainerState
 {
@@ -18,25 +25,21 @@ class Container extends React.Component<PropsWithAPI, ContainerState>
 {
     state: ContainerState = {}
 
-    private _find(id: number)
-    {
-        const {adventures} = this.props
-        if (adventures)
-            return adventures.find(adv => adv.id === id)
-        else
-            return undefined
-    }
-
     public componentDidMount()
     {
-        const {adventures, campaign} = this.props
+        const {id, adventures, campaign} = this.props
         const campaignId = campaign ? campaign.id : 0
-        if (!adventures || adventures.length === 0)
+
+        const adventure = adventures && adventures[id]
+
+        if (!adventure)
         {
-            this.props.api.listAdventures({campaignId})
-                .then(adventures => {
+            this.props.api.fetchAdventure({campaignId, adventureId: id})
+                .then(adventure => {
                     this.setState({fetching: false})
-                    this.props.setState(state => ({...state, data: {...state.data, adventures}}))
+                    this.props.setState(state => ({...state,
+                        data: {...state.data, adventures: {...state.data.adventures, [id]: adventure}}
+                    }))
                 })
                 .catch(error => this.setState({error, fetching: false}))
             this.setState({fetching: true})
@@ -45,9 +48,10 @@ class Container extends React.Component<PropsWithAPI, ContainerState>
 
     public render()
     {
-        const {render, children, id} = this.props
-        const adventure = this._find(id)
+        const {render, children, id, adventures} = this.props
         const {fetching, error} = this.state
+
+        const adventure = adventures && adventures[id]
 
         const renderProps = {adventure, error, fetching: fetching || false}
 

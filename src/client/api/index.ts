@@ -265,7 +265,7 @@ export class ClientAPI implements API
 
     async fetchAdventure({adventureId, campaignId}: {adventureId: number, campaignId: number}): Promise<AdventureData|undefined>
     {
-        return this._callRemote<AdventureData|null>(`/adventures/${adventureId}`, {method: 'GET'}).then(adv => adv || undefined)
+        return this._callRemote<AdventureData|null>(`/adventures/${adventureId}`, {campaignId, method: 'GET'}).then(adv => adv || undefined)
     }
 
     async createAdventure({campaignId, adventure}: {campaignId: number, adventure: AdventureInput}): Promise<AdventureData>

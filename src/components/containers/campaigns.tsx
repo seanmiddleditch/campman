@@ -3,11 +3,18 @@ import { StateConsumer, SetState } from '../state-context'
 import { APIConsumer } from '../api-context'
 import { CampaignData } from '../../types'
 import { API } from '../../types'
+import { Mapping } from '../../state'
 
 type Render = (data: {campaigns?: CampaignData[], error?: Error, fetching: boolean}) => React.ReactNode
 
 type Props = {render: Render, children?: never}|{render?: never, children: Render}
-type PropsWithAPI = Props&{api: API, campaigns?: CampaignData[], setState: SetState}
+type PropsWithAPI = Props&
+{
+    api: API
+    campaigns?: Mapping<CampaignData>
+    indices?: number[]
+    setState: SetState
+}
 interface ContainerState
 {
     fetching?: boolean
@@ -19,13 +26,16 @@ class Container extends React.Component<PropsWithAPI, ContainerState>
 
     public componentDidMount()
     {
-        const {campaigns} = this.props
-        if (!campaigns || campaigns.length === 0)
+        const {indices} = this.props
+        if (!indices || indices.length === 0)
         {
             this.props.api.listCampaigns()
                 .then(campaigns => {
+                    this.props.setState(state => ({...state,
+                        data: {...state.data, campaigns: campaigns.reduce((r, c) => ({...r, [c.id]: c}), {})},
+                        indices: {...state.indices, campaigns: campaigns.map(c => c.id)}
+                    }))
                     this.setState({fetching: false})
-                    this.props.setState(state => ({...state, campaigns: new Map<number, CampaignData>(campaigns.map(c => [c.id, c] as [number, CampaignData]))}))
                 })
                 .catch(error => this.setState({error, fetching: false}))
             this.setState({fetching: true})
@@ -34,10 +44,13 @@ class Container extends React.Component<PropsWithAPI, ContainerState>
 
     public render()
     {
-        const {campaigns, render, children} = this.props
+        const {render, children, campaigns, indices} = this.props
         const {fetching, error} = this.state
 
-        const renderProps = {campaigns, error, fetching: fetching || false}
+        const campaignList = indices && campaigns &&
+            indices.map(id => campaigns[id]).filter(c => !!c) as CampaignData[]|undefined
+
+        const renderProps = {campaigns: campaignList, error, fetching: fetching || false}
 
         if (typeof render === 'function')
             return render(renderProps)
@@ -50,9 +63,9 @@ class Container extends React.Component<PropsWithAPI, ContainerState>
 
 export const CampaignsContainer: React.SFC<Props> = props =>
     <StateConsumer>
-        {({data: {campaigns}}, setState) =>
+        {({data, indices}, setState) =>
             <APIConsumer render={api =>
-                <Container api={api} campaigns={campaigns} setState={setState} {...props}/>
+                <Container api={api} campaigns={data.campaigns} indices={indices.campaigns} setState={setState} {...props}/>
             }/>
         }
     </StateConsumer>

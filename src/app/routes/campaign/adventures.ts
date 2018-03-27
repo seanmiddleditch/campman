@@ -45,7 +45,10 @@ export function adventures()
             role: req.campaignRole
         })
 
-        renderMain(req, res, {data: {adventures: filtered}})
+        renderMain(req, res, {
+            data: {adventures: filtered.reduce((r, a) => ({...r, [a.id]: a}), {})},
+            indices: {adventures: filtered.map(a => a.id)}
+        })
     })
 
     router.get('/adventures/:id', async (req, res, next) => {
@@ -75,7 +78,9 @@ export function adventures()
                 visible: adventure.visible
             }
 
-            renderMain(req, res, {data: {adventures: [adventureData]}})
+            renderMain(req, res, {
+                data: {adventures: {[adventure.id]: adventureData}},
+            })
                 //editable: checkAccess('adventure:edit', {profileId: req.profileId, role: req.campaignRole})
         }
         else

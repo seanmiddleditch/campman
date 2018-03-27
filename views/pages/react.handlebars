@@ -4,7 +4,7 @@
 <div id='react-content'>{{{content}}}</div>
 <script>
     const api = new ClientAPI('{{config.publicURL}}', '{{config.apiURL}}')
-    const initialState = deserializeState({{{json initialState}}})
+    const initialState = {{{json initialState}}}
     ReactDOM.hydrate(React.createElement(Main, {api, initialState}, React.createElement({{component}}, {...{{{json props}}} })),
     document.getElementById('react-content'))
 </script>
