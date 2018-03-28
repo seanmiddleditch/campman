@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Prompt } from 'react-router-dom'
 
 import { MarkEditor } from '../draft/editor'
 import { ImageSelect } from '../image-select'
@@ -11,6 +12,8 @@ import { StateConsumer } from '../state-context'
 import { APIConsumer } from '../api-context'
 import { Alert } from '../alert'
 import { ActionButton } from '../action-button'
+import { AdventureContainer } from '../containers/adventure'
+import { NotFound } from './not-found'
 
 interface Props
 {
@@ -23,15 +26,17 @@ interface State
     deleting?: Promise<void>
     errorMessage?: string
     errors: {[K in keyof(AdventureInput)]?: string}
+    dirty: boolean
 }
-export class EditAdventure extends React.Component<Props, State>
+class Editor extends React.Component<Props, State>
 {
     constructor(props: Props)
     {
         super(props)
         this.state = {
             adventure: {...props.initial},
-            errors: {}
+            errors: {},
+            dirty: false
         }
     }
 
@@ -74,7 +79,7 @@ export class EditAdventure extends React.Component<Props, State>
 
     private _handleChange<P extends keyof(AdventureInput)>(key: P, value: AdventureInput[P])
     {
-        this.setState({adventure: {...this.state.adventure, [key]: value}})
+        this.setState({adventure: {...this.state.adventure, [key]: value}, dirty: true})
     }
 
     public render()
@@ -82,7 +87,8 @@ export class EditAdventure extends React.Component<Props, State>
         const adventure = this.state.adventure
         const errors = this.state.errors
         return (
-            <div>
+            <>
+                <Prompt when={this.state.dirty} message='You have unsaved changes. Are you sure you want to leave?'/>
                 {this.state.errorMessage && <Alert type='danger'>{this.state.errorMessage}</Alert>}
                 <FormInput type='text' title='Short Description' error={errors.title} name='title' value={adventure.title || ''} disabled={!!this.state.saving} onChange={val => this._handleChange('title', val)}/>
                 <FormSelect name='visible' title='Public' error={errors.visible} options={[{value: 'visible', label: 'Public'}, {value: '', label: 'Secret'}]} value={adventure.visible ? 'visible' : ''} defaultValue='visible'/>
@@ -101,7 +107,14 @@ export class EditAdventure extends React.Component<Props, State>
                         )}/>}/>
                     </div>
                 )}/>
-            </div>
+            </>
         )
     }
 }
+
+export const EditAdventure: React.SFC<{id: number}> = ({id}) =>
+    <AdventureContainer id={id}>{
+        ({adventure}) => adventure ?
+            <Editor initial={adventure}/> :
+            <NotFound/>
+    }</AdventureContainer>

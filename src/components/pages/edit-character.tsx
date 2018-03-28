@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Prompt } from 'react-router-dom'
 
 import { MarkEditor } from '../draft/editor'
 import { ImageSelect } from '../image-select'
@@ -21,6 +22,7 @@ interface State
     deleting?: Promise<void>
     errorMessage?: string
     errors: {[K in keyof(CharacterData)]?: string}
+    dirty: boolean
 }
 export class EditCharacter extends React.Component<Props, State>
 {
@@ -29,7 +31,8 @@ export class EditCharacter extends React.Component<Props, State>
         super(props)
         this.state = {
             char: {...this.props.initial},
-            errors: {}
+            errors: {},
+            dirty: false
         }
     }
 
@@ -70,14 +73,15 @@ export class EditCharacter extends React.Component<Props, State>
 
     private _handleChange<P extends keyof(CharacterInput)>(key: P, value: CharacterInput[P])
     {
-        this.setState({char: {...this.state.char, [key]: value}})
+        this.setState({char: {...this.state.char, [key]: value}, dirty: true})
     }
 
     public render()
     {
         const current = this.state.char
         return (
-            <div>
+            <>
+                <Prompt when={this.state.dirty} message='You have unsaved changes. Are you sure you want to leave?'/>
                 {this.state.errorMessage && <div className='alert alert-danger'>{this.state.errorMessage}</div>}
                 <div className='form-row'>
                     <div className='col-md-10'>
@@ -117,7 +121,7 @@ export class EditCharacter extends React.Component<Props, State>
                         }/>
                     </div>
                 )}/>
-            </div>
+            </>
         )
     }
 }

@@ -14,7 +14,7 @@ export function adventures()
         res.json({status: 'success', body: one ? {
             id: one.id,
             title: one.title,
-            rawbody: one.rawbody,
+            rawbody: JSON.parse(one.rawbody),
             created_at: one.createdAt,
             visible: one.visible
         } : null})
@@ -26,7 +26,7 @@ export function adventures()
         res.json({status: 'success', body: all.map(one => ({
             id: one.id,
             title: one.title,
-            rawbody: one.rawbody,
+            rawbody: JSON.parse(one.rawbody),
             created_at: one.createdAt,
             visible: one.visible
         }))})

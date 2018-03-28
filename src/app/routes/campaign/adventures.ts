@@ -62,45 +62,24 @@ export function adventures()
             return
         }
 
-        if (!req.query['edit'])
+        if (!checkAccess('adventure:view', {profileId: req.profileId, role: req.campaignRole}))
         {
-            if (!checkAccess('adventure:view', {profileId: req.profileId, role: req.campaignRole}))
-            {
-                render(res.status(403), AccessDenied, {})
-                return
-            }
-
-            const adventureData: AdventureData = {
-                id: adventure.id,
-                title: adventure.title,
-                rawbody: JSON.parse(adventure.rawbody),
-                created_at: adventure.createdAt,
-                visible: adventure.visible
-            }
-
-            renderMain(req, res, {
-                data: {adventures: {[adventure.id]: adventureData}},
-            })
-                //editable: checkAccess('adventure:edit', {profileId: req.profileId, role: req.campaignRole})
+            render(res.status(403), AccessDenied, {})
+            return
         }
-        else
-        {
-            if (!checkAccess('adventure:edit', {profileId: req.profileId, role: req.campaignRole}))
-            {
-                render(res.status(403), AccessDenied, {})
-                return
-            }
 
-            render(res, EditAdventure, {
-                initial: {
-                    id: adventure.id,
-                    title: adventure.title,
-                    rawbody: JSON.parse(adventure.rawbody),
-                    created_at: adventure.createdAt.toUTCString(),
-                },
-                editable: checkAccess('adventure:edit', {profileId: req.profileId, role: req.campaignRole})
-            })
+        const adventureData: AdventureData = {
+            id: adventure.id,
+            title: adventure.title,
+            rawbody: JSON.parse(adventure.rawbody),
+            created_at: adventure.createdAt,
+            visible: adventure.visible
         }
+
+        renderMain(req, res, {
+            data: {adventures: {[adventure.id]: adventureData}},
+        })
+            //editable: checkAccess('adventure:edit', {profileId: req.profileId, role: req.campaignRole})
     })
     
     router.post('/adventures/:id', async (req, res, next) => {

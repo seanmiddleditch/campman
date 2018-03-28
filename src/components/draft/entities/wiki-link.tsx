@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 
 interface Props
 {
@@ -6,4 +7,4 @@ interface Props
     offsetKey?: string
 }
 export const WikiLink: React.SFC<Props> = ({target, offsetKey, children}) =>
-    <a href={'/wiki/p/' + target} data-offset-key={offsetKey}>{children}</a>
+    <Link to={'/wiki/p/' + target} data-offset-key={offsetKey}>{children}</Link>

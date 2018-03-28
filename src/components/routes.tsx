@@ -9,6 +9,7 @@ import {
     JoinCampaign,
     ListAdventures,
     NewAdventure,
+    EditAdventure,
     ViewAdventure,
     CampaignMembership
 } from './pages'
@@ -36,6 +37,9 @@ export const CampaignRoutes: React.SFC<{location: Location}> = ({location, child
         <Route exact path='/'>
             <Redirect to='/wiki/p/home'/>
         </Route>
+        <Route exact path='/adventures/:id/edit' render={({match}) =>
+            <EditAdventure id={match.params['id']}/>
+        }/>
         <Route exact path='/adventures/:id' render={({match}) =>
             <ViewAdventure id={match.params['id']}/>
         }/>

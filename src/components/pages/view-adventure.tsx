@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Link } from 'react-router-dom'
 import { RenderRaw } from '../draft/render-raw'
 import { AdventureData } from '../../types/content'
 import { RawDraftContentState } from 'draft-js'
@@ -23,7 +24,7 @@ export class ViewAdventure extends React.Component<Props>
                 <>
                     <h1>
                         {adventure.title}
-                        {true && <button className='btn btn-link' onClick={ev => this._handleEditClicked(ev)}><i className='fa fa-pencil'></i></button>}
+                        {true && <Link className='btn btn-link' to={`/adventures/${this.props.id}/edit`}><i className='fa fa-pencil'></i></Link>}
                     </h1>
                     <h2><LocalDate date={adventure.created_at}/></h2>
                     <RenderRaw document={adventure.rawbody}/>
