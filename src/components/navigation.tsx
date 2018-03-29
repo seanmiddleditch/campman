@@ -12,7 +12,6 @@ const CampaignLinks: React.SFC<{campaign: CampaignData}> = ({campaign}) =>
     <ul className='navbar-nav mr-lg-auto'>
         <li className='nav-item'><NavLink className='nav-link' to='/adventures'>Adventures</NavLink></li>
         <li className='nav-item'><a className='nav-link' href='/wiki'>Wiki</a></li>
-        <li className='nav-item'><a className='nav-link' href='/tags'>Tags</a></li>
         <li className='nav-item'><a className='nav-link' href='/maps'>Maps</a></li>
         <li className='nav-item'><a className='nav-link' href='/chars'>Characters</a></li>
         <li className='nav-item'><a className='nav-link' href='/files'>Files</a></li>

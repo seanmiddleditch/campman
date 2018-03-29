@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
 import { wiki } from './wiki'
-import { tags } from './tags'
 import { files } from './files'
 import { settings } from './settings'
 import { membership } from './membership'
@@ -105,7 +104,6 @@ export function routes()
     const router = PromiseRouter()
     router.use(resolveCampaign(), lookupProfileRole(), checkViewAccess())
     router.use(wiki())
-    router.use(tags())
     router.use(files())
     router.use(settings())
     router.use(membership())
