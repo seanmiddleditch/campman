@@ -19,7 +19,6 @@ type PropsWithAPI = Props&
 }
 interface ContainerState
 {
-    fetching?: boolean
     error?: Error
 }
 class Container extends React.Component<PropsWithAPI, ContainerState>
@@ -38,22 +37,22 @@ class Container extends React.Component<PropsWithAPI, ContainerState>
                         data: {...state.data, adventures: adventures.reduce((r, a) => ({...r, [a.id]: a}), {})},
                         indices: {...state.indices, adventures: adventures.map(a => a.id)}
                     }))
-                    this.setState({fetching: false})
                 })
-                .catch(error => this.setState({error, fetching: false}))
-            this.setState({fetching: true})
+                .catch(error => this.setState({error}))
         }
     }
 
     public render()
     {
         const {render, children, indices, adventures} = this.props
-        const {fetching, error} = this.state
+        const {error} = this.state
+
+        const fetching = !error && !indices
 
         const adventureList = indices && adventures &&
             indices.map(id => adventures[id]).filter(adv => !!adv) as AdventureData[]|undefined
 
-        const renderProps = {adventures: adventureList, error, fetching: fetching || false}
+        const renderProps = {adventures: adventureList, error, fetching}
 
         if (typeof render === 'function')
             return render(renderProps)

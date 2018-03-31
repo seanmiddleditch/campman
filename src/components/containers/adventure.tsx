@@ -27,7 +27,6 @@ type PropsWithAPI = Props&
 
 interface ContainerState
 {
-    fetching?: boolean
     error?: Error
 }
 class Container extends React.Component<PropsWithAPI, ContainerState>
@@ -45,13 +44,11 @@ class Container extends React.Component<PropsWithAPI, ContainerState>
         {
             this.props.api.fetchAdventure({campaignId, adventureId: id})
                 .then(adventure => {
-                    this.setState({fetching: false})
                     this.props.setState(state => ({...state,
                         data: {...state.data, adventures: {...state.data.adventures, [id]: adventure}}
                     }))
                 })
-                .catch(error => this.setState({error, fetching: false}))
-            this.setState({fetching: true})
+                .catch(error => this.setState({error}))
         }
     }
 
@@ -91,11 +88,12 @@ class Container extends React.Component<PropsWithAPI, ContainerState>
     public render()
     {
         const {render, children, id, adventures} = this.props
-        const {fetching, error} = this.state
+        const {error} = this.state
 
         const adventure = adventures && adventures[id]
+        const fetching = !error && !adventure
 
-        const renderProps = {adventure, error, fetching: fetching || false, update: this._update.bind(this), delete: this._delete.bind(this)}
+        const renderProps = {adventure, error, fetching, update: this._update.bind(this), delete: this._delete.bind(this)}
 
         let result: React.ReactNode = undefined
         if (typeof render === 'function')

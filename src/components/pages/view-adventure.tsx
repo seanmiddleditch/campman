@@ -5,6 +5,7 @@ import { AdventureData } from '../../types/content'
 import { RawDraftContentState } from 'draft-js'
 import { LocalDate } from '../local-date'
 import { AdventureContainer } from '../containers/adventure'
+import { LoadSpinner } from '../load-spinner'
 
 interface Props
 {
@@ -20,7 +21,7 @@ export class ViewAdventure extends React.Component<Props>
     public render()
     {
         return <AdventureContainer id={this.props.id}>
-            {({adventure}) => adventure &&
+            {({adventure, fetching, error}) => adventure ?
                 <>
                     <h1>
                         {adventure.title}
@@ -28,7 +29,10 @@ export class ViewAdventure extends React.Component<Props>
                     </h1>
                     <h2><LocalDate date={adventure.created_at}/></h2>
                     <RenderRaw document={adventure.rawbody}/>
-                </>
+                </> :
+                fetching ?
+                <LoadSpinner/> :
+                <div>{error}</div>
             }
         </AdventureContainer>
     }

@@ -16,6 +16,7 @@ import { Alert } from '../alert'
 import { ActionButton } from '../action-button'
 import { AdventureContainer } from '../containers/adventure'
 import { NotFound } from './not-found'
+import { LoadSpinner } from '../load-spinner'
 
 interface Props
 {
@@ -117,9 +118,11 @@ class Editor extends React.Component<Props, State>
 }
 
 export const EditAdventure: React.SFC<{id: number}> = ({id}) =>
-    <AdventureContainer id={id}>{({adventure, update, delete: del}) => adventure ?
+    <AdventureContainer id={id}>{({adventure, fetching, update, delete: del}) => adventure ?
         <Route>{({history}) =>
             <Editor initial={adventure} update={update} delete={del} history={history}/>
         }</Route> :
+        fetching ?
+        <LoadSpinner/> :
         <NotFound/>
     }</AdventureContainer>

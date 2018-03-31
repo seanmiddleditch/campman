@@ -3,6 +3,7 @@ import { AdventureData } from '../../types'
 import { AdventuresContainer } from '../containers/adventures'
 import { LocalDate } from '../local-date'
 import { Link } from 'react-router-dom'
+import { LoadSpinner } from '../load-spinner'
 
 export class ListAdventures extends React.PureComponent
 {
@@ -10,7 +11,7 @@ export class ListAdventures extends React.PureComponent
     {
         return <AdventuresContainer>{({adventures, fetching}) =>
             fetching ?
-                <div className='text-center'><i className='fa fa-spinner fa-spin fa-3x fa-fw'></i></div> :
+                <LoadSpinner/> :
                 <>
                     <h1>Adventures</h1>
                     <div className='list-group list-group-flush'>
