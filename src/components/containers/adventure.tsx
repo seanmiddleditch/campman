@@ -1,11 +1,20 @@
 import * as React from 'react'
 import { StateConsumer, SetState } from '../state-context'
 import { APIConsumer } from '../api-context'
-import { AdventureData, CampaignData } from '../../types'
+import { AdventureData, AdventureInput, CampaignData } from '../../types'
 import { API } from '../../types'
 import { Mapping } from '../../state'
 
-type Render = (data: {adventure?: AdventureData, error?: Error, fetching: boolean}) => React.ReactNode
+type RenderFuncProps =
+{
+    adventure?: AdventureData
+    error?: Error
+    fetching: boolean
+    update: (adv: AdventureInput) => Promise<void>
+    delete: () => Promise<void>
+}
+
+type Render = (props: RenderFuncProps) => React.ReactNode
 type RenderProps = {render: Render, children?: never}|{render?: never, children: Render}
 type Props = {id: number}&RenderProps
 type PropsWithAPI = Props&
@@ -46,6 +55,39 @@ class Container extends React.Component<PropsWithAPI, ContainerState>
         }
     }
 
+    private _update(adventure: AdventureInput): Promise<void>
+    {
+        const {id, campaign} = this.props
+        const campaignId = campaign ? campaign.id : 0
+
+        return this.props.api.updateAdventure({campaignId, adventure: {...adventure, id}})
+            .then(adv => {
+                this.props.setState(state => ({...state,
+                    data: {...state.data, adventures: {...state.data.adventures, [id]: adv}}
+                }))
+            })
+            .catch(error => {
+                this.setState({error})
+            })
+    }
+
+    private _delete(): Promise<void>
+    {
+        const {id, campaign} = this.props
+        const campaignId = campaign ? campaign.id : 0
+
+        return this.props.api.deleteAdventure({campaignId, adventureId: id})
+            .then(adv => {
+                this.props.setState(state => ({...state,
+                    data: {...state.data, adventures: {...state.data.adventures, [id]: undefined}},
+                    indices: {...state.indices, adventures: undefined}
+                }))
+            })
+            .catch(error => {
+                this.setState({error})
+            })
+    }
+
     public render()
     {
         const {render, children, id, adventures} = this.props
@@ -53,7 +95,7 @@ class Container extends React.Component<PropsWithAPI, ContainerState>
 
         const adventure = adventures && adventures[id]
 
-        const renderProps = {adventure, error, fetching: fetching || false}
+        const renderProps = {adventure, error, fetching: fetching || false, update: this._update.bind(this), delete: this._delete.bind(this)}
 
         let result: React.ReactNode = undefined
         if (typeof render === 'function')
