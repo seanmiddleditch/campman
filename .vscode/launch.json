@@ -13,7 +13,8 @@
             "envFile": "${workspaceRoot}/.env",
             "outFiles": [
                 "${workspaceRoot}/dist/**/*.js"
-            ]
+            ],
+            "preLaunchTask": "npm: build-dev"
         }
     ]
 }
