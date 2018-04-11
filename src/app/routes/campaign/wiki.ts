@@ -1,19 +1,19 @@
 import PromiseRouter = require('express-promise-router')
-import {PageModel, PageRepository, PageVisibility, TagRepository} from '../../models'
-import {connection} from '../../db'
-import {config} from '../../config'
-import {URL} from 'url'
-import {checkAccess} from '../../auth'
-import {scrubDraftSecrets} from '../../../common/draft-utils'
+import { PageModel, PageRepository, PageVisibility, TagRepository } from '../../models'
+import { connection } from '../../db'
+import { config } from '../../config'
+import { URL } from 'url'
+import { checkAccess } from '../../auth'
+import { scrubDraftSecrets } from '../../../common/draft-utils'
 import * as slugUtils from '../../../common/slug-utils'
-import {render} from '../../react-ssr'
-import {ViewWiki} from '../../../components/pages/view-wiki'
-import {EditWiki} from '../../../components/pages/edit-wiki'
-import {NewWiki} from '../../../components/pages/new-wiki'
-import {ListWiki} from '../../../components/pages/list-wiki'
-import {AccessDenied} from '../../../components/pages/access-denied'
-import {NotFound} from '../../../components/pages/not-found'
-import {WikiPageData} from '../../../types/content'
+import { render, renderMain } from '../../react-ssr'
+import { ViewWiki } from '../../../components/pages/view-wiki'
+import { EditWiki } from '../../../components/pages/edit-wiki'
+import { NewWiki } from '../../../components/pages/new-wiki'
+import { ListWiki } from '../../../components/pages/list-wiki'
+import { AccessDenied } from '../../../components/pages/access-denied'
+import { NotFound } from '../../../components/pages/not-found'
+import { WikiPageData } from '../../../types/content'
 
 export function wiki() {
     const router = PromiseRouter()
@@ -28,7 +28,7 @@ export function wiki() {
 
         const canCreate = checkAccess('page:create', {profileId: req.profileId, role: req.campaignRole})
 
-        const pages = all.filter(page => checkAccess('page:view', {
+        const pages: WikiPageData[] = all.filter(page => checkAccess('page:view', {
             profileId: req.profileId,
             role: req.campaignRole,
             ownerId: page.authorId,
@@ -40,11 +40,10 @@ export function wiki() {
             editable: checkAccess('page:edit', {profileId: req.profileId, role: req.campaignRole, ownerId: page.authorId, hidden: page.visibility !== PageVisibility.Public})
         }))
 
-        const pages2: WikiPageData[] = pages
-
-        const props = {editable: canCreate, pages: pages2}
-
-        render(res, ListWiki, props)
+        renderMain(req, res, {
+            data: {pages: pages.reduce((coll, page) => ({...coll, [page.id]: page}), {})},
+            indices: {pages: pages.map(page => page.id)}
+        })
     })
 
     router.get('/new-wiki', async (req, res, next) => {

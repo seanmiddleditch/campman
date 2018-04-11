@@ -60,6 +60,7 @@ export class PageRepository extends Repository<PageModel>
                     id: row.note_id as number,
                     slug: row.note_slug as string,
                     title: row.note_title as string,
+                    rawbody: row.note_rawbody as string,
                     visibility: row.note_visibility as PageVisibility,
                     authorId: row.note_author_id as number
                 })))

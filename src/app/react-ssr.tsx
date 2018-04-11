@@ -1,11 +1,11 @@
 import * as React from 'react'
 import { Request, Response } from 'express'
 import * as ReactDOMServer from 'react-dom/server'
-import {Application} from '../components/application'
+import { Application } from '../components/application'
 import { MainRoutes, CampaignRoutes } from '../components/routes'
 import * as shortid from 'shortid'
-import {URL} from 'url'
-import {API, CharacterData, CampaignData, MediaFile, WikiPageData, ProfileData, AdventureData} from '../types'
+import { URL } from 'url'
+import { API, CharacterData, CampaignData, MediaFile, WikiPageData, ProfileData, AdventureData, MapData } from '../types'
 import { State } from '../state'
 import { StaticRouter, Route } from 'react-router'
 import { config } from './config'
@@ -22,6 +22,7 @@ function stub<R>(): Stub<R> { return () => {throw new Error('not implemented')} 
 const stubAPI: API = {
     showLoginDialog: stub<ProfileData|undefined>(),
     endSession: stub<void>(),
+    listCharacters: stub<CharacterData[]>(),
     saveCharacter: stub<CharacterData>(),
     deleteCharacter: stub<void>(),
     uploadFile: stub<MediaFile>(),
@@ -30,9 +31,11 @@ const stubAPI: API = {
     createCampaign: stub<CampaignData>(),
     saveSettings: stub<void>(),
     listCampaigns: stub<CampaignData[]>(),
+    listWikiPages: stub<WikiPageData[]>(),
     saveWikiPage: stub<WikiPageData>(),
     deletePage: stub<void>(),
     listProfiles: stub<ProfileData[]>(),
+    listMaps: stub<MapData[]>(),
     listAdventures: stub<AdventureData[]>(),
     fetchAdventure: stub<AdventureData|undefined>(),
     createAdventure: stub<AdventureData>(),

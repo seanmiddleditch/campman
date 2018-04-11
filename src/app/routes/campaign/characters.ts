@@ -1,22 +1,22 @@
 import PromiseRouter = require('express-promise-router')
-import {Request, Response} from 'express'
-import {CharacterRepository, CharacterModel} from '../../models'
-import {connection} from '../../db'
-import {config} from '../../config'
-import {URL} from 'url'
-import {checkAccess} from '../../auth'
-import {scrubDraftSecrets} from '../../../common/draft-utils'
+import { Request, Response } from 'express'
+import { CharacterRepository, CharacterModel } from '../../models'
+import { connection } from '../../db'
+import { config } from '../../config'
+import { URL } from 'url'
+import { checkAccess } from '../../auth'
+import { scrubDraftSecrets } from '../../../common/draft-utils'
 import * as slugUtils from '../../../common/slug-utils'
 import * as multer from 'multer'
-import {insertMedia} from '../../insert-media'
-import {CharacterData} from '../../../types'
-import {render} from '../../react-ssr'
-import {ViewCharacter} from '../../../components/pages/view-character'
-import {EditCharacter} from '../../../components/pages/edit-character'
-import {NewCharacter} from '../../../components/pages/new-character'
-import {ListCharacters}  from '../../../components/pages/list-characters'
-import {AccessDenied} from '../../../components/pages/access-denied'
-import {NotFound} from '../../../components/pages/not-found'
+import { insertMedia } from '../../insert-media'
+import { CharacterData } from '../../../types'
+import { render, renderMain } from '../../react-ssr'
+import { ViewCharacter } from '../../../components/pages/view-character'
+import { EditCharacter } from '../../../components/pages/edit-character'
+import { NewCharacter } from '../../../components/pages/new-character'
+import { ListCharacters } from '../../../components/pages/list-characters'
+import { AccessDenied } from '../../../components/pages/access-denied'
+import { NotFound } from '../../../components/pages/not-found'
 
 export function characters() {
     const router = PromiseRouter()
@@ -27,16 +27,23 @@ export function characters() {
             throw new Error('Missing campaign')
 
         const all = await characterRepository.findForCampaign({campaignId: req.campaign.id})
-        const chars = all.filter(char => checkAccess('character:view', {
+        const chars: CharacterData[] = all.filter(char => checkAccess('character:view', {
             profileId: req.profileId,
             role: req.campaignRole,
             hidden: !char.visible,
             ownerId: char.ownerId
-        })).map(c => ({...c, rawbody: JSON.parse(c.rawbody)}))
+        })).map(c => ({
+            ...c,
+            owner: c.ownerId,
+            rawbody: JSON.parse(c.rawbody)
+        }))
 
         const canCreate = checkAccess('character:view', {profileId: req.profileId, role: req.campaignRole})
-
-        render(res, ListCharacters, {chars, editable: canCreate})
+        
+        renderMain(req, res, {
+            data: {characters: chars.reduce((coll, ch) => ({...coll, [ch.id]: ch}), {})},
+            indices: {characters: chars.map(ch => ch.id)}
+        })
     })
 
     router.get('/new-char', async (req, res, next) => {

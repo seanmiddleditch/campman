@@ -74,7 +74,7 @@ export interface MapData
     slug: string
     title: string
     rawbody: RawDraftContentState
-    storage: FileImageData,
+    storage: {contentMD5: string, imageWidth: number, imageHeight: number, extension: string},
 }
 
 

@@ -1,17 +1,18 @@
-import {Request, Response} from 'express'
-import {checkAccess} from '../../auth'
-import {MapRepository} from '../../models'
-import {connection} from '../../db'
+import { Request, Response } from 'express'
+import { checkAccess } from '../../auth'
+import { MapRepository } from '../../models'
+import { connection } from '../../db'
 import PromiseRouter = require('express-promise-router')
 import * as multer from 'multer'
-import {insertMedia} from '../../insert-media'
-import {render} from '../../react-ssr'
-import {ListMaps} from '../../../components/pages/list-maps'
-import {NewMap} from '../../../components/pages/new-map'
-import {ViewMap} from '../../../components/pages/view-map'
+import { insertMedia } from '../../insert-media'
+import { render, renderMain } from '../../react-ssr'
+import { ListMaps } from '../../../components/pages/list-maps'
+import { NewMap } from '../../../components/pages/new-map'
+import { ViewMap } from '../../../components/pages/view-map'
 import * as slugUtils from '../../../common/slug-utils'
-import {AccessDenied} from '../../../components/pages/access-denied'
-import {NotFound} from '../../../components/pages/not-found'
+import { AccessDenied } from '../../../components/pages/access-denied'
+import { NotFound } from '../../../components/pages/not-found'
+import { MapData } from '../../../types'
 
 export function maps()
 {
@@ -30,14 +31,14 @@ export function maps()
             return
         }
 
-        const filtered = all.filter(map => checkAccess('map:view', {
+        const filtered: MapData[] = all.filter(map => checkAccess('map:view', {
             profileId: req.profileId,
             role: req.campaignRole
         })).map(m => ({
             id: m.id,
             slug: m.slug,
             title: m.title,
-            rawbody: m.rawbody,
+            rawbody: m.rawbody ? JSON.parse(m.rawbody) : undefined,
             storage: m.storage,
         }))
 
@@ -46,7 +47,10 @@ export function maps()
             role: req.campaignRole
         })
 
-        render(res, ListMaps, {maps: filtered, canCreate})
+        renderMain(req, res, {
+            data: {maps: filtered.reduce((coll, map) => ({...coll, [map.id]: map}), {})},
+            indices: {maps: filtered.map(map => map.id)}
+        })
     })
 
     router.get('/new-map', async (req, res, next) =>

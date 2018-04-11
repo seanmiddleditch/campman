@@ -11,7 +11,10 @@ import {
     NewAdventure,
     EditAdventure,
     ViewAdventure,
-    CampaignMembership
+    CampaignMembership,
+    ListCharacters,
+    ListWiki,
+    ListMaps
 } from './pages'
 
 export const MainRoutes: React.SFC<{location: Location}> = ({location, children}) =>
@@ -49,20 +52,23 @@ export const CampaignRoutes: React.SFC<{location: Location}> = ({location, child
         <Route exact path='/new-adventure'>
             <NewAdventure/>
         </Route>
-        {/* <Route exact path='/wiki'>
+        <Route exact path='/chars'>
+            <ListCharacters/>
         </Route>
-        <Route exact path='/characters'>
+        <Route exact path='/wiki'>
+            <ListWiki/>
         </Route>
-        <Route exact path='/files'>
+        <Route exact path='/maps'>
+            <ListMaps/>
+        </Route>
+        {/* <Route exact path='/files'>
         </Route>
         <Route exact path='/settings'>
         </Route>
         <Route exact path='/membership'>
             <Redirect to='/membership'/>
         </Route>
-        <Route exact path='/maps'>
-            <Redirect to='/maps'/>
-        </Route> */}
+         */}
         {children && <Route path='/'>{children}</Route>}
         <Route status={404} component={NotFound}/>
     </Switch>

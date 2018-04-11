@@ -5,7 +5,7 @@ import {
     WikiPageInput, WikiPageData,
     CampaignInput, CampaignData,
     AdventureInput, AdventureData,
-    ProfileData
+    ProfileData, MapData
 } from '../../types'
 import * as urlJoin from 'url-join'
 
@@ -76,6 +76,11 @@ export class ClientAPI implements API
         return this._callRemoteV1<Response, Body>(fullUri, req)
     }
 
+    public listCharacters({campaignId}: {campaignId: number}): Promise<CharacterData[]>
+    {
+        return this._callRemote<CharacterData[]>('/characters', {method: 'GET', campaignId})
+    }
+
     public saveCharacter(char: CharacterInput): Promise<CharacterData>
     {
         return this._callRemoteV1<CharacterData>('/chars', {method: 'POST', body: {...char, rawbody: JSON.stringify(char.rawbody)}})
@@ -84,6 +89,11 @@ export class ClientAPI implements API
     public deleteCharacter(data: {characterId: number}): Promise<void>
     {
         return this._callRemoteV1<void>(`/chars/c/${data.characterId}`, {method: 'DELETE'})
+    }
+
+    public listWikiPages({campaignId}: {campaignId: number}): Promise<WikiPageData[]>
+    {
+        return this._callRemote<WikiPageData[]>('/pages', {method: 'GET', campaignId})
     }
 
     public async saveWikiPage(page: WikiPageInput): Promise<WikiPageData>
@@ -256,6 +266,11 @@ export class ClientAPI implements API
     async listProfiles({campaignId}: {campaignId: number}): Promise<ProfileData[]>
     {
         return this._callRemote<ProfileData[]>('/members', {campaignId})
+    }
+
+    public listMaps({campaignId}: {campaignId: number}): Promise<MapData[]>
+    {
+        return this._callRemote<MapData[]>('/maps', {campaignId})
     }
 
     async listAdventures({campaignId}: {campaignId: number}): Promise<AdventureData[]>

@@ -2,7 +2,10 @@ import PromiseRouter = require('express-promise-router')
 import { CampaignRepository } from '../../../../models'
 import { connection } from '../../../../db'
 import { members } from './members'
+import { characters } from './characters'
 import { files } from './files'
+import { pages } from './pages'
+import { maps } from './maps'
 import { adventures } from './adventures'
 import { makeCampaignURL } from '../../../../../common/url-utils'
 import { config } from '../../../../config'
@@ -14,7 +17,10 @@ export function campaigns()
     const router = PromiseRouter()
     router.use('/:campaignId/adventures', adventures())
     router.use('/:campaignId/members', members())
+    router.use('/:campaignId/characters', characters())
     router.use('/:campaignId/files', files())
+    router.use('/:campaignId/pages', pages())
+    router.use('/:campaignId/maps', maps())
     router.use('/:campaignId/', async (req, res) => {
         const campaign = await campaignRepository.findOneById(req.params['campaignId'])
         if (!campaign)
